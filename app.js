@@ -22,7 +22,7 @@ scene.add(directionalLight);
 
 // Noise system with configurable parameters
 const noiseParams = {
-    scale: 0.1,
+    scale: 0.005, // Increased frequency for more detailed terrain
     octaves: 4,
     persistence: 0.5,
     lacunarity: 2.0,
