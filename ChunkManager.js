@@ -18,28 +18,32 @@ window.ChunkManager = class ChunkManager {
     createTextureAtlas() {
         const canvas = document.createElement('canvas');
         canvas.width = 16;
-        canvas.height = 16;
+        canvas.height = 20;  // Increased height for sea block
         const ctx = canvas.getContext('2d');
         
-        // Water (blue)
+        // Water (blue) - moved down 4px
         ctx.fillStyle = '#1E90FF';
-        ctx.fillRect(0, 0, 16, 4);
-        
-        // Sand (yellow)
-        ctx.fillStyle = '#F0E68C';
         ctx.fillRect(0, 4, 16, 4);
         
-        // Grass (green)
-        ctx.fillStyle = '#32CD32';
+        // Sand (yellow) - moved down 4px
+        ctx.fillStyle = '#F0E68C';
         ctx.fillRect(0, 8, 16, 4);
         
-        // Rock (gray)
-        ctx.fillStyle = '#808080';
-        ctx.fillRect(0, 12, 16, 2);
+        // Grass (green) - moved down 4px
+        ctx.fillStyle = '#32CD32';
+        ctx.fillRect(0, 12, 16, 4);
         
-        // Snow (white)
+        // Rock (gray) - moved down 4px
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, 16, 16, 2);
+        
+        // Snow (white) - moved down 4px
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 14, 16, 2);
+        ctx.fillRect(0, 18, 16, 2);
+        
+        // Sea (dark blue) - added at top
+        ctx.fillStyle = '#00008B';
+        ctx.fillRect(0, 0, 16, 4);
         
         const texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
@@ -115,7 +119,7 @@ window.ChunkManager = class ChunkManager {
                     frequency *= this.noiseParams.lacunarity;
                 }
                 
-                heightMap[x][z] = Math.floor(noiseValue * 20);
+                heightMap[x][z] = Math.max(0, Math.floor(noiseValue * 20));
             }
         }
         
@@ -128,7 +132,9 @@ window.ChunkManager = class ChunkManager {
                 for (let y = 0; y <= height; y++) {
                     // Determine block type
                     let color;
-                    if (y < 5) {
+                    if (y === 0) {
+                        color = new THREE.Color(0x00008B); // Sea
+                    } else if (y < 5) {
                         color = new THREE.Color(0x1E90FF); // Water
                     } else if (y < 10) {
                         color = new THREE.Color(0xF0E68C); // Sand
