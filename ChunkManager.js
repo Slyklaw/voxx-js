@@ -50,9 +50,6 @@ window.ChunkManager = class ChunkManager {
         const chunk = new THREE.Group();
         chunk.position.set(x * this.chunkSize, 0, z * this.chunkSize);
         
-        // Create voxel geometry (shared)
-        const voxelGeometry = new THREE.BoxGeometry(1, 1, 1);
-        
         // Create materials for different block types
         const materials = {
             water: new THREE.MeshPhongMaterial({ color: 0x1E90FF }),
@@ -62,17 +59,45 @@ window.ChunkManager = class ChunkManager {
             snow: new THREE.MeshPhongMaterial({ color: 0xFFFFFF })
         };
         
-        // Generate terrain
-        this.generateVoxelTerrain(chunk, voxelGeometry, materials, x, z);
-        this.scene.add(chunk);
+        // Generate terrain as a single mesh
+        const mesh = this.generateVoxelTerrain(materials, x, z);
+        if (mesh) {
+            chunk.add(mesh);
+        }
         
+        this.scene.add(chunk);
         return chunk;
     }
 
-    generateVoxelTerrain(chunk, voxelGeometry, materials, chunkX, chunkZ) {
+    generateVoxelTerrain(materials, chunkX, chunkZ) {
         const simplex = new SimplexNoise(this.noiseParams.seed);
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.MeshPhongMaterial({ vertexColors: true });
+        const positions = [];
+        const colors = [];
+        const indices = [];
         
+        // Helper function to add a voxel face
+        const addFace = (vertices, color, indicesOffset) => {
+            // Add vertices to positions array
+            positions.push(...vertices);
+            
+            // Add color for each vertex
+            for (let i = 0; i < 4; i++) {
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            // Add indices for two triangles
+            indices.push(
+                indicesOffset, indicesOffset + 2, indicesOffset + 1,
+                indicesOffset, indicesOffset + 3, indicesOffset + 2
+            );
+        };
+        
+        // Generate heightmap
+        const heightMap = [];
         for (let x = 0; x < this.chunkSize; x++) {
+            heightMap[x] = [];
             for (let z = 0; z < this.chunkSize; z++) {
                 const worldX = chunkX * this.chunkSize + x;
                 const worldZ = chunkZ * this.chunkSize + z;
@@ -90,29 +115,95 @@ window.ChunkManager = class ChunkManager {
                     frequency *= this.noiseParams.lacunarity;
                 }
                 
-                const height = Math.floor(noiseValue * 20);
+                heightMap[x][z] = Math.floor(noiseValue * 20);
+            }
+        }
+        
+        // Generate all faces for each voxel
+        let vertexCount = 0;
+        for (let x = 0; x < this.chunkSize; x++) {
+            for (let z = 0; z < this.chunkSize; z++) {
+                const height = heightMap[x][z];
                 
-                // Create voxel based on height
                 for (let y = 0; y <= height; y++) {
-                    let material;
+                    // Determine block type
+                    let color;
                     if (y < 5) {
-                        material = materials.water;
+                        color = new THREE.Color(0x1E90FF); // Water
                     } else if (y < 10) {
-                        material = materials.sand;
+                        color = new THREE.Color(0xF0E68C); // Sand
                     } else if (y < 20) {
-                        material = materials.grass;
+                        color = new THREE.Color(0x32CD32); // Grass
                     } else if (y < 30) {
-                        material = materials.rock;
+                        color = new THREE.Color(0x808080); // Rock
                     } else {
-                        material = materials.snow;
+                        color = new THREE.Color(0xFFFFFF); // Snow
                     }
                     
-                    const voxel = new THREE.Mesh(voxelGeometry, material);
-                    voxel.position.set(x, y, z);
-                    chunk.add(voxel);
+                    // Define vertices for all 6 faces
+                    const faces = [
+                        // Top face (y+)
+                        [
+                            x, y+1, z,
+                            x+1, y+1, z,
+                            x+1, y+1, z+1,
+                            x, y+1, z+1
+                        ],
+                        // Bottom face (y-)
+                        [
+                            x, y, z,
+                            x, y, z+1,
+                            x+1, y, z+1,
+                            x+1, y, z
+                        ],
+                        // Front face (z+)
+                        [
+                            x, y, z+1,
+                            x, y+1, z+1,
+                            x+1, y+1, z+1,
+                            x+1, y, z+1
+                        ],
+                        // Back face (z-)
+                        [
+                            x, y, z,
+                            x+1, y, z,
+                            x+1, y+1, z,
+                            x, y+1, z
+                        ],
+                        // Right face (x+)
+                        [
+                            x+1, y, z,
+                            x+1, y, z+1,
+                            x+1, y+1, z+1,
+                            x+1, y+1, z
+                        ],
+                        // Left face (x-)
+                        [
+                            x, y, z,
+                            x, y+1, z,
+                            x, y+1, z+1,
+                            x, y, z+1
+                        ]
+                    ];
+                    
+                    // Add all faces
+                    for (const face of faces) {
+                        addFace(face, color, vertexCount);
+                        vertexCount += 4;
+                    }
                 }
             }
         }
+        
+        // Create geometry if we have any faces
+        if (positions.length === 0) return null;
+        
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        
+        return new THREE.Mesh(geometry, material);
     }
 
     unloadChunk(x, z) {
