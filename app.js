@@ -30,7 +30,7 @@ const noiseParams = {
 };
 
 // Create chunk manager
-const chunkManager = new window.ChunkManager(scene, noiseParams, 32, 3);
+const chunkManager = new window.ChunkManager(scene, noiseParams, 32, 10);
 
 // First-person controls
 const moveSpeed = 0.2;
@@ -86,8 +86,23 @@ window.addEventListener('resize', () => {
 });
 
 // Animation loop
+// FPS counter variables
+let lastFpsUpdate = 0;
+let frameCount = 0;
+let fps = 0;
+
 function animate() {
     requestAnimationFrame(animate);
+    
+    // Update FPS counter every second
+    frameCount++;
+    const now = performance.now();
+    if (now >= lastFpsUpdate + 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastFpsUpdate = now;
+        document.getElementById('fpsCounter').textContent = `FPS: ${fps}`;
+    }
     
     // Update camera rotation
     camera.rotation.set(pitch, yaw, 0, 'YXZ');
