@@ -11,7 +11,7 @@
 1. **Terrain Generation**
    - [ ] Fractal noise terrain with multiple octaves
    - [ ] Height-based material selection
-   - [ ] Chunk loading/unloading
+   - [x] Chunk loading/unloading
    - [x] LOD (Level of Detail) system
    - [ ] Biome system with temperature/humidity
    - [ ] Cave generation

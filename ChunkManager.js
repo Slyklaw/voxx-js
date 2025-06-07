@@ -211,8 +211,12 @@ window.ChunkManager = class ChunkManager {
         const chunk = this.chunks.get(key);
         if (chunk) {
             this.scene.remove(chunk);
-            chunk.geometry.dispose();
-            chunk.material.dispose();
+            if (chunk.geometry) {
+                chunk.geometry.dispose();
+            }
+            if (chunk.material) {
+                chunk.material.dispose();
+            }
             this.chunks.delete(key);
         }
     }
