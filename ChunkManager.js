@@ -318,6 +318,166 @@ window.ChunkManager = class ChunkManager {
         return texture;
     }
 
+    createChunk(x, z) {
+        const chunk = new THREE.Group();
+        chunk.position.set(x * this.chunkSize, 0, z * this.chunkSize);
+        
+        // Create materials for different block types
+        const materials = {
+            water: new THREE.MeshPhongMaterial({ color: 0x1E90FF }),
+            sand: new THREE.MeshPhongMaterial({ color: 0xF0E68C }),
+            grass: new THREE.MeshPhongMaterial({ color: 0x32CD32 }),
+            rock: new THREE.MeshPhongMaterial({ color: 0x808080 }),
+            snow: new THREE.MeshPhongMaterial({ color: 0xFFFFFF })
+        };
+        
+        // Generate terrain as a single mesh
+        const mesh = this.generateVoxelTerrain(materials, x, z);
+        if (mesh) {
+            chunk.add(mesh);
+        }
+        
+        this.scene.add(chunk);
+        return chunk;
+    }
+
+    generateVoxelTerrain(materials, chunkX, chunkZ) {
+        const simplex = new SimplexNoise(this.noiseParams.seed);
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.MeshPhongMaterial({ vertexColors: true });
+        const positions = [];
+        const colors = [];
+        const indices = [];
+        
+        // Helper function to add a voxel face
+        const addFace = (vertices, color, indicesOffset) => {
+            // Add vertices to positions array
+            positions.push(...vertices);
+            
+            // Add color for each vertex
+            for (let i = 0; i < 4; i++) {
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            // Add indices for two triangles
+            indices.push(
+                indicesOffset, indicesOffset + 2, indicesOffset + 1,
+                indicesOffset, indicesOffset + 3, indicesOffset + 2
+            );
+        };
+        
+        // Generate heightmap
+        const heightMap = [];
+        for (let x = 0; x < this.chunkSize; x++) {
+            heightMap[x] = [];
+            for (let z = 0; z < this.chunkSize; z++) {
+                const worldX = chunkX * this.chunkSize + x;
+                const worldZ = chunkZ * this.chunkSize + z;
+                
+                let noiseValue = 0;
+                let amplitude = 1;
+                let frequency = 1;
+                
+                for (let octave = 0; octave < this.noiseParams.octaves; octave++) {
+                    const sampleX = worldX * this.noiseParams.scale * frequency;
+                    const sampleZ = worldZ * this.noiseParams.scale * frequency;
+                    noiseValue += simplex.noise2D(sampleX, sampleZ) * amplitude;
+                    
+                    amplitude *= this.noiseParams.persistence;
+                    frequency *= this.noiseParams.lacunarity;
+                }
+                
+                heightMap[x][z] = Math.floor(noiseValue * 20);
+            }
+        }
+        
+        // Generate all faces for each voxel
+        let vertexCount = 0;
+        for (let x = 0; x < this.chunkSize; x++) {
+            for (let z = 0; z < this.chunkSize; z++) {
+                const height = heightMap[x][z];
+                
+                for (let y = 0; y <= height; y++) {
+                    // Determine block type
+                    let color;
+                    if (y < 5) {
+                        color = new THREE.Color(0x1E90FF); // Water
+                    } else if (y < 10) {
+                        color = new THREE.Color(0xF0E68C); // Sand
+                    } else if (y < 20) {
+                        color = new THREE.Color(0x32CD32); // Grass
+                    } else if (y < 30) {
+                        color = new THREE.Color(0x808080); // Rock
+                    } else {
+                        color = new THREE.Color(0xFFFFFF); // Snow
+                    }
+                    
+                    // Define vertices for all 6 faces
+                    const faces = [
+                        // Top face (y+)
+                        [
+                            x, y+1, z,
+                            x+1, y+1, z,
+                            x+1, y+1, z+1,
+                            x, y+1, z+1
+                        ],
+                        // Bottom face (y-)
+                        [
+                            x, y, z,
+                            x, y, z+1,
+                            x+1, y, z+1,
+                            x+1, y, z
+                        ],
+                        // Front face (z+)
+                        [
+                            x, y, z+1,
+                            x, y+1, z+1,
+                            x+1, y+1, z+1,
+                            x+1, y, z+1
+                        ],
+                        // Back face (z-)
+                        [
+                            x, y, z,
+                            x+1, y, z,
+                            x+1, y+1, z,
+                            x, y+1, z
+                        ],
+                        // Right face (x+)
+                        [
+                            x+1, y, z,
+                            x+1, y, z+1,
+                            x+1, y+1, z+1,
+                            x+1, y+1, z
+                        ],
+                        // Left face (x-)
+                        [
+                            x, y, z,
+                            x, y+1, z,
+                            x, y+1, z+1,
+                            x, y, z+1
+                        ]
+                    ];
+                    
+                    // Add all faces
+                    for (const face of faces) {
+                        addFace(face, color, vertexCount);
+                        vertexCount += 4;
+                    }
+                }
+            }
+        }
+        
+        // Create geometry if we have any faces
+        if (positions.length === 0) return null;
+        
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+        
+        return new THREE.Mesh(geometry, material);
+    }
+
     unloadChunk(x, z) {
         const key = this.getChunkKey(x, z);
         
