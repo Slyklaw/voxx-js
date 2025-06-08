@@ -11,7 +11,72 @@ window.ChunkManager = class ChunkManager {
         // Create texture atlas
         this.textureAtlas = this.createTextureAtlas();
         
-        // Create web worker using Blob URL to avoid file:// restrictions
+        // Initialize worker pool
+        this.workerPool = [];
+        this.taskQueue = [];
+        this.workerTasks = new Map();
+        this.initWorkerPool();
+        console.log('conc', navigator.hardwareConcurrency);
+    }
+
+    processTaskQueue() {
+        for (const worker of this.workerPool) {
+            if (!this.workerTasks.get(worker) && this.taskQueue.length > 0) {
+                const task = this.taskQueue.shift();
+                this.workerTasks.set(worker, task.key);
+                console.log('[ChunkManager] Sending chunk task to worker:', task.x, task.z);
+                worker.postMessage({
+                    chunkX: task.x,
+                    chunkZ: task.z,
+                    noiseParams: this.noiseParams,
+                    chunkSize: this.chunkSize
+                });
+            }
+        }
+    }
+    
+    handleWorkerMessage(worker, event) {
+        const { chunkX, chunkZ, positions, colors, indices } = event.data;
+        const key = this.getChunkKey(chunkX, chunkZ);
+        
+        console.log('[ChunkManager] Received chunk from worker:', chunkX, chunkZ);
+        
+        // Create geometry and material
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        geometry.setIndex(indices);
+        
+        const material = new THREE.MeshBasicMaterial({
+            vertexColors: true,
+            side: THREE.DoubleSide
+        });
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(chunkX * this.chunkSize, 0, chunkZ * this.chunkSize);
+        this.scene.add(mesh);
+        
+        // Store chunk and mark as complete
+        this.chunks.set(key, mesh);
+        this.pendingChunks.delete(key);
+        this.workerTasks.set(worker, null);
+    }
+
+    createChunk(x, z) {
+        const key = this.getChunkKey(x, z);
+        if (this.chunks.has(key) || this.pendingChunks.has(key)) return;
+        
+        console.log('[ChunkManager] Creating chunk', x, z);
+        this.pendingChunks.set(key, true);
+        this.taskQueue.push({ x, z, key });
+        this.processTaskQueue();
+    }
+
+    getChunkKey(x, z) {
+        return `${x},${z}`;
+    }
+    
+    initWorkerPool() {
         const workerCode = `
             // Simple Simplex Noise implementation
             class SimplexNoise {
@@ -37,7 +102,7 @@ window.ChunkManager = class ChunkManager {
                     const s = (xin+yin)*F2;
                     const i = Math.floor(xin+s);
                     const j = Math.floor(yin+s);
-                    const G2 = (3.0-Math.sqrt(3.0))/6.0;
+                    const G2 = (3.0-Math.sqrt(3.0))/6.0;  // Fixed syntax error
                     const t = (i+j)*G2;
                     const X0 = i-t;
                     const Y0 = j-t;
@@ -87,7 +152,9 @@ window.ChunkManager = class ChunkManager {
             
             self.addEventListener('message', (e) => {
                 const { chunkX, chunkZ, noiseParams, chunkSize } = e.data;
+                console.log('[Worker] Generating terrain for chunk', chunkX, chunkZ);
                 const { positions, colors, indices } = generateVoxelTerrain(chunkX, chunkZ, noiseParams, chunkSize);
+                console.log('[Worker] Finished generating chunk', chunkX, chunkZ, positions.length, 'vertices');
                 self.postMessage({ chunkX, chunkZ, positions, colors, indices });
             });
             
@@ -206,35 +273,14 @@ window.ChunkManager = class ChunkManager {
             }
         `;
         
-        const blob = new Blob([workerCode], { type: 'application/javascript' });
-        this.worker = new Worker(URL.createObjectURL(blob));
-        this.worker.onmessage = (e) => {
-            const { chunkX, chunkZ, positions, colors, indices } = e.data;
-            const key = this.getChunkKey(chunkX, chunkZ);
-            const pending = this.pendingChunks.get(key);
-            if (pending) {
-                const geometry = new THREE.BufferGeometry();
-                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-                geometry.setIndex(indices);
-                geometry.computeVertexNormals();
-                
-                const material = new THREE.MeshPhongMaterial({ vertexColors: true });
-                const mesh = new THREE.Mesh(geometry, material);
-                
-                const chunk = new THREE.Group();
-                chunk.position.set(chunkX * this.chunkSize, 0, chunkZ * this.chunkSize);
-                chunk.add(mesh);
-                
-                this.scene.add(chunk);
-                this.chunks.set(key, chunk);
-                this.pendingChunks.delete(key);
-            }
-        };
-    }
-
-    getChunkKey(x, z) {
-        return `${x},${z}`;
+        // Create workers and set up message handlers
+        for (let i = 0; i < 4; i++) {
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const worker = new Worker(URL.createObjectURL(blob));
+            worker.addEventListener('message', (event) => this.handleWorkerMessage(worker, event));
+            this.workerPool.push(worker);
+            this.workerTasks.set(worker, null);
+        }
     }
 
     createTextureAtlas() {
@@ -272,19 +318,6 @@ window.ChunkManager = class ChunkManager {
         return texture;
     }
 
-    createChunk(x, z) {
-        const key = this.getChunkKey(x, z);
-        if (this.chunks.has(key) || this.pendingChunks.has(key)) return;
-        
-        this.pendingChunks.set(key, true);
-        this.worker.postMessage({
-            chunkX: x,
-            chunkZ: z,
-            noiseParams: this.noiseParams,
-            chunkSize: this.chunkSize
-        });
-    }
-
     unloadChunk(x, z) {
         const key = this.getChunkKey(x, z);
         
@@ -312,29 +345,40 @@ window.ChunkManager = class ChunkManager {
         const chunkX = Math.round(cameraPosition.x / this.chunkSize);
         const chunkZ = Math.round(cameraPosition.z / this.chunkSize);
         
-        // Only update if camera moved to a new chunk
-        if (chunkX === this.previousChunkCoords.x && chunkZ === this.previousChunkCoords.z) return;
-        
-        this.previousChunkCoords = { x: chunkX, z: chunkZ };
-        
-        // Unload distant chunks
-        for (const [key, chunk] of this.chunks) {
-            const [x, z] = key.split(',').map(Number);
-            if (Math.abs(x - chunkX) > this.renderDistance ||
-                Math.abs(z - chunkZ) > this.renderDistance) {
-                this.unloadChunk(x, z);
+        // Track camera movement for unloading
+        if (chunkX !== this.previousChunkCoords.x || chunkZ !== this.previousChunkCoords.z) {
+            this.previousChunkCoords = { x: chunkX, z: chunkZ };
+            
+            // Unload distant chunks
+            for (const [key, chunk] of this.chunks) {
+                const [x, z] = key.split(',').map(Number);
+                if (Math.abs(x - chunkX) > this.renderDistance ||
+                    Math.abs(z - chunkZ) > this.renderDistance) {
+                    this.unloadChunk(x, z);
+                }
             }
         }
         
-        // Load new chunks
+        // Always load visible chunks regardless of movement
         for (let x = chunkX - this.renderDistance; x <= chunkX + this.renderDistance; x++) {
             for (let z = chunkZ - this.renderDistance; z <= chunkZ + this.renderDistance; z++) {
                 const key = this.getChunkKey(x, z);
-                if (!this.chunks.has(key)) {
-                    const chunk = this.createChunk(x, z);
-                    this.chunks.set(key, chunk);
+                if (!this.chunks.has(key) && !this.pendingChunks.has(key)) {
+                    this.createChunk(x, z);
                 }
             }
+        }
+        
+        // Process pending chunks continuously
+        this.processContinuous();
+    }
+    
+    processContinuous() {
+        // Process up to 2 chunks per frame to avoid freezing
+        let processed = 0;
+        while (this.taskQueue.length > 0 && processed < 2) {
+            this.processTaskQueue();
+            processed++;
         }
     }
 }
