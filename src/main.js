@@ -41,7 +41,9 @@ document.body.appendChild(stats.dom);
 const noise = createNoise2D();
 const chunk = new Chunk(0, 0);
 chunk.generate(noise);
-scene.add(chunk.createMesh());
+const mesh = chunk.createMesh();
+mesh.position.set(chunk.chunkX * 32, 0, chunk.chunkZ * 32);
+scene.add(mesh);
 
 // 2. PLAYER CONTROLS
 // =================================================================
