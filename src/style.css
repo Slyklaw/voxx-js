@@ -1,7 +1,25 @@
+html,
 body {
   margin: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 canvas {
   display: block;
+}
+
+#instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  font-family: sans-serif;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1em;
+  border-radius: 5px;
+  cursor: pointer;
 }
