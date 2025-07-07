@@ -13,30 +13,30 @@ Create a 3D voxel terrain engine using `three.js`. The world will be composed of
 This checklist is structured into milestones to provide a clear development path from a basic prototype to a feature-rich engine.
 
 ## Milestone 1: The Basics (MVP)
-- [ ] **Project Setup:**
-    - [ ] Initialize project with a build tool (e.g., Vite).
-    - [ ] Install `three.js` and a noise library (e.g., `simplex-noise`).
-- [ ] **Scene Setup:**
-    - [ ] Create a basic `three.js` scene: `Scene`, `PerspectiveCamera`, `WebGLRenderer`.
-    - [ ] Add basic lighting (e.g., `AmbientLight`, `DirectionalLight`).
-    - [ ] Add an FPS counter (e.g., `stats.js`).
-- [ ] **Player Controls:**
-    - [ ] Implement first-person controls (`PointerLockControls`).
-    - [ ] Map WASD for horizontal movement.
-    - [ ] Map Space/Left Shift for vertical movement.
-- [ ] **Initial World Generation:**
-    - [ ] Implement a `Chunk` class (e.g., 32x32x32).
-    - [ ] Use a simple noise function to define a height map.
-    - [ ] Generate and display a single chunk of terrain using simple `BoxGeometry` for each voxel.
+- [x] **Project Setup:**
+    - [x] Initialize project with a build tool (e.g., Vite).
+    - [x] Install `three.js` and a noise library (e.g., `simplex-noise`).
+- [x] **Scene Setup:**
+    - [x] Create a basic `three.js` scene: `Scene`, `PerspectiveCamera`, `WebGLRenderer`.
+    - [x] Add basic lighting (e.g., `AmbientLight`, `DirectionalLight`).
+    - [x] Add an FPS counter (e.g., `stats.js`).
+- [x] **Player Controls:**
+    - [x] Implement first-person controls (`PointerLockControls`).
+    - [x] Map WASD for horizontal movement.
+    - [x] Map Space/Left Shift for vertical movement.
+- [x] **Initial World Generation:**
+    - [x] Implement a `Chunk` class (e.g., 32x32x32).
+    - [x] Use a simple noise function to define a height map.
+    - [x] Generate and display a single chunk of terrain using simple `BoxGeometry` for each voxel.
 
 ## Milestone 2: Core Engine Features
 - [ ] **Infinite World:**
     - [ ] Create a `World` class to manage chunks.
     - [ ] Dynamically load/unload chunks based on camera position.
     - [ ] Implement a chunk pooling system to reuse chunk objects.
-- [ ] **Performance Optimization: Meshing**
-    - [ ] Implement "Greedy Meshing" or "Culled Meshing" to combine adjacent voxel faces into a single geometry. This is a crucial step to move beyond rendering individual cubes.
-    - [ ] Perform chunk meshing in a Web Worker to avoid blocking the main thread.
+- [x] **Performance Optimization: Meshing**
+    - [x] Implement "Greedy Meshing" or "Culled Meshing" to combine adjacent voxel faces into a single geometry. This is a crucial step to move beyond rendering individual cubes.
+    - [x] Perform chunk meshing in a Web Worker to avoid blocking the main thread.
 - [ ] **Improved Terrain Generation:**
     - [ ] Use fractal noise (multiple octaves) for more interesting terrain.
     - [ ] Make world generation seed-based.
