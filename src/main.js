@@ -14,7 +14,7 @@ scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(16, 35, 16); // Position above the center of the first chunk
+camera.position.set(16, 100, 16); // Position above terrain level
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -65,7 +65,7 @@ document.addEventListener('keydown', (event) => (keys[event.code] = true));
 document.addEventListener('keyup', (event) => (keys[event.code] = false));
 
 const clock = new THREE.Clock();
-const moveSpeed = 5;
+const moveSpeed = 15;
 
 // Animation loop
 function animate() {

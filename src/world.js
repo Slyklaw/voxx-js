@@ -21,7 +21,7 @@ export class World {
     return this.chunks[key];
   }
 
-  update(cameraPosition, renderDistance = 3) {
+  update(cameraPosition, renderDistance = 16) {
     // Determine current camera chunk
     const camChunkX = Math.floor(cameraPosition.x / CHUNK_WIDTH);
     const camChunkZ = Math.floor(cameraPosition.z / CHUNK_DEPTH);

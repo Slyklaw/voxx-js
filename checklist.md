@@ -31,8 +31,8 @@ This checklist is structured into milestones to provide a clear development path
 
 ## Milestone 2: Core Engine Features
 - [ ] **Infinite World:**
-    - [ ] Create a `World` class to manage chunks.
-    - [ ] Dynamically load/unload chunks based on camera position.
+    - [x] Create a `World` class to manage chunks.
+    - [x] Dynamically load/unload chunks based on camera position.
     - [ ] Implement a chunk pooling system to reuse chunk objects.
 - [x] **Performance Optimization: Meshing**
     - [x] Implement "Greedy Meshing" or "Culled Meshing" to combine adjacent voxel faces into a single geometry. This is a crucial step to move beyond rendering individual cubes.
