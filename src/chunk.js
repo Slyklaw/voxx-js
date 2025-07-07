@@ -4,6 +4,13 @@ export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 32;
 export const CHUNK_DEPTH = 32;
 
+const blocks = [
+  { type: 'AIR', color: [0, 0, 0, 0] },
+  { type: 'STONE', color: [128, 128, 128, 255] },
+  { type: 'DIRT', color: [139, 69, 19, 255] },
+  { type: 'GRASS', color: [95, 159, 53, 255] },
+];
+
 export class Chunk {
   constructor(chunkX, chunkZ) {
     this.chunkX = chunkX;
@@ -37,7 +44,13 @@ export class Chunk {
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
-            this.setVoxel(x, y, z, 1); // Solid block
+            let blockType = 1; // STONE by default
+            if (y === height - 1) {
+              blockType = 3; // GRASS on top layer
+            } else if (y >= height - 4) {
+              blockType = 2; // DIRT for layers below grass
+            }
+            this.setVoxel(x, y, z, blockType);
           }
         }
       }
@@ -50,6 +63,7 @@ export class Chunk {
     const normals = [];
     const uvs = [];
     const indices = [];
+    const colors = [];   // for vertex colors
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -116,9 +130,20 @@ export class Chunk {
               if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
               normals.push(...normal, ...normal, ...normal, ...normal);
 
-              uvs.push(0, 0, w, 0, 0, h, w, h);
+        uvs.push(0, 0, w, 0, 0, h, w, h);
 
-              if (val > 0) {
+        // Get the block color
+        const blockIndex = Math.abs(val);
+        const blockColor = blocks[blockIndex].color;
+        const r = blockColor[0] / 255;
+        const g = blockColor[1] / 255;
+        const b = blockColor[2] / 255;
+        // Push color for each vertex (4 times)
+        for (let i = 0; i < 4; i++) {
+          colors.push(r, g, b);
+        }
+
+        if (val > 0) {
                 // Front face
                 indices.push(vertexCount, vertexCount + 1, vertexCount + 2);
                 indices.push(vertexCount + 1, vertexCount + 3, vertexCount + 2);
@@ -149,9 +174,12 @@ export class Chunk {
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setIndex(indices);
 
-    const material = new THREE.MeshStandardMaterial({ color: 0x88aa88 });
+    const material = new THREE.MeshStandardMaterial({ 
+      vertexColors: true
+    });
     this.mesh = new THREE.Mesh(geometry, material);
     return this.mesh;
   }
