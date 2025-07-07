@@ -2,6 +2,8 @@ import './style.css';
 import * as THREE from 'three';
 import Stats from 'stats.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
+import { createNoise2D } from 'simplex-noise';
+import { Chunk } from './chunk.js';
 
 // 1. SCENE SETUP
 // =================================================================
@@ -12,7 +14,7 @@ scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 1.8, 5); // Eye-level height
+camera.position.set(16, 35, 16); // Position above the center of the first chunk
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -33,12 +35,13 @@ const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb
 document.body.appendChild(stats.dom);
 
-// Ground Plane
-const planeGeometry = new THREE.PlaneGeometry(100, 100);
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x668866 });
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = -Math.PI / 2;
-scene.add(plane);
+// 3. WORLD GENERATION
+// =================================================================
+
+const noise = createNoise2D();
+const chunk = new Chunk(0, 0);
+chunk.generate(noise);
+scene.add(chunk.createMesh());
 
 // 2. PLAYER CONTROLS
 // =================================================================
