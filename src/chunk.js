@@ -57,6 +57,14 @@ export class Chunk {
     }
   }
 
+  dispose() {
+    if (this.mesh) {
+      this.mesh.geometry.dispose();
+      this.mesh.material.dispose();
+      this.mesh = null;
+    }
+  }
+
   /** Create a mesh from the voxel data using Greedy Meshing */
   createMesh() {
     const positions = [];

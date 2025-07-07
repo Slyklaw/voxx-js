@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import Stats from 'stats.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { createNoise2D } from 'simplex-noise';
-import { Chunk } from './chunk.js';
+import { World } from './world.js';
 
 // 1. SCENE SETUP
 // =================================================================
@@ -39,11 +39,8 @@ document.body.appendChild(stats.dom);
 // =================================================================
 
 const noise = createNoise2D();
-const chunk = new Chunk(0, 0);
-chunk.generate(noise);
-const mesh = chunk.createMesh();
-mesh.position.set(chunk.chunkX * 32, 0, chunk.chunkZ * 32);
-scene.add(mesh);
+const world = new World(noise, scene);
+world.update(camera.position); // Initial world generation
 
 // 2. PLAYER CONTROLS
 // =================================================================
@@ -92,6 +89,9 @@ function animate() {
     if (keys['Space']) camera.position.y += moveSpeed * delta;
     if (keys['ShiftLeft']) camera.position.y -= moveSpeed * delta;
   }
+
+  // Update world based on camera position
+  world.update(camera.position);
 
   renderer.render(scene, camera);
   stats.end();
