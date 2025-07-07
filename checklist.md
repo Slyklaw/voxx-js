@@ -1,3 +1,6 @@
+# Project Overview
+Create a simple 3D voxel terrain engine with cubes of 1 meter size. use a simple noise function to create a sample terrain. Use three.js to render the terrain. include an fps counter. make the terrain unlimited by including the loading and unloading of terrain chunks of 32x32x32 size. enable camera movement with WASD keys. Restrict camera movement to the horizonal plane, with <spacebar> and <left-shift> to move up/down. Restriction camera movement to disallow tilting side to side, but do allow looking up or down.
+
 # Voxel Terrain Engine Implementation Checklist
 
 ## Core Engine Components
