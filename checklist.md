@@ -1,63 +1,74 @@
 # Project Overview
-Create a simple 3D voxel terrain engine with cubes of 1 meter size. use a simple noise function to create a sample terrain. Use three.js to render the terrain. include an fps counter. make the terrain unlimited by including the loading and unloading of terrain chunks of 32x32x32 size. enable camera movement with WASD keys. Restrict camera movement to the horizonal plane, with <spacebar> and <left-shift> to move up/down. Restriction camera movement to disallow tilting side to side, but do allow looking up or down.
+
+Create a 3D voxel terrain engine using `three.js`. The world will be composed of 1-meter cubes and generated using a noise function. The engine should support "infinite" terrain through dynamic loading and unloading of chunks (32x32x32 voxels).
+
+**Core Features:**
+- **Rendering:** Use `three.js`.
+- **World:** Chunk-based, procedurally generated using noise.
+- **Controls:** First-person camera with WASD for horizontal movement, Space/Shift for vertical movement, and mouse for looking. Camera tilt (roll) should be disabled.
+- **Performance:** Include an FPS counter and design for performance from the start.
 
 # Voxel Terrain Engine Implementation Checklist
 
-## Core Engine Components
-- [ ] Three.js scene setup (camera, renderer, lighting)
-- [ ] Noise system implementation (Simplex noise with configurable parameters)
-- [ ] Chunk-based world generation system
-- [ ] Voxel material system with height-based texture selection
-- [ ] Efficient rendering pipeline
+This checklist is structured into milestones to provide a clear development path from a basic prototype to a feature-rich engine.
 
-## Features to Implement
-1. **Terrain Generation**
-   - [ ] Fractal noise terrain with multiple octaves
-   - [ ] Height-based material selection
-   - [ ] Chunk loading/unloading
-   - [ ] LOD (Level of Detail) system
-   - [ ] Biome system with temperature/humidity
-   - [ ] Cave generation
+## Milestone 1: The Basics (MVP)
+- [ ] **Project Setup:**
+    - [ ] Initialize project with a build tool (e.g., Vite).
+    - [ ] Install `three.js` and a noise library (e.g., `simplex-noise`).
+- [ ] **Scene Setup:**
+    - [ ] Create a basic `three.js` scene: `Scene`, `PerspectiveCamera`, `WebGLRenderer`.
+    - [ ] Add basic lighting (e.g., `AmbientLight`, `DirectionalLight`).
+    - [ ] Add an FPS counter (e.g., `stats.js`).
+- [ ] **Player Controls:**
+    - [ ] Implement first-person controls (`PointerLockControls`).
+    - [ ] Map WASD for horizontal movement.
+    - [ ] Map Space/Left Shift for vertical movement.
+- [ ] **Initial World Generation:**
+    - [ ] Implement a `Chunk` class (e.g., 32x32x32).
+    - [ ] Use a simple noise function to define a height map.
+    - [ ] Generate and display a single chunk of terrain using simple `BoxGeometry` for each voxel.
 
-2. **Performance Optimization**
-   - [ ] Frustum culling
-   - [ ] Mesh instancing
-   - [ ] Web Workers for terrain generation
-   - [ ] GPU acceleration
+## Milestone 2: Core Engine Features
+- [ ] **Infinite World:**
+    - [ ] Create a `World` class to manage chunks.
+    - [ ] Dynamically load/unload chunks based on camera position.
+    - [ ] Implement a chunk pooling system to reuse chunk objects.
+- [ ] **Performance Optimization: Meshing**
+    - [ ] Implement "Greedy Meshing" or "Culled Meshing" to combine adjacent voxel faces into a single geometry. This is a crucial step to move beyond rendering individual cubes.
+    - [ ] Perform chunk meshing in a Web Worker to avoid blocking the main thread.
+- [ ] **Improved Terrain Generation:**
+    - [ ] Use fractal noise (multiple octaves) for more interesting terrain.
+    - [ ] Make world generation seed-based.
+- [ ] **Materials and Textures:**
+    - [ ] Create a texture atlas for different block types (e.g., grass, dirt, stone).
+    - [ ] Apply textures to voxels based on rules (e.g., height, biome).
 
-3. **Rendering Enhancements**
-   - [ ] Shadows
-   - [ ] Water rendering with reflections
-   - [ ] Fog and atmospheric effects
-   - [ ] Day/night cycle
+## Milestone 3: Advanced Features & Polish
+- [ ] **Advanced World Generation:**
+    - [ ] Implement a simple biome system (e.g., based on temperature/humidity noise maps).
+    - [ ] Add 3D noise for cave generation.
+    - [ ] Add water at a fixed level.
+- [ ] **Rendering Enhancements:**
+    - [ ] Add shadows (`DirectionalLight.castShadow`).
+    - [ ] Implement scene fog (`Scene.fog`) for atmospheric effect.
+    - [ ] Create a simple day/night cycle by rotating the directional light.
+    - [ ] Implement water rendering with transparency and shaders.
+- [ ] **Interaction:**
+    - [ ] Implement voxel editing (adding/removing blocks) via raycasting.
+    - [ ] Add basic AABB (Axis-Aligned Bounding Box) collision detection with the terrain.
+- [ ] **UI:**
+    - [ ] Add a debug UI (e.g., `lil-gui`) to tweak parameters like noise settings, render distance, etc.
 
-4. **Interaction System**
-   - [ ] First-person controls
-   - [ ] Voxel editing (add/remove blocks)
-   - [ ] Collision detection
-   - [ ] Physics integration
+## Milestone 4: Future Goals
+- [ ] **Performance:**
+    - [ ] Implement a Level of Detail (LOD) system for distant chunks.
+    - [ ] Optimize chunk generation and meshing further.
+- [ ] **Gameplay & World:**
+    - [ ] Integrate a physics engine (e.g., `cannon-es`, `rapier.js`) for more robust collisions and entities.
+    - [ ] Implement world saving and loading to `IndexedDB`.
 
-5. **World Management**
-   - [ ] Infinite terrain generation
-   - [ ] World saving/loading
-   - [ ] Seed-based world generation
-
-## Implementation Steps
-1. Set up Three.js scene with camera, renderer, and lighting
-2. Implement Simplex noise with configurable parameters
-3. Create chunk generation system with size parameters
-4. Develop material system with height-based texture mapping
-5. Optimize rendering using instanced meshes
-6. Add frustum culling to skip off-screen chunks
-7. Implement LOD system for distant terrain
-8. Add biome system using temperature and humidity noise
-9. Create first-person camera controls
-10. Implement voxel editing functionality
-11. Add collision detection and physics
-12. Develop saving/loading system using IndexedDB
-13. Create UI controls for world parameters
-
-## Testing Procedures
+## Quality Assurance
 - [ ] Performance testing with large worlds
 - [ ] Visual inspection of terrain features
 - [ ] Memory usage profiling
