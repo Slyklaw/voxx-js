@@ -1,22 +1,40 @@
+import { WorkerPool } from './workers/workerPool.js';
 import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
 
 export class World {
-  constructor(noise, scene) {
+  constructor(noiseSeed, scene) {
     this.chunks = {}; // key: `${chunkX},${chunkZ}`
-    this.noise = noise;
+    this.noiseSeed = noiseSeed;
     this.scene = scene;
+    this.pendingChunks = new Map();
+    this.workerPool = new WorkerPool(
+      new URL('./workers/chunkWorker.js', import.meta.url).href,
+      4
+    );
   }
 
   getChunk(chunkX, chunkZ) {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
+      // Create placeholder chunk
       const chunk = new Chunk(chunkX, chunkZ);
-      chunk.generate(this.noise);
-      const mesh = chunk.createMesh();
-      mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
-      this.scene.add(mesh);
-      chunk.mesh = mesh; // Ensure the chunk's mesh is set
       this.chunks[key] = chunk;
+      this.pendingChunks.set(key, chunk);
+
+      // Queue generation task
+      this.workerPool.enqueueTask(
+        { chunkX, chunkZ, noiseSeed: this.noiseSeed },
+        (chunkData) => {
+          if (!this.chunks[key]) return; // Chunk was unloaded before generation completed
+          
+          chunk.voxels = new Uint8Array(chunkData.voxels);
+          const mesh = chunk.createMesh();
+          mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
+          this.scene.add(mesh);
+          chunk.mesh = mesh;
+          this.pendingChunks.delete(key);
+        }
+      );
     }
     return this.chunks[key];
   }
@@ -44,10 +62,27 @@ export class World {
     for (const key in this.chunks) {
       if (!chunksToKeep.has(key)) {
         const chunk = this.chunks[key];
+        
+        // Cancel pending generation if exists
+        if (this.pendingChunks.has(key)) {
+          this.pendingChunks.delete(key);
+        }
+        
         this.scene.remove(chunk.mesh);
         chunk.dispose();
         delete this.chunks[key];
       }
     }
+  }
+
+  dispose() {
+    this.workerPool.terminate();
+    for (const key in this.chunks) {
+      const chunk = this.chunks[key];
+      this.scene.remove(chunk.mesh);
+      chunk.dispose();
+    }
+    this.chunks = {};
+    this.pendingChunks.clear();
   }
 }

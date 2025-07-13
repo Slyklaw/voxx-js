@@ -38,8 +38,9 @@ document.body.appendChild(stats.dom);
 // 3. WORLD GENERATION
 // =================================================================
 
-const noise = createNoise2D();
-const world = new World(noise, scene);
+const noiseSeed = Math.random();
+const noise = createNoise2D(() => noiseSeed);
+const world = new World(noiseSeed, scene);
 world.update(camera.position); // Initial world generation
 
 // 2. PLAYER CONTROLS
