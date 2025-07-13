@@ -11,6 +11,7 @@ const blocks = [
   { type: 'DIRT', color: [139, 69, 19, 255] },
   { type: 'GRASS', color: [95, 159, 53, 255] },
   { type: 'WATER', color: [30, 144, 255, 200] },
+  { type: 'SNOW', color: [255, 255, 255, 255] },
 ];
 
 export class Chunk {
@@ -62,13 +63,14 @@ export class Chunk {
         }
 
         // Normalize and scale height
-        height = Math.floor(height * 20) + 60; // Lower base height for more valleys
+        height = Math.floor(height * 40) + 100; // Further increase height for more snow coverage
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
             let blockType = 1; // STONE by default
             if (y === height - 1) {
-              blockType = 3; // GRASS on top layer
+              // Add snow on peaks above altitude 150
+              blockType = (height > 150) ? 5 : 3; // SNOW or GRASS
             } else if (y >= height - 4) {
               blockType = 2; // DIRT for layers below grass
             }
