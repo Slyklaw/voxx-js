@@ -14,7 +14,7 @@ scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(16, 100, 16); // Position above terrain level
+camera.position.set(16, 200, 16); // Raised initial position
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });

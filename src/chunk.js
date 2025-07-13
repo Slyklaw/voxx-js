@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 export const CHUNK_WIDTH = 32;
-export const CHUNK_HEIGHT = 32;
+export const CHUNK_HEIGHT = 256;
 export const CHUNK_DEPTH = 32;
-export const SEA_LEVEL = 18;
+export const SEA_LEVEL = 64;
 
 const blocks = [
   { type: 'AIR', color: [0, 0, 0, 0] },
@@ -36,10 +36,10 @@ export class Chunk {
 
   /** Generate terrain data using a noise function */
   generate(noise) {
-    const octaves = 3;
-    const persistence = 0.3;
-    const lacunarity = 1.8;
-    const scale = 100;
+    const octaves = 4;
+    const persistence = 0.5;
+    const lacunarity = 2.0;
+    const scale = 400; // Stretch terrain horizontally 4x
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -62,7 +62,7 @@ export class Chunk {
         }
 
         // Normalize and scale height
-        height = Math.floor(height * 10) + 15;
+        height = Math.floor(height * 25) + 128; // Reduce vertical exaggeration
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
