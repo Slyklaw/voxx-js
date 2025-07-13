@@ -38,9 +38,9 @@ export class Chunk {
   /** Generate terrain data using a noise function */
   generate(noise) {
     const octaves = 5;
-    const persistence = 0.4;
+    const persistence = 0.1; // Ultra-low persistence for maximum lowlands
     const lacunarity = 2.0;
-    const scale = 600; // Maintain broad valleys
+    const scale = 200; // Largest scale for flattest terrain
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -63,7 +63,7 @@ export class Chunk {
         }
 
         // Normalize and scale height
-        height = Math.floor(height * 60) + 150; // Increased base height by 50 blocks
+        height = Math.floor(height * 35) + 150; // Minimal height variation maximizes lowlands
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
