@@ -40,7 +40,7 @@ export class Chunk {
     const octaves = 5;
     const persistence = 0.1; // Ultra-low persistence for maximum lowlands
     const lacunarity = 2.0;
-    const scale = 200; // Largest scale for flattest terrain
+    const scale = 500; // Largest scale for flattest terrain
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -63,7 +63,17 @@ export class Chunk {
         }
 
         // Normalize and scale height
-        height = Math.floor(height * 35) + 150; // Minimal height variation maximizes lowlands
+        let originalHeight = Math.floor(height * 35) + 150;
+        let newHeight;
+        if (originalHeight < 120) {
+          newHeight = (originalHeight - 115) * (48 / 5);
+        } else if (originalHeight <= 180) {
+          newHeight = 48 + (originalHeight - 120) * (160 / 60);
+        } else {
+          newHeight = 208 + (originalHeight - 180) * (48 / 5);
+        }
+        newHeight = Math.max(0, Math.min(255, Math.floor(newHeight)));
+        height = newHeight;
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
