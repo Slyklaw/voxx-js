@@ -34,13 +34,33 @@ export class Chunk {
 
   /** Generate terrain data using a noise function */
   generate(noise) {
+    const octaves = 3;
+    const persistence = 0.3;
+    const lacunarity = 1.8;
+    const scale = 100;
+
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
         const worldX = this.chunkX * CHUNK_WIDTH + x;
         const worldZ = this.chunkZ * CHUNK_DEPTH + z;
 
-        // Generate a height value using simplex noise
-        const height = Math.floor(noise(worldX / 50, worldZ / 50) * 10) + 15;
+        // Multi-octave noise generation
+        let amplitude = 1;
+        let frequency = 1;
+        let height = 0;
+
+        for (let i = 0; i < octaves; i++) {
+          const sampleX = (worldX / scale) * frequency;
+          const sampleZ = (worldZ / scale) * frequency;
+          const noiseValue = noise(sampleX, sampleZ);
+          
+          height += noiseValue * amplitude;
+          amplitude *= persistence;
+          frequency *= lacunarity;
+        }
+
+        // Normalize and scale height
+        height = Math.floor(height * 10) + 15;
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
