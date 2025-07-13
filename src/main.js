@@ -94,6 +94,10 @@ function animate() {
   // Update world based on camera position
   world.update(camera.position);
 
+  // Update camera position display
+  document.getElementById('camera-position').textContent = 
+    `X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)}`;
+
   renderer.render(scene, camera);
   stats.end();
 }

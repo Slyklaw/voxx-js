@@ -23,3 +23,16 @@ canvas {
   border-radius: 5px;
   cursor: pointer;
 }
+
+#camera-position {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 12px;
+  border-radius: 4px;
+  user-select: none;
+}
