@@ -63,16 +63,23 @@ export class Chunk {
         }
 
         // Normalize and scale height
-        height = Math.floor(height * 40) + 100; // Further increase height for more snow coverage
+        height = Math.floor(height * 60) + 150; // Increased base height by 50 blocks
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
             let blockType = 1; // STONE by default
-            if (y === height - 1) {
-              // Add snow on peaks above altitude 150
-              blockType = (height > 150) ? 5 : 3; // SNOW or GRASS
-            } else if (y >= height - 4) {
-              blockType = 2; // DIRT for layers below grass
+            if (height > 190) { // Adjusted snow line up by 50 blocks
+              if (y >= height - 3) {
+                blockType = 5; // SNOW for top 3 layers
+              } else if (y >= height - 4) {
+                blockType = 2; // DIRT below snow
+              }
+            } else {
+              if (y === height - 1) {
+                blockType = 3; // GRASS
+              } else if (y >= height - 4) {
+                blockType = 2; // DIRT
+              }
             }
             this.setVoxel(x, y, z, blockType);
           }
