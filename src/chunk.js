@@ -3,12 +3,14 @@ import * as THREE from 'three';
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 32;
 export const CHUNK_DEPTH = 32;
+export const SEA_LEVEL = 18;
 
 const blocks = [
   { type: 'AIR', color: [0, 0, 0, 0] },
   { type: 'STONE', color: [128, 128, 128, 255] },
   { type: 'DIRT', color: [139, 69, 19, 255] },
   { type: 'GRASS', color: [95, 159, 53, 255] },
+  { type: 'WATER', color: [30, 144, 255, 200] },
 ];
 
 export class Chunk {
@@ -71,6 +73,17 @@ export class Chunk {
               blockType = 2; // DIRT for layers below grass
             }
             this.setVoxel(x, y, z, blockType);
+          }
+        }
+      }
+    }
+
+    // Add water below sea level
+    for (let x = 0; x < CHUNK_WIDTH; x++) {
+      for (let z = 0; z < CHUNK_DEPTH; z++) {
+        for (let y = SEA_LEVEL; y >= 0; y--) {
+          if (this.getVoxel(x, y, z) === 0) { // AIR
+            this.setVoxel(x, y, z, 4); // WATER
           }
         }
       }
