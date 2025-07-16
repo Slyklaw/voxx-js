@@ -100,78 +100,327 @@ class BlockRenderer {
     }
 }
 
+// Chunk class representing a 16x16x256 section of the world
+class Chunk {
+    constructor(chunkX, chunkZ) {
+        this.chunkX = chunkX;
+        this.chunkZ = chunkZ;
+        this.blocks = this.initializeBlockArray();
+        this.mesh = null;
+        this.needsUpdate = false;
+        this.isEmpty = true;
+    }
+    
+    // Initialize 3D array for blocks (16x256x16)
+    initializeBlockArray() {
+        const blocks = [];
+        for (let x = 0; x < 16; x++) {
+            blocks[x] = [];
+            for (let y = 0; y < 256; y++) {
+                blocks[x][y] = [];
+                for (let z = 0; z < 16; z++) {
+                    blocks[x][y][z] = new Block(BlockType.AIR, {
+                        x: this.chunkX * 16 + x,
+                        y: y,
+                        z: this.chunkZ * 16 + z
+                    });
+                }
+            }
+        }
+        return blocks;
+    }
+    
+    // Get block at local chunk coordinates (0-15, 0-255, 0-15)
+    getBlock(localX, localY, localZ) {
+        if (localX < 0 || localX >= 16 || localY < 0 || localY >= 256 || localZ < 0 || localZ >= 16) {
+            return new Block(BlockType.AIR, { x: 0, y: 0, z: 0 });
+        }
+        return this.blocks[localX][localY][localZ];
+    }
+    
+    // Set block at local chunk coordinates
+    setBlock(localX, localY, localZ, blockType) {
+        if (localX < 0 || localX >= 16 || localY < 0 || localY >= 256 || localZ < 0 || localZ >= 16) {
+            return false;
+        }
+        
+        const worldX = this.chunkX * 16 + localX;
+        const worldY = localY;
+        const worldZ = this.chunkZ * 16 + localZ;
+        
+        this.blocks[localX][localY][localZ] = new Block(blockType, {
+            x: worldX,
+            y: worldY,
+            z: worldZ
+        });
+        
+        this.needsUpdate = true;
+        this.isEmpty = this.checkIfEmpty();
+        return true;
+    }
+    
+    // Check if chunk contains any non-air blocks
+    checkIfEmpty() {
+        for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 256; y++) {
+                for (let z = 0; z < 16; z++) {
+                    if (this.blocks[x][y][z].type !== BlockType.AIR) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    // Get world position from chunk coordinates
+    getWorldPosition(localX, localY, localZ) {
+        return {
+            x: this.chunkX * 16 + localX,
+            y: localY,
+            z: this.chunkZ * 16 + localZ
+        };
+    }
+    
+    // Get all non-air blocks in the chunk
+    getNonAirBlocks() {
+        const nonAirBlocks = [];
+        for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 256; y++) {
+                for (let z = 0; z < 16; z++) {
+                    const block = this.blocks[x][y][z];
+                    if (block.type !== BlockType.AIR) {
+                        nonAirBlocks.push(block);
+                    }
+                }
+            }
+        }
+        return nonAirBlocks;
+    }
+    
+    // Get chunk key for identification
+    getKey() {
+        return `${this.chunkX},${this.chunkZ}`;
+    }
+}
+
+// ChunkManager handles chunk creation, storage, and coordinate mapping
+class ChunkManager {
+    constructor() {
+        this.chunks = new Map();
+        this.loadedChunks = new Set();
+    }
+    
+    // Convert world coordinates to chunk coordinates
+    static worldToChunkCoords(worldX, worldZ) {
+        return {
+            chunkX: Math.floor(worldX / 16),
+            chunkZ: Math.floor(worldZ / 16)
+        };
+    }
+    
+    // Convert world coordinates to local chunk coordinates
+    static worldToLocalCoords(worldX, worldY, worldZ) {
+        const chunkCoords = ChunkManager.worldToChunkCoords(worldX, worldZ);
+        return {
+            chunkX: chunkCoords.chunkX,
+            chunkZ: chunkCoords.chunkZ,
+            localX: worldX - (chunkCoords.chunkX * 16),
+            localY: worldY,
+            localZ: worldZ - (chunkCoords.chunkZ * 16)
+        };
+    }
+    
+    // Generate chunk key from coordinates
+    static getChunkKey(chunkX, chunkZ) {
+        return `${chunkX},${chunkZ}`;
+    }
+    
+    // Get or create chunk at given chunk coordinates
+    getOrCreateChunk(chunkX, chunkZ) {
+        const key = ChunkManager.getChunkKey(chunkX, chunkZ);
+        
+        if (!this.chunks.has(key)) {
+            const chunk = new Chunk(chunkX, chunkZ);
+            this.chunks.set(key, chunk);
+            this.loadedChunks.add(key);
+        }
+        
+        return this.chunks.get(key);
+    }
+    
+    // Get chunk at world coordinates
+    getChunkAtWorldPos(worldX, worldZ) {
+        const { chunkX, chunkZ } = ChunkManager.worldToChunkCoords(worldX, worldZ);
+        return this.getOrCreateChunk(chunkX, chunkZ);
+    }
+    
+    // Get block at world coordinates
+    getBlock(worldX, worldY, worldZ) {
+        const coords = ChunkManager.worldToLocalCoords(worldX, worldY, worldZ);
+        const chunk = this.getOrCreateChunk(coords.chunkX, coords.chunkZ);
+        return chunk.getBlock(coords.localX, coords.localY, coords.localZ);
+    }
+    
+    // Set block at world coordinates
+    setBlock(worldX, worldY, worldZ, blockType) {
+        const coords = ChunkManager.worldToLocalCoords(worldX, worldY, worldZ);
+        const chunk = this.getOrCreateChunk(coords.chunkX, coords.chunkZ);
+        return chunk.setBlock(coords.localX, coords.localY, coords.localZ, blockType);
+    }
+    
+    // Check if block at world coordinates is solid
+    isSolid(worldX, worldY, worldZ) {
+        const block = this.getBlock(worldX, worldY, worldZ);
+        return block.isSolid();
+    }
+    
+    // Get all loaded chunks
+    getLoadedChunks() {
+        return Array.from(this.chunks.values());
+    }
+    
+    // Get chunks in a radius around a center point
+    getChunksInRadius(centerX, centerZ, radius) {
+        const chunks = [];
+        const centerChunkX = Math.floor(centerX / 16);
+        const centerChunkZ = Math.floor(centerZ / 16);
+        
+        for (let x = centerChunkX - radius; x <= centerChunkX + radius; x++) {
+            for (let z = centerChunkZ - radius; z <= centerChunkZ + radius; z++) {
+                const chunk = this.getOrCreateChunk(x, z);
+                chunks.push(chunk);
+            }
+        }
+        
+        return chunks;
+    }
+    
+    // Unload chunk
+    unloadChunk(chunkX, chunkZ) {
+        const key = ChunkManager.getChunkKey(chunkX, chunkZ);
+        const chunk = this.chunks.get(key);
+        
+        if (chunk) {
+            // Clean up mesh if it exists
+            if (chunk.mesh) {
+                chunk.mesh.geometry.dispose();
+                if (Array.isArray(chunk.mesh.material)) {
+                    chunk.mesh.material.forEach(mat => mat.dispose());
+                } else {
+                    chunk.mesh.material.dispose();
+                }
+            }
+            
+            this.chunks.delete(key);
+            this.loadedChunks.delete(key);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Get chunk count
+    getChunkCount() {
+        return this.chunks.size;
+    }
+    
+    // Clear all chunks
+    clear() {
+        this.chunks.forEach((chunk, key) => {
+            if (chunk.mesh) {
+                chunk.mesh.geometry.dispose();
+                if (Array.isArray(chunk.mesh.material)) {
+                    chunk.mesh.material.forEach(mat => mat.dispose());
+                } else {
+                    chunk.mesh.material.dispose();
+                }
+            }
+        });
+        
+        this.chunks.clear();
+        this.loadedChunks.clear();
+    }
+}
+
 // Basic world representation
 class World {
     constructor() {
-        this.blocks = new Map(); // Store blocks using position key
+        this.chunkManager = new ChunkManager();
         this.blockRenderer = new BlockRenderer();
         this.scene = null; // Will be set by the game
     }
     
-    // Generate position key for block storage
-    getPositionKey(x, y, z) {
-        return `${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`;
-    }
-    
-    // Set a block at the given position
+    // Set a block at the given position using chunk system
     setBlock(x, y, z, blockType) {
-        const position = { x: Math.floor(x), y: Math.floor(y), z: Math.floor(z) };
-        const key = this.getPositionKey(position.x, position.y, position.z);
+        const worldX = Math.floor(x);
+        const worldY = Math.floor(y);
+        const worldZ = Math.floor(z);
         
-        // Remove existing block if present
-        this.removeBlock(position.x, position.y, position.z);
+        // Remove existing block mesh if present
+        this.removeBlockMesh(worldX, worldY, worldZ);
         
-        // Don't store air blocks
-        if (blockType === BlockType.AIR) {
-            return;
-        }
+        // Set block in chunk system
+        const success = this.chunkManager.setBlock(worldX, worldY, worldZ, blockType);
         
-        // Create and store new block
-        const block = new Block(blockType, position);
-        this.blocks.set(key, block);
-        
-        // Create and add mesh to scene if scene is available
-        if (this.scene) {
+        if (success && blockType !== BlockType.AIR && this.scene) {
+            // Create and add mesh to scene
+            const block = this.chunkManager.getBlock(worldX, worldY, worldZ);
             const mesh = this.blockRenderer.createBlockMesh(block);
             if (mesh) {
+                const key = this.getPositionKey(worldX, worldY, worldZ);
                 mesh.name = `block_${key}`;
                 this.scene.add(mesh);
             }
         }
         
+        return success;
+    }
+    
+    // Get block at the given position using chunk system
+    getBlock(x, y, z) {
+        return this.chunkManager.getBlock(Math.floor(x), Math.floor(y), Math.floor(z));
+    }
+    
+    // Remove block at the given position using chunk system
+    removeBlock(x, y, z) {
+        const worldX = Math.floor(x);
+        const worldY = Math.floor(y);
+        const worldZ = Math.floor(z);
+        
+        const block = this.chunkManager.getBlock(worldX, worldY, worldZ);
+        
+        // Remove mesh from scene
+        this.removeBlockMesh(worldX, worldY, worldZ);
+        
+        // Set to air in chunk system
+        this.chunkManager.setBlock(worldX, worldY, worldZ, BlockType.AIR);
+        
         return block;
     }
     
-    // Get block at the given position
-    getBlock(x, y, z) {
-        const key = this.getPositionKey(x, y, z);
-        return this.blocks.get(key) || new Block(BlockType.AIR, { x, y, z });
-    }
-    
-    // Remove block at the given position
-    removeBlock(x, y, z) {
-        const key = this.getPositionKey(x, y, z);
-        const block = this.blocks.get(key);
-        
-        if (block && this.scene) {
-            // Remove mesh from scene
+    // Helper method to remove block mesh from scene
+    removeBlockMesh(x, y, z) {
+        if (this.scene) {
+            const key = this.getPositionKey(x, y, z);
             const mesh = this.scene.getObjectByName(`block_${key}`);
             if (mesh) {
                 this.scene.remove(mesh);
             }
         }
-        
-        this.blocks.delete(key);
-        return block;
     }
     
-    // Check if position has a solid block
+    // Generate position key for block identification
+    getPositionKey(x, y, z) {
+        return `${x},${y},${z}`;
+    }
+    
+    // Check if position has a solid block using chunk system
     isSolid(x, y, z) {
-        const block = this.getBlock(x, y, z);
-        return block.isSolid();
+        return this.chunkManager.isSolid(Math.floor(x), Math.floor(y), Math.floor(z));
     }
     
-    // Generate a simple test world
+    // Generate a simple test world using chunk system
     generateTestWorld() {
         // Create a simple platform
         for (let x = -5; x <= 5; x++) {
@@ -192,26 +441,44 @@ class World {
         this.setBlock(-1, 1, 0, BlockType.LEAVES);
         this.setBlock(0, 2, 0, BlockType.LEAVES);
         
-        console.log('Test world generated with', this.blocks.size, 'blocks');
+        const totalBlocks = this.getAllBlocks().length;
+        console.log('Test world generated with', totalBlocks, 'blocks across', this.chunkManager.getChunkCount(), 'chunks');
     }
     
     // Set the scene reference for rendering
     setScene(scene) {
         this.scene = scene;
         
-        // Add existing blocks to scene
-        this.blocks.forEach((block, key) => {
-            const mesh = this.blockRenderer.createBlockMesh(block);
-            if (mesh) {
-                mesh.name = `block_${key}`;
-                this.scene.add(mesh);
+        // Add existing blocks to scene from all chunks
+        const allBlocks = this.getAllBlocks();
+        allBlocks.forEach(block => {
+            if (block.type !== BlockType.AIR) {
+                const mesh = this.blockRenderer.createBlockMesh(block);
+                if (mesh) {
+                    const key = this.getPositionKey(block.position.x, block.position.y, block.position.z);
+                    mesh.name = `block_${key}`;
+                    this.scene.add(mesh);
+                }
             }
         });
     }
     
-    // Get all blocks (for testing/debugging)
+    // Get all blocks from all chunks (for testing/debugging)
     getAllBlocks() {
-        return Array.from(this.blocks.values());
+        const allBlocks = [];
+        const chunks = this.chunkManager.getLoadedChunks();
+        
+        chunks.forEach(chunk => {
+            const nonAirBlocks = chunk.getNonAirBlocks();
+            allBlocks.push(...nonAirBlocks);
+        });
+        
+        return allBlocks;
+    }
+    
+    // Get chunk manager for direct access
+    getChunkManager() {
+        return this.chunkManager;
     }
     
     // Dispose of resources
@@ -219,7 +486,9 @@ class World {
         if (this.blockRenderer) {
             this.blockRenderer.dispose();
         }
-        this.blocks.clear();
+        if (this.chunkManager) {
+            this.chunkManager.clear();
+        }
     }
 }
 

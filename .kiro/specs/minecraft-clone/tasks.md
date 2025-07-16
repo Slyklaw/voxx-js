@@ -49,7 +49,12 @@
   - Write unit tests for block creation and property management
   - _Requirements: 2.1, 2.2, 3.1, 3.3_
 
-- [ ] 4. Implement chunk-based world structure
+- [x] 4. Implement chunk-based world structure
+
+
+
+
+
   - Create Chunk class with 16x16x256 block array structure
   - Implement chunk coordinate system and position mapping
   - Create ChunkManager to handle chunk creation and storage
