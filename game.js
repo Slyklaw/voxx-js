@@ -1,3 +1,228 @@
+// Block system definitions
+const BlockType = {
+    AIR: 0,
+    GRASS: 1,
+    DIRT: 2,
+    STONE: 3,
+    WOOD: 4,
+    LEAVES: 5
+};
+
+// Block class representing a single block in the world
+class Block {
+    constructor(type = BlockType.AIR, position = { x: 0, y: 0, z: 0 }) {
+        this.type = type;
+        this.position = { ...position };
+        this.metadata = null;
+    }
+    
+    // Get block type name for debugging
+    getTypeName() {
+        const typeNames = {
+            [BlockType.AIR]: 'Air',
+            [BlockType.GRASS]: 'Grass',
+            [BlockType.DIRT]: 'Dirt',
+            [BlockType.STONE]: 'Stone',
+            [BlockType.WOOD]: 'Wood',
+            [BlockType.LEAVES]: 'Leaves'
+        };
+        return typeNames[this.type] || 'Unknown';
+    }
+    
+    // Check if block is solid (not air)
+    isSolid() {
+        return this.type !== BlockType.AIR;
+    }
+    
+    // Clone the block
+    clone() {
+        const cloned = new Block(this.type, this.position);
+        cloned.metadata = this.metadata ? { ...this.metadata } : null;
+        return cloned;
+    }
+}
+
+// Block renderer for creating and managing block meshes
+class BlockRenderer {
+    constructor() {
+        this.geometry = new THREE.BoxGeometry(1, 1, 1);
+        this.materials = this.createBlockMaterials();
+    }
+    
+    createBlockMaterials() {
+        const materials = {};
+        
+        // Create color-coded materials for different block types
+        materials[BlockType.GRASS] = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // Forest Green
+        materials[BlockType.DIRT] = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // Saddle Brown
+        materials[BlockType.STONE] = new THREE.MeshLambertMaterial({ color: 0x696969 }); // Dim Gray
+        materials[BlockType.WOOD] = new THREE.MeshLambertMaterial({ color: 0xDEB887 }); // Burlywood
+        materials[BlockType.LEAVES] = new THREE.MeshLambertMaterial({ color: 0x32CD32 }); // Lime Green
+        
+        return materials;
+    }
+    
+    // Create a mesh for a block
+    createBlockMesh(block) {
+        if (block.type === BlockType.AIR) {
+            return null; // Don't render air blocks
+        }
+        
+        const material = this.materials[block.type];
+        if (!material) {
+            console.warn(`No material found for block type: ${block.type}`);
+            return null;
+        }
+        
+        const mesh = new THREE.Mesh(this.geometry, material);
+        mesh.position.set(block.position.x, block.position.y, block.position.z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        // Store block reference for later use
+        mesh.userData.block = block;
+        
+        return mesh;
+    }
+    
+    // Update block mesh position
+    updateBlockMesh(mesh, block) {
+        if (mesh && block) {
+            mesh.position.set(block.position.x, block.position.y, block.position.z);
+            mesh.userData.block = block;
+        }
+    }
+    
+    // Dispose of resources
+    dispose() {
+        this.geometry.dispose();
+        Object.values(this.materials).forEach(material => material.dispose());
+    }
+}
+
+// Basic world representation
+class World {
+    constructor() {
+        this.blocks = new Map(); // Store blocks using position key
+        this.blockRenderer = new BlockRenderer();
+        this.scene = null; // Will be set by the game
+    }
+    
+    // Generate position key for block storage
+    getPositionKey(x, y, z) {
+        return `${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`;
+    }
+    
+    // Set a block at the given position
+    setBlock(x, y, z, blockType) {
+        const position = { x: Math.floor(x), y: Math.floor(y), z: Math.floor(z) };
+        const key = this.getPositionKey(position.x, position.y, position.z);
+        
+        // Remove existing block if present
+        this.removeBlock(position.x, position.y, position.z);
+        
+        // Don't store air blocks
+        if (blockType === BlockType.AIR) {
+            return;
+        }
+        
+        // Create and store new block
+        const block = new Block(blockType, position);
+        this.blocks.set(key, block);
+        
+        // Create and add mesh to scene if scene is available
+        if (this.scene) {
+            const mesh = this.blockRenderer.createBlockMesh(block);
+            if (mesh) {
+                mesh.name = `block_${key}`;
+                this.scene.add(mesh);
+            }
+        }
+        
+        return block;
+    }
+    
+    // Get block at the given position
+    getBlock(x, y, z) {
+        const key = this.getPositionKey(x, y, z);
+        return this.blocks.get(key) || new Block(BlockType.AIR, { x, y, z });
+    }
+    
+    // Remove block at the given position
+    removeBlock(x, y, z) {
+        const key = this.getPositionKey(x, y, z);
+        const block = this.blocks.get(key);
+        
+        if (block && this.scene) {
+            // Remove mesh from scene
+            const mesh = this.scene.getObjectByName(`block_${key}`);
+            if (mesh) {
+                this.scene.remove(mesh);
+            }
+        }
+        
+        this.blocks.delete(key);
+        return block;
+    }
+    
+    // Check if position has a solid block
+    isSolid(x, y, z) {
+        const block = this.getBlock(x, y, z);
+        return block.isSolid();
+    }
+    
+    // Generate a simple test world
+    generateTestWorld() {
+        // Create a simple platform
+        for (let x = -5; x <= 5; x++) {
+            for (let z = -5; z <= 5; z++) {
+                // Grass layer
+                this.setBlock(x, 0, z, BlockType.GRASS);
+                // Dirt layers
+                this.setBlock(x, -1, z, BlockType.DIRT);
+                this.setBlock(x, -2, z, BlockType.DIRT);
+                // Stone base
+                this.setBlock(x, -3, z, BlockType.STONE);
+            }
+        }
+        
+        // Add some test blocks
+        this.setBlock(0, 1, 0, BlockType.WOOD);
+        this.setBlock(1, 1, 0, BlockType.STONE);
+        this.setBlock(-1, 1, 0, BlockType.LEAVES);
+        this.setBlock(0, 2, 0, BlockType.LEAVES);
+        
+        console.log('Test world generated with', this.blocks.size, 'blocks');
+    }
+    
+    // Set the scene reference for rendering
+    setScene(scene) {
+        this.scene = scene;
+        
+        // Add existing blocks to scene
+        this.blocks.forEach((block, key) => {
+            const mesh = this.blockRenderer.createBlockMesh(block);
+            if (mesh) {
+                mesh.name = `block_${key}`;
+                this.scene.add(mesh);
+            }
+        });
+    }
+    
+    // Get all blocks (for testing/debugging)
+    getAllBlocks() {
+        return Array.from(this.blocks.values());
+    }
+    
+    // Dispose of resources
+    dispose() {
+        if (this.blockRenderer) {
+            this.blockRenderer.dispose();
+        }
+        this.blocks.clear();
+    }
+}
+
 // Input handling system
 class InputHandler {
     constructor() {
@@ -221,6 +446,9 @@ class MinecraftClone {
         this.cameraController = null;
         this.inputHandler = null;
         
+        // World system
+        this.world = null;
+        
         this.init();
     }
     
@@ -323,24 +551,14 @@ class MinecraftClone {
         directionalLight.shadow.mapSize.height = 2048;
         this.scene.add(directionalLight);
         
-        // Add a simple test cube to verify rendering
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-        const testCube = new THREE.Mesh(geometry, material);
-        testCube.position.set(0, 1, 0);
-        testCube.castShadow = true;
-        testCube.receiveShadow = true;
-        this.scene.add(testCube);
+        // Initialize world system
+        this.world = new World();
+        this.world.setScene(this.scene);
         
-        // Add a ground plane
-        const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        this.scene.add(ground);
+        // Generate test world with blocks
+        this.world.generateTestWorld();
         
-        console.log('Test content added to scene');
+        console.log('World system initialized and test world generated');
     }
     
     start() {
@@ -377,17 +595,7 @@ class MinecraftClone {
     }
     
     update(deltaTime) {
-        // Basic rotation animation for the test cube
-        const testCube = this.scene.children.find(child => 
-            child instanceof THREE.Mesh && child.geometry instanceof THREE.BoxGeometry
-        );
-        
-        if (testCube) {
-            testCube.rotation.x += deltaTime * 0.5;
-            testCube.rotation.y += deltaTime * 0.3;
-        }
-        
-        // Update camera controls (placeholder for future implementation)
+        // Update camera controls
         this.updateCamera(deltaTime);
     }
     
@@ -421,6 +629,11 @@ class MinecraftClone {
     // Cleanup method for proper disposal
     dispose() {
         this.stop();
+        
+        // Dispose world system
+        if (this.world) {
+            this.world.dispose();
+        }
         
         // Dispose input handler
         if (this.inputHandler) {
