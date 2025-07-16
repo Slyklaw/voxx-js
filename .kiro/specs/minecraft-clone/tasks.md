@@ -11,7 +11,21 @@
   - Implement basic game loop with requestAnimationFrame
   - _Requirements: 5.1, 5.4_
 
-- [ ] 2. Implement first-person camera and input system
+- [x] 2. Implement first-person camera and input system
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   - Replace current orbital camera with first-person camera controller
   - Implement mouse look functionality with pointer lock API
   - Add WASD movement controls with proper event handling
