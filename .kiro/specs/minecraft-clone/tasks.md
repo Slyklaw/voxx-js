@@ -1,31 +1,12 @@
 # Implementation Plan
 
 - [x] 1. Set up project structure and core Three.js foundation
-
-
-
-
-
   - Create HTML file with canvas element and basic styling
   - Set up Three.js scene, camera, and renderer with proper initialization
   - Implement basic game loop with requestAnimationFrame
   - _Requirements: 5.1, 5.4_
 
 - [x] 2. Implement first-person camera and input system
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   - Replace current orbital camera with first-person camera controller
   - Implement mouse look functionality with pointer lock API
   - Add WASD movement controls with proper event handling
@@ -34,15 +15,6 @@
   - _Requirements: 1.2, 1.3, 1.4_
 
 - [x] 3. Create block system and basic world representation
-
-
-
-
-
-
-
-
-
   - Define BlockType enum and Block interface with position and type properties
   - Implement basic block geometry creation using Three.js BoxGeometry
   - Create simple block texture system with color-coded materials
@@ -50,11 +22,6 @@
   - _Requirements: 2.1, 2.2, 3.1, 3.3_
 
 - [x] 4. Implement chunk-based world structure
-
-
-
-
-
   - Create Chunk class with 16x16x256 block array structure
   - Implement chunk coordinate system and position mapping
   - Create ChunkManager to handle chunk creation and storage
@@ -144,3 +111,4 @@
   - Optimize final performance and fix any remaining bugs
   - Create automated tests for complete gameplay scenarios
   - _Requirements: All requirements integration_
+  
