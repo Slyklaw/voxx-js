@@ -853,6 +853,9 @@ class MinecraftClone {
         // World system
         this.world = null;
         
+        // UI elements
+        this.fpsCounter = null;
+        
         this.init();
     }
     
@@ -874,6 +877,9 @@ class MinecraftClone {
         
         // Initialize input and camera controls
         this.initControls();
+        
+        // Initialize UI elements
+        this.initUI();
         
         // Add some basic content for testing
         this.addTestContent();
@@ -943,6 +949,13 @@ class MinecraftClone {
         console.log('Input and camera controls initialized');
     }
     
+    initUI() {
+        // Initialize FPS counter
+        this.fpsCounter = new FPSCounter();
+        
+        console.log('UI elements initialized');
+    }
+    
     addTestContent() {
         // Add basic lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
@@ -1006,12 +1019,22 @@ class MinecraftClone {
     update(deltaTime) {
         // Update camera controls
         this.updateCamera(deltaTime);
+        
+        // Update UI elements
+        this.updateUI(deltaTime);
     }
     
     updateCamera(deltaTime) {
         // Update first-person camera controller
         if (this.cameraController) {
             this.cameraController.update(deltaTime);
+        }
+    }
+    
+    updateUI(deltaTime) {
+        // Update FPS counter
+        if (this.fpsCounter) {
+            this.fpsCounter.update(deltaTime);
         }
     }
     
@@ -1038,6 +1061,11 @@ class MinecraftClone {
     // Cleanup method for proper disposal
     dispose() {
         this.stop();
+        
+        // Dispose UI elements
+        if (this.fpsCounter) {
+            this.fpsCounter.dispose();
+        }
         
         // Dispose world system
         if (this.world) {
@@ -1068,6 +1096,89 @@ class MinecraftClone {
         });
         
         console.log('Game resources disposed');
+    }
+}
+
+// FPS Counter class for performance monitoring
+class FPSCounter {
+    constructor() {
+        this.element = null;
+        this.frameCount = 0;
+        this.lastTime = performance.now();
+        this.currentFPS = 0;
+        this.updateInterval = 500; // Update every 0.5 seconds
+        this.lastUpdateTime = 0;
+        
+        this.createElement();
+    }
+    
+    createElement() {
+        this.element = document.createElement('div');
+        this.element.className = 'ui-element fps-counter';
+        this.element.textContent = 'FPS: 0';
+        
+        // Add to UI container
+        const uiContainer = document.getElementById('ui');
+        if (uiContainer) {
+            uiContainer.appendChild(this.element);
+        }
+    }
+    
+    update(deltaTime) {
+        // Skip update if deltaTime is invalid
+        if (deltaTime <= 0 || !isFinite(deltaTime)) {
+            return;
+        }
+        
+        this.frameCount++;
+        const currentTime = performance.now();
+        
+        // Update FPS calculation every updateInterval milliseconds
+        if (currentTime - this.lastUpdateTime >= this.updateInterval) {
+            const timeDiff = (currentTime - this.lastTime) / 1000;
+            
+            if (timeDiff > 0) {
+                this.currentFPS = Math.round(this.frameCount / timeDiff);
+                
+                // Cap FPS at reasonable maximum
+                if (this.currentFPS > 999 || !isFinite(this.currentFPS)) {
+                    this.currentFPS = 999;
+                }
+                
+                this.updateDisplay(this.currentFPS);
+            }
+            
+            // Reset counters
+            this.frameCount = 0;
+            this.lastTime = currentTime;
+            this.lastUpdateTime = currentTime;
+        }
+    }
+    
+    updateDisplay(fps) {
+        if (!this.element) return;
+        
+        // Cap FPS display at reasonable maximum
+        let displayFPS = fps;
+        if (displayFPS > 999 || !isFinite(displayFPS)) {
+            displayFPS = 999;
+        }
+        
+        this.element.textContent = `FPS: ${displayFPS}`;
+        
+        // Color coding: green for >30 FPS, red for ≤30 FPS
+        if (displayFPS > 30) {
+            this.element.style.color = '#00ff00'; // Green
+        } else {
+            this.element.style.color = '#ff0000'; // Red
+        }
+    }
+    
+    dispose() {
+        if (this.element && this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+        }
+        this.element = null;
     }
 }
 
