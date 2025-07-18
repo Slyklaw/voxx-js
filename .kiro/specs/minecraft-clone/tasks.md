@@ -28,7 +28,14 @@
   - Write unit tests for chunk coordinate calculations and block access
   - _Requirements: 3.2, 3.4, 5.2_
 
-- [ ] 5. Add basic terrain generation
+- [x] 5. Add basic terrain generation
+
+
+
+
+
+
+
   - Implement simple height-based terrain generation using Math.random or noise
   - Create different block types (grass, dirt, stone) based on height
   - Generate initial world chunks around spawn point

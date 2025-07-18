@@ -343,12 +343,109 @@ class ChunkManager {
     }
 }
 
+// Terrain generator for creating procedural terrain
+class TerrainGenerator {
+    constructor(seed = Math.random() * 1000000) {
+        this.seed = seed;
+        this.seededRandom = this.createSeededRandom(seed);
+    }
+    
+    // Create a seeded random number generator
+    createSeededRandom(seed) {
+        return function() {
+            seed = (seed * 9301 + 49297) % 233280;
+            return seed / 233280;
+        };
+    }
+    
+    // Simple noise function using seeded random
+    noise(x, z, scale = 1) {
+        const intX = Math.floor(x * scale);
+        const intZ = Math.floor(z * scale);
+        
+        // Create deterministic "random" value based on coordinates
+        let hash = intX * 374761393 + intZ * 668265263;
+        hash = (hash ^ (hash >> 13)) * 1274126177;
+        hash = hash ^ (hash >> 16);
+        
+        return (hash & 0x7fffffff) / 0x7fffffff;
+    }
+    
+    // Generate height at given world coordinates
+    generateHeight(worldX, worldZ) {
+        // Combine multiple noise octaves for more natural terrain
+        let height = 0;
+        
+        // Base terrain (large features)
+        height += this.noise(worldX, worldZ, 0.01) * 30;
+        
+        // Medium features
+        height += this.noise(worldX, worldZ, 0.05) * 10;
+        
+        // Small details
+        height += this.noise(worldX, worldZ, 0.1) * 5;
+        
+        // Add some randomness
+        height += (this.noise(worldX, worldZ, 0.2) - 0.5) * 3;
+        
+        // Ensure minimum height and round to integer
+        return Math.max(1, Math.floor(height + 32)); // Base height of 32
+    }
+    
+    // Determine block type based on height and position
+    getBlockTypeAtHeight(worldX, worldY, worldZ, terrainHeight) {
+        const depthFromSurface = terrainHeight - worldY;
+        
+        if (worldY > terrainHeight) {
+            return BlockType.AIR;
+        }
+        
+        // Surface block (grass)
+        if (depthFromSurface === 0) {
+            return BlockType.GRASS;
+        }
+        
+        // Dirt layer (2-4 blocks deep)
+        if (depthFromSurface <= 3) {
+            return BlockType.DIRT;
+        }
+        
+        // Stone for deeper layers
+        return BlockType.STONE;
+    }
+    
+    // Generate terrain for a specific chunk
+    generateChunkTerrain(chunk) {
+        for (let localX = 0; localX < 16; localX++) {
+            for (let localZ = 0; localZ < 16; localZ++) {
+                const worldX = chunk.chunkX * 16 + localX;
+                const worldZ = chunk.chunkZ * 16 + localZ;
+                
+                const terrainHeight = this.generateHeight(worldX, worldZ);
+                
+                // Generate blocks from bottom to terrain height
+                for (let worldY = 0; worldY <= Math.min(terrainHeight, 255); worldY++) {
+                    const blockType = this.getBlockTypeAtHeight(worldX, worldY, worldZ, terrainHeight);
+                    chunk.setBlock(localX, worldY, localZ, blockType);
+                }
+            }
+        }
+    }
+    
+    // Get terrain height at specific coordinates (for collision detection)
+    getTerrainHeight(worldX, worldZ) {
+        return this.generateHeight(worldX, worldZ);
+    }
+}
+
 // Basic world representation
 class World {
-    constructor() {
+    constructor(seed) {
         this.chunkManager = new ChunkManager();
         this.blockRenderer = new BlockRenderer();
+        this.terrainGenerator = new TerrainGenerator(seed);
         this.scene = null; // Will be set by the game
+        this.spawnPoint = { x: 0, y: 64, z: 0 };
     }
     
     // Set a block at the given position using chunk system
@@ -420,29 +517,46 @@ class World {
         return this.chunkManager.isSolid(Math.floor(x), Math.floor(y), Math.floor(z));
     }
     
-    // Generate a simple test world using chunk system
-    generateTestWorld() {
-        // Create a simple platform
-        for (let x = -5; x <= 5; x++) {
-            for (let z = -5; z <= 5; z++) {
-                // Grass layer
-                this.setBlock(x, 0, z, BlockType.GRASS);
-                // Dirt layers
-                this.setBlock(x, -1, z, BlockType.DIRT);
-                this.setBlock(x, -2, z, BlockType.DIRT);
-                // Stone base
-                this.setBlock(x, -3, z, BlockType.STONE);
+    // Generate initial world chunks around spawn point
+    generateInitialWorld(radius = 2) {
+        const spawnChunkX = Math.floor(this.spawnPoint.x / 16);
+        const spawnChunkZ = Math.floor(this.spawnPoint.z / 16);
+        
+        console.log(`Generating initial world around spawn point (${this.spawnPoint.x}, ${this.spawnPoint.z}) with radius ${radius}`);
+        
+        // Generate chunks in a radius around spawn
+        for (let chunkX = spawnChunkX - radius; chunkX <= spawnChunkX + radius; chunkX++) {
+            for (let chunkZ = spawnChunkZ - radius; chunkZ <= spawnChunkZ + radius; chunkZ++) {
+                const chunk = this.chunkManager.getOrCreateChunk(chunkX, chunkZ);
+                this.terrainGenerator.generateChunkTerrain(chunk);
             }
         }
         
-        // Add some test blocks
-        this.setBlock(0, 1, 0, BlockType.WOOD);
-        this.setBlock(1, 1, 0, BlockType.STONE);
-        this.setBlock(-1, 1, 0, BlockType.LEAVES);
-        this.setBlock(0, 2, 0, BlockType.LEAVES);
+        // Update spawn point Y to be above terrain
+        const terrainHeight = this.terrainGenerator.getTerrainHeight(this.spawnPoint.x, this.spawnPoint.z);
+        this.spawnPoint.y = terrainHeight + 2;
         
         const totalBlocks = this.getAllBlocks().length;
-        console.log('Test world generated with', totalBlocks, 'blocks across', this.chunkManager.getChunkCount(), 'chunks');
+        const chunkCount = this.chunkManager.getChunkCount();
+        console.log(`Initial world generated with ${totalBlocks} blocks across ${chunkCount} chunks`);
+        console.log(`Spawn point set to (${this.spawnPoint.x}, ${this.spawnPoint.y}, ${this.spawnPoint.z})`);
+    }
+    
+    // Generate terrain for a specific chunk (used for dynamic loading)
+    generateChunkTerrain(chunkX, chunkZ) {
+        const chunk = this.chunkManager.getOrCreateChunk(chunkX, chunkZ);
+        this.terrainGenerator.generateChunkTerrain(chunk);
+        return chunk;
+    }
+    
+    // Get terrain height at world coordinates
+    getTerrainHeight(worldX, worldZ) {
+        return this.terrainGenerator.getTerrainHeight(worldX, worldZ);
+    }
+    
+    // Get spawn point
+    getSpawnPoint() {
+        return { ...this.spawnPoint };
     }
     
     // Set the scene reference for rendering
@@ -575,9 +689,10 @@ class InputHandler {
 
 // First-person camera controller
 class FirstPersonCameraController {
-    constructor(camera, inputHandler) {
+    constructor(camera, inputHandler, world = null) {
         this.camera = camera;
         this.inputHandler = inputHandler;
+        this.world = world; // Reference to world for terrain collision
         
         // Camera rotation
         this.yaw = 0;
@@ -591,6 +706,7 @@ class FirstPersonCameraController {
         this.jumpSpeed = 8.0;
         this.gravity = -20.0;
         this.isGrounded = false;
+        this.playerHeight = 1.8; // Player height for collision
         
         // Movement directions
         this.forward = new THREE.Vector3();
@@ -598,6 +714,11 @@ class FirstPersonCameraController {
         this.up = new THREE.Vector3(0, 1, 0);
         
         this.updateCamera();
+    }
+    
+    // Set world reference for terrain collision
+    setWorld(world) {
+        this.world = world;
     }
     
     update(deltaTime) {
@@ -665,11 +786,25 @@ class FirstPersonCameraController {
         this.velocity.y += this.gravity * deltaTime;
         this.position.y += this.velocity.y * deltaTime;
         
-        // Simple ground collision (temporary - will be replaced with proper collision)
-        if (this.position.y <= 2) {
-            this.position.y = 2;
-            this.velocity.y = 0;
-            this.isGrounded = true;
+        // Terrain-based collision detection
+        if (this.world) {
+            const terrainHeight = this.world.getTerrainHeight(this.position.x, this.position.z);
+            const groundLevel = terrainHeight + this.playerHeight;
+            
+            if (this.position.y <= groundLevel) {
+                this.position.y = groundLevel;
+                this.velocity.y = 0;
+                this.isGrounded = true;
+            } else {
+                this.isGrounded = false;
+            }
+        } else {
+            // Fallback to simple ground collision if no world reference
+            if (this.position.y <= 2) {
+                this.position.y = 2;
+                this.velocity.y = 0;
+                this.isGrounded = true;
+            }
         }
     }
     
@@ -802,7 +937,7 @@ class MinecraftClone {
         // Initialize input handler
         this.inputHandler = new InputHandler();
         
-        // Initialize first-person camera controller
+        // Initialize first-person camera controller (world will be set later)
         this.cameraController = new FirstPersonCameraController(this.camera, this.inputHandler);
         
         console.log('Input and camera controls initialized');
@@ -820,14 +955,19 @@ class MinecraftClone {
         directionalLight.shadow.mapSize.height = 2048;
         this.scene.add(directionalLight);
         
-        // Initialize world system
-        this.world = new World();
+        // Initialize world system with a random seed
+        const worldSeed = Math.floor(Math.random() * 1000000);
+        this.world = new World(worldSeed);
         this.world.setScene(this.scene);
         
-        // Generate test world with blocks
-        this.world.generateTestWorld();
+        // Generate initial world terrain around spawn point
+        this.world.generateInitialWorld(3); // Generate 3 chunk radius around spawn
         
-        console.log('World system initialized and test world generated');
+        // Set camera controller position to spawn point
+        const spawnPoint = this.world.getSpawnPoint();
+        this.cameraController.setPosition(spawnPoint.x, spawnPoint.y, spawnPoint.z);
+        
+        console.log(`World system initialized with seed ${worldSeed} and terrain generated`);
     }
     
     start() {
