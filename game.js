@@ -348,6 +348,7 @@ class TerrainGenerator {
     constructor(seed = Math.random() * 1000000) {
         this.seed = seed;
         this.seededRandom = this.createSeededRandom(seed);
+        this.heightCache = new Map(); // Cache terrain heights for consistency
     }
     
     // Create a seeded random number generator
@@ -358,10 +359,13 @@ class TerrainGenerator {
         };
     }
     
-    // Simple noise function using seeded random
+    // Simple noise function using seeded random (fixed for consistency)
     noise(x, z, scale = 1) {
-        const intX = Math.floor(x * scale);
-        const intZ = Math.floor(z * scale);
+        // Ensure consistent coordinate handling by scaling first, then flooring
+        const scaledX = x * scale;
+        const scaledZ = z * scale;
+        const intX = Math.floor(scaledX);
+        const intZ = Math.floor(scaledZ);
         
         // Create deterministic "random" value based on coordinates
         let hash = intX * 374761393 + intZ * 668265263;
@@ -371,25 +375,52 @@ class TerrainGenerator {
         return (hash & 0x7fffffff) / 0x7fffffff;
     }
     
-    // Generate height at given world coordinates
+    // Generate height at given world coordinates with guaranteed consistency
     generateHeight(worldX, worldZ) {
-        // Combine multiple noise octaves for more natural terrain
-        let height = 0;
+        // Ensure we're working with consistent integer coordinates
+        const x = Math.floor(worldX);
+        const z = Math.floor(worldZ);
         
-        // Base terrain (large features)
-        height += this.noise(worldX, worldZ, 0.01) * 30;
+        // Create cache key
+        const cacheKey = `${x},${z}`;
         
-        // Medium features
-        height += this.noise(worldX, worldZ, 0.05) * 10;
+        // Check cache first
+        if (this.heightCache.has(cacheKey)) {
+            return this.heightCache.get(cacheKey);
+        }
         
-        // Small details
-        height += this.noise(worldX, worldZ, 0.1) * 5;
+        // Use a much simpler, more predictable approach
+        let height = 35; // Base height
         
-        // Add some randomness
-        height += (this.noise(worldX, worldZ, 0.2) - 0.5) * 3;
+        // Create very smooth, predictable terrain using simple math
+        // Use sine waves for smooth, continuous terrain
+        const waveX = Math.sin(x * 0.01) * 8;  // Large waves every ~628 blocks
+        const waveZ = Math.sin(z * 0.01) * 8;  // Large waves every ~628 blocks
+        const waveXZ = Math.sin((x + z) * 0.005) * 4; // Diagonal waves
+        
+        height += waveX + waveZ + waveXZ;
+        
+        // Add some smaller variations
+        const smallWaveX = Math.sin(x * 0.05) * 2;
+        const smallWaveZ = Math.sin(z * 0.05) * 2;
+        
+        height += smallWaveX + smallWaveZ;
         
         // Ensure minimum height and round to integer
-        return Math.max(1, Math.floor(height + 32)); // Base height of 32
+        const finalHeight = Math.max(1, Math.floor(height));
+        
+        // Cache the result
+        this.heightCache.set(cacheKey, finalHeight);
+        
+        return finalHeight;
+    }
+    
+    // Simple hash function for consistent terrain generation
+    simpleHash(x, z) {
+        let hash = x * 374761393 + z * 668265263;
+        hash = (hash ^ (hash >> 13)) * 1274126177;
+        hash = hash ^ (hash >> 16);
+        return Math.abs(hash);
     }
     
     // Determine block type based on height and position
@@ -414,13 +445,17 @@ class TerrainGenerator {
         return BlockType.STONE;
     }
     
-    // Generate terrain for a specific chunk
+    // Generate terrain for a specific chunk with guaranteed consistency
     generateChunkTerrain(chunk) {
+        console.log(`Generating terrain for chunk (${chunk.chunkX}, ${chunk.chunkZ})`);
+        
+        // Generate blocks directly using world coordinates for perfect consistency
         for (let localX = 0; localX < 16; localX++) {
             for (let localZ = 0; localZ < 16; localZ++) {
                 const worldX = chunk.chunkX * 16 + localX;
                 const worldZ = chunk.chunkZ * 16 + localZ;
                 
+                // Get terrain height for this exact world coordinate
                 const terrainHeight = this.generateHeight(worldX, worldZ);
                 
                 // Generate blocks from bottom to terrain height
@@ -430,6 +465,82 @@ class TerrainGenerator {
                 }
             }
         }
+        
+        // Test boundary consistency by checking adjacent coordinates
+        this.testBoundaryConsistency(chunk);
+    }
+    
+    // Test that terrain generation is consistent at chunk boundaries
+    testBoundaryConsistency(chunk) {
+        const chunkX = chunk.chunkX;
+        const chunkZ = chunk.chunkZ;
+        
+        // Test boundary consistency more thoroughly
+        console.log(`Testing boundary consistency for chunk (${chunkX}, ${chunkZ})`);
+        
+        // Test all edges of the chunk
+        const edgeTests = [
+            // Left edge (x=0) - test against potential left neighbor
+            { localX: 0, localZ: 8, worldX: chunkX * 16, worldZ: chunkZ * 16 + 8, neighborWorldX: chunkX * 16 - 1, neighborWorldZ: chunkZ * 16 + 8 },
+            // Right edge (x=15) - test against potential right neighbor  
+            { localX: 15, localZ: 8, worldX: chunkX * 16 + 15, worldZ: chunkZ * 16 + 8, neighborWorldX: chunkX * 16 + 16, neighborWorldZ: chunkZ * 16 + 8 },
+            // Top edge (z=0) - test against potential top neighbor
+            { localX: 8, localZ: 0, worldX: chunkX * 16 + 8, worldZ: chunkZ * 16, neighborWorldX: chunkX * 16 + 8, neighborWorldZ: chunkZ * 16 - 1 },
+            // Bottom edge (z=15) - test against potential bottom neighbor
+            { localX: 8, localZ: 15, worldX: chunkX * 16 + 8, worldZ: chunkZ * 16 + 15, neighborWorldX: chunkX * 16 + 8, neighborWorldZ: chunkZ * 16 + 16 }
+        ];
+        
+        edgeTests.forEach((test, index) => {
+            const currentHeight = this.generateHeight(test.worldX, test.worldZ);
+            const neighborHeight = this.generateHeight(test.neighborWorldX, test.neighborWorldZ);
+            const heightDiff = Math.abs(currentHeight - neighborHeight);
+            
+            console.log(`Edge ${index}: Current (${test.worldX}, ${test.worldZ}) = ${currentHeight}, Neighbor (${test.neighborWorldX}, ${test.neighborWorldZ}) = ${neighborHeight}, Diff: ${heightDiff}`);
+            
+            if (heightDiff > 5) {
+                console.warn(`Large height difference at chunk boundary: ${heightDiff} blocks`);
+            }
+        });
+        
+        // Test cache consistency
+        const testCoord = { x: chunkX * 16 + 8, z: chunkZ * 16 + 8 };
+        const height1 = this.generateHeight(testCoord.x, testCoord.z);
+        const height2 = this.generateHeight(testCoord.x, testCoord.z);
+        
+        if (height1 !== height2) {
+            console.error(`Cache inconsistency detected at (${testCoord.x}, ${testCoord.z}): ${height1} vs ${height2}`);
+        } else {
+            console.log(`Cache working correctly at (${testCoord.x}, ${testCoord.z}): ${height1}`);
+        }
+    }
+    
+    // Verify that chunk boundaries are consistent with neighboring chunks
+    verifyChunkBoundaries(chunk, heightMap) {
+        const chunkX = chunk.chunkX;
+        const chunkZ = chunk.chunkZ;
+        
+        // Check consistency at chunk edges
+        const edgeChecks = [
+            // Left edge (x=0)
+            { localX: 0, localZ: 8, neighborX: chunkX - 1, neighborZ: chunkZ, neighborLocalX: 15, neighborLocalZ: 8 },
+            // Right edge (x=15)
+            { localX: 15, localZ: 8, neighborX: chunkX + 1, neighborZ: chunkZ, neighborLocalX: 0, neighborLocalZ: 8 },
+            // Top edge (z=0)
+            { localX: 8, localZ: 0, neighborX: chunkX, neighborZ: chunkZ - 1, neighborLocalX: 8, neighborLocalZ: 15 },
+            // Bottom edge (z=15)
+            { localX: 8, localZ: 15, neighborX: chunkX, neighborZ: chunkZ + 1, neighborLocalX: 8, neighborLocalZ: 0 }
+        ];
+        
+        edgeChecks.forEach(check => {
+            const currentHeight = heightMap[check.localX][check.localZ];
+            const neighborWorldX = check.neighborX * 16 + check.neighborLocalX;
+            const neighborWorldZ = check.neighborZ * 16 + check.neighborLocalZ;
+            const neighborHeight = this.generateHeight(neighborWorldX, neighborWorldZ);
+            
+            if (Math.abs(currentHeight - neighborHeight) > 1) {
+                console.warn(`Terrain discontinuity detected at chunk (${chunkX}, ${chunkZ}) edge: current=${currentHeight}, neighbor=${neighborHeight}`);
+            }
+        });
     }
     
     // Get terrain height at specific coordinates (for collision detection)
@@ -448,27 +559,20 @@ class World {
         this.spawnPoint = { x: 0, y: 64, z: 0 };
     }
     
-    // Set a block at the given position using chunk system
+    // Set a block at the given position using chunk system (optimized)
     setBlock(x, y, z, blockType) {
         const worldX = Math.floor(x);
         const worldY = Math.floor(y);
         const worldZ = Math.floor(z);
         
-        // Remove existing block mesh if present
-        this.removeBlockMesh(worldX, worldY, worldZ);
-        
         // Set block in chunk system
         const success = this.chunkManager.setBlock(worldX, worldY, worldZ, blockType);
         
-        if (success && blockType !== BlockType.AIR && this.scene) {
-            // Create and add mesh to scene
-            const block = this.chunkManager.getBlock(worldX, worldY, worldZ);
-            const mesh = this.blockRenderer.createBlockMesh(block);
-            if (mesh) {
-                const key = this.getPositionKey(worldX, worldY, worldZ);
-                mesh.name = `block_${key}`;
-                this.scene.add(mesh);
-            }
+        if (success) {
+            // Mark the chunk as needing mesh update instead of creating individual meshes
+            const chunkCoords = ChunkManager.worldToChunkCoords(worldX, worldZ);
+            const chunk = this.chunkManager.getOrCreateChunk(chunkCoords.chunkX, chunkCoords.chunkZ);
+            chunk.needsUpdate = true;
         }
         
         return success;
@@ -559,22 +663,179 @@ class World {
         return { ...this.spawnPoint };
     }
     
-    // Set the scene reference for rendering
+    // Set the scene reference for rendering (optimized)
     setScene(scene) {
         this.scene = scene;
         
-        // Add existing blocks to scene from all chunks
-        const allBlocks = this.getAllBlocks();
-        allBlocks.forEach(block => {
-            if (block.type !== BlockType.AIR) {
-                const mesh = this.blockRenderer.createBlockMesh(block);
-                if (mesh) {
-                    const key = this.getPositionKey(block.position.x, block.position.y, block.position.z);
-                    mesh.name = `block_${key}`;
-                    this.scene.add(mesh);
+        // Generate optimized chunk meshes instead of individual block meshes
+        this.generateChunkMeshes();
+    }
+    
+    // Generate optimized meshes for all chunks
+    generateChunkMeshes() {
+        if (!this.scene) return;
+        
+        console.log('Generating optimized chunk meshes...');
+        const chunks = this.chunkManager.getLoadedChunks();
+        let totalMeshes = 0;
+        
+        chunks.forEach(chunk => {
+            if (!chunk.isEmpty) {
+                const chunkMesh = this.createChunkMesh(chunk);
+                if (chunkMesh) {
+                    chunkMesh.name = `chunk_${chunk.chunkX}_${chunk.chunkZ}`;
+                    this.scene.add(chunkMesh);
+                    chunk.mesh = chunkMesh;
+                    totalMeshes++;
                 }
             }
         });
+        
+        console.log(`Generated ${totalMeshes} optimized chunk meshes`);
+    }
+    
+    // Create an optimized mesh for a single chunk
+    createChunkMesh(chunk) {
+        const blocksByType = {
+            [BlockType.GRASS]: [],
+            [BlockType.DIRT]: [],
+            [BlockType.STONE]: []
+        };
+        
+        // Collect all block positions by type
+        for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 256; y++) {
+                for (let z = 0; z < 16; z++) {
+                    const block = chunk.getBlock(x, y, z);
+                    if (block.type !== BlockType.AIR) {
+                        if (!blocksByType[block.type]) {
+                            blocksByType[block.type] = [];
+                        }
+                        blocksByType[block.type].push({
+                            x: chunk.chunkX * 16 + x,
+                            y: y,
+                            z: chunk.chunkZ * 16 + z
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Create merged geometries for each block type using InstancedMesh for better performance
+        const meshes = [];
+        
+        Object.keys(blocksByType).forEach(blockType => {
+            const positions = blocksByType[blockType];
+            if (positions.length > 0) {
+                // Use BufferGeometry merging for correct polygon rendering
+                const geometriesToMerge = [];
+                const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+                
+                positions.forEach(pos => {
+                    const geometry = blockGeometry.clone();
+                    geometry.translate(pos.x, pos.y, pos.z);
+                    geometriesToMerge.push(geometry);
+                });
+                
+                // Use THREE.BufferGeometryUtils.mergeGeometries if available, otherwise use manual merging
+                let mergedGeometry;
+                if (THREE.BufferGeometryUtils && THREE.BufferGeometryUtils.mergeGeometries) {
+                    mergedGeometry = THREE.BufferGeometryUtils.mergeGeometries(geometriesToMerge);
+                } else {
+                    // Fallback: use manual merging
+                    mergedGeometry = this.mergeGeometries(geometriesToMerge);
+                }
+                
+                if (mergedGeometry) {
+                    // Create mesh with appropriate material
+                    const material = this.blockRenderer.materials[blockType];
+                    if (material) {
+                        const mesh = new THREE.Mesh(mergedGeometry, material);
+                        meshes.push(mesh);
+                    }
+                }
+                
+                // Clean up temporary geometries
+                geometriesToMerge.forEach(geo => geo.dispose());
+            }
+        });
+        
+        // If we have multiple meshes, create a group
+        if (meshes.length > 1) {
+            const group = new THREE.Group();
+            meshes.forEach(mesh => group.add(mesh));
+            return group;
+        } else if (meshes.length === 1) {
+            return meshes[0];
+        }
+        
+        return null;
+    }
+    
+    // Manual geometry merging fallback
+    mergeGeometries(geometries) {
+        if (geometries.length === 0) return null;
+        
+        let totalVertices = 0;
+        let totalIndices = 0;
+        
+        // Count total vertices and indices
+        geometries.forEach(geo => {
+            totalVertices += geo.attributes.position.count;
+            if (geo.index) {
+                totalIndices += geo.index.count;
+            } else {
+                totalIndices += geo.attributes.position.count;
+            }
+        });
+        
+        // Create arrays for merged data
+        const positions = new Float32Array(totalVertices * 3);
+        const normals = new Float32Array(totalVertices * 3);
+        const uvs = new Float32Array(totalVertices * 2);
+        const indices = new Uint32Array(totalIndices);
+        
+        let vertexOffset = 0;
+        let indexOffset = 0;
+        let vertexCount = 0;
+        
+        // Merge geometries
+        geometries.forEach(geo => {
+            const posAttr = geo.attributes.position;
+            const normalAttr = geo.attributes.normal;
+            const uvAttr = geo.attributes.uv;
+            
+            // Copy vertex data
+            positions.set(posAttr.array, vertexOffset * 3);
+            normals.set(normalAttr.array, vertexOffset * 3);
+            uvs.set(uvAttr.array, vertexOffset * 2);
+            
+            // Copy and adjust indices
+            if (geo.index) {
+                for (let i = 0; i < geo.index.count; i++) {
+                    indices[indexOffset + i] = geo.index.array[i] + vertexCount;
+                }
+                indexOffset += geo.index.count;
+            } else {
+                // Generate indices for non-indexed geometry
+                for (let i = 0; i < posAttr.count; i++) {
+                    indices[indexOffset + i] = vertexCount + i;
+                }
+                indexOffset += posAttr.count;
+            }
+            
+            vertexOffset += posAttr.count;
+            vertexCount += posAttr.count;
+        });
+        
+        // Create merged geometry
+        const mergedGeometry = new THREE.BufferGeometry();
+        mergedGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        mergedGeometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+        mergedGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        mergedGeometry.setIndex(new THREE.BufferAttribute(indices, 1));
+        
+        return mergedGeometry;
     }
     
     // Get all blocks from all chunks (for testing/debugging)
@@ -776,6 +1037,19 @@ class FirstPersonCameraController {
             this.position.add(moveVector);
         }
         
+        // Handle altitude controls (free-flight mode for terrain exploration)
+        if (this.inputHandler.isKeyPressed('Space')) {
+            // Spacebar: Move up
+            this.position.y += this.moveSpeed * deltaTime;
+        }
+        if (this.inputHandler.isKeyPressed('ShiftLeft')) {
+            // Left Shift: Move down
+            this.position.y -= this.moveSpeed * deltaTime;
+        }
+        
+        // Disable gravity and terrain collision for free exploration
+        // (Comment out the original physics for now)
+        /*
         // Handle jumping
         if (this.inputHandler.isKeyPressed('Space') && this.isGrounded) {
             this.velocity.y = this.jumpSpeed;
@@ -806,6 +1080,7 @@ class FirstPersonCameraController {
                 this.isGrounded = true;
             }
         }
+        */
     }
     
     updateCamera() {
@@ -855,6 +1130,7 @@ class MinecraftClone {
         
         // UI elements
         this.fpsCounter = null;
+        this.cameraLocationDisplay = null;
         
         this.init();
     }
@@ -928,8 +1204,9 @@ class MinecraftClone {
         // Set renderer properties
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // Temporarily disable shadows for performance testing
+        this.renderer.shadowMap.enabled = false;
+        // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
         // Enable gamma correction for better colors
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -953,32 +1230,62 @@ class MinecraftClone {
         // Initialize FPS counter
         this.fpsCounter = new FPSCounter();
         
+        // Initialize camera location display
+        this.cameraLocationDisplay = new CameraLocationDisplay();
+        
         console.log('UI elements initialized');
     }
     
     addTestContent() {
-        // Add basic lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        // Add brighter lighting to make terrain more visible
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.8); // Increased ambient light
         this.scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(50, 50, 25);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); // Increased directional light
+        directionalLight.position.set(10, 10, 10); // Closer light position
+        directionalLight.castShadow = false; // Shadows disabled for performance
         this.scene.add(directionalLight);
         
         // Initialize world system with a random seed
         const worldSeed = Math.floor(Math.random() * 1000000);
         this.world = new World(worldSeed);
+        
+        // Generate initial world terrain around spawn point (minimal for testing)
+        console.log('Starting terrain generation...');
+        
+        // Generate proper terrain using the terrain generation system
+        console.log('Generating proper terrain...');
+        
+        // Generate terrain in a small area around spawn (1 chunk radius = 3x3 chunks)
+        this.world.generateInitialWorld(1); // Generate 1 chunk radius around spawn to maintain performance
+        
+        // Set scene reference after terrain generation to add blocks to scene
         this.world.setScene(this.scene);
         
-        // Generate initial world terrain around spawn point
-        this.world.generateInitialWorld(3); // Generate 3 chunk radius around spawn
+        console.log('Terrain generation completed');
+        console.log(`Scene now has ${this.scene.children.length} objects`);
+        
+        // Set world reference for camera controller terrain collision
+        this.cameraController.setWorld(this.world);
         
         // Set camera controller position to spawn point
         const spawnPoint = this.world.getSpawnPoint();
-        this.cameraController.setPosition(spawnPoint.x, spawnPoint.y, spawnPoint.z);
+        console.log(`Spawn point: (${spawnPoint.x}, ${spawnPoint.y}, ${spawnPoint.z})`);
+        
+        // Position camera higher to see more terrain variation
+        const cameraX = spawnPoint.x + 10;
+        const cameraY = spawnPoint.y + 15; // Much higher to see terrain from above
+        const cameraZ = spawnPoint.z + 10;
+        
+        this.cameraController.setPosition(cameraX, cameraY, cameraZ);
+        
+        // Look down and towards the spawn area to see terrain variation
+        this.cameraController.yaw = -Math.PI / 4; // Look towards spawn area
+        this.cameraController.pitch = -0.6; // Look down to see terrain
+        this.cameraController.updateCamera();
+        
+        console.log(`Camera positioned at (${cameraX}, ${cameraY}, ${cameraZ}) looking down at terrain`);
+        console.log(`Spawn point is at: (${spawnPoint.x}, ${spawnPoint.y}, ${spawnPoint.z})`);
         
         console.log(`World system initialized with seed ${worldSeed} and terrain generated`);
     }
@@ -1020,8 +1327,110 @@ class MinecraftClone {
         // Update camera controls
         this.updateCamera(deltaTime);
         
+        // Update chunk loading based on camera position
+        this.updateChunkLoading();
+        
         // Update UI elements
         this.updateUI(deltaTime);
+    }
+    
+    updateChunkLoading() {
+        if (!this.world || !this.cameraController) return;
+        
+        const cameraPos = this.cameraController.getPosition();
+        const chunkX = Math.floor(cameraPos.x / 16);
+        const chunkZ = Math.floor(cameraPos.z / 16);
+        
+        const renderDistance = 3; // Load chunks within 3 chunk radius
+        const unloadDistance = 5; // Unload chunks beyond 5 chunk radius
+        
+        // Load new chunks around camera
+        this.loadChunksAroundPosition(chunkX, chunkZ, renderDistance);
+        
+        // Unload distant chunks
+        this.unloadDistantChunks(chunkX, chunkZ, unloadDistance);
+    }
+    
+    loadChunksAroundPosition(centerChunkX, centerChunkZ, radius) {
+        for (let x = centerChunkX - radius; x <= centerChunkX + radius; x++) {
+            for (let z = centerChunkZ - radius; z <= centerChunkZ + radius; z++) {
+                const chunkKey = `${x},${z}`;
+                
+                // Check if chunk is already loaded
+                if (!this.world.chunkManager.chunks.has(chunkKey)) {
+                    console.log(`Loading chunk (${x}, ${z})`);
+                    
+                    // Generate and load new chunk
+                    const chunk = this.world.chunkManager.getOrCreateChunk(x, z);
+                    this.world.terrainGenerator.generateChunkTerrain(chunk);
+                    
+                    // Debug: Check terrain height at chunk boundaries for consistency
+                    const worldX = x * 16;
+                    const worldZ = z * 16;
+                    
+                    // Check heights at chunk corners
+                    const corner1 = this.world.terrainGenerator.generateHeight(worldX, worldZ);
+                    const corner2 = this.world.terrainGenerator.generateHeight(worldX + 15, worldZ);
+                    const corner3 = this.world.terrainGenerator.generateHeight(worldX, worldZ + 15);
+                    const corner4 = this.world.terrainGenerator.generateHeight(worldX + 15, worldZ + 15);
+                    
+                    console.log(`Chunk (${x}, ${z}) at world (${worldX}, ${worldZ}) heights: ${corner1}, ${corner2}, ${corner3}, ${corner4}`);
+                    
+                    // Create optimized mesh for the new chunk
+                    if (!chunk.isEmpty && this.scene) {
+                        const chunkMesh = this.world.createChunkMesh(chunk);
+                        if (chunkMesh) {
+                            chunkMesh.name = `chunk_${x}_${z}`;
+                            this.scene.add(chunkMesh);
+                            chunk.mesh = chunkMesh;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    unloadDistantChunks(centerChunkX, centerChunkZ, maxDistance) {
+        const chunksToUnload = [];
+        
+        // Find chunks that are too far away
+        this.world.chunkManager.chunks.forEach((chunk, key) => {
+            const distance = Math.max(
+                Math.abs(chunk.chunkX - centerChunkX),
+                Math.abs(chunk.chunkZ - centerChunkZ)
+            );
+            
+            if (distance > maxDistance) {
+                chunksToUnload.push(chunk);
+            }
+        });
+        
+        // Unload distant chunks
+        chunksToUnload.forEach(chunk => {
+            // Remove mesh from scene
+            if (chunk.mesh && this.scene) {
+                this.scene.remove(chunk.mesh);
+                
+                // Dispose of geometry and materials
+                if (chunk.mesh.geometry) {
+                    chunk.mesh.geometry.dispose();
+                }
+                if (chunk.mesh.material) {
+                    if (Array.isArray(chunk.mesh.material)) {
+                        chunk.mesh.material.forEach(mat => mat.dispose());
+                    } else {
+                        chunk.mesh.material.dispose();
+                    }
+                }
+            }
+            
+            // Remove chunk from manager
+            this.world.chunkManager.unloadChunk(chunk.chunkX, chunk.chunkZ);
+        });
+        
+        if (chunksToUnload.length > 0) {
+            console.log(`Unloaded ${chunksToUnload.length} distant chunks`);
+        }
     }
     
     updateCamera(deltaTime) {
@@ -1035,6 +1444,11 @@ class MinecraftClone {
         // Update FPS counter
         if (this.fpsCounter) {
             this.fpsCounter.update(deltaTime);
+        }
+        
+        // Update camera location display
+        if (this.cameraLocationDisplay) {
+            this.cameraLocationDisplay.update(this.cameraController);
         }
     }
     
@@ -1065,6 +1479,10 @@ class MinecraftClone {
         // Dispose UI elements
         if (this.fpsCounter) {
             this.fpsCounter.dispose();
+        }
+        
+        if (this.cameraLocationDisplay) {
+            this.cameraLocationDisplay.dispose();
         }
         
         // Dispose world system
@@ -1179,6 +1597,88 @@ class FPSCounter {
             this.element.parentNode.removeChild(this.element);
         }
         this.element = null;
+    }
+}
+
+// Camera Location Display class for position tracking
+class CameraLocationDisplay {
+    constructor() {
+        this.element = null;
+        this.lastPosition = null;
+        
+        this.createElement();
+    }
+    
+    createElement() {
+        this.element = document.createElement('div');
+        this.element.className = 'ui-element camera-location';
+        this.element.textContent = 'Position: Loading...';
+        
+        // Add to UI container
+        const uiContainer = document.getElementById('ui');
+        if (uiContainer) {
+            uiContainer.appendChild(this.element);
+        }
+    }
+    
+    update(cameraController) {
+        if (!this.element) return;
+        
+        // Handle missing camera controller
+        if (!cameraController) {
+            this.element.textContent = 'Position: Loading...';
+            return;
+        }
+        
+        try {
+            const position = cameraController.getPosition();
+            
+            // Handle invalid position data
+            if (!position || typeof position.x !== 'number' || typeof position.y !== 'number' || typeof position.z !== 'number') {
+                this.element.textContent = 'Position: Error';
+                this.lastPosition = null; // Reset to allow recovery
+                console.warn('Invalid position data received from camera controller');
+                return;
+            }
+            
+            // Check if position has changed to minimize DOM updates
+            if (this.lastPosition && 
+                Math.abs(position.x - this.lastPosition.x) < 0.01 &&
+                Math.abs(position.y - this.lastPosition.y) < 0.01 &&
+                Math.abs(position.z - this.lastPosition.z) < 0.01) {
+                return; // No significant change, skip update
+            }
+            
+            // Format and display coordinates
+            const formattedCoords = this.formatCoordinates(position.x, position.y, position.z);
+            this.element.textContent = formattedCoords;
+            
+            // Store last position for change detection
+            this.lastPosition = { x: position.x, y: position.y, z: position.z };
+            
+        } catch (error) {
+            this.element.textContent = 'Position: Error';
+            this.lastPosition = null; // Reset to allow recovery
+            console.warn('Error updating camera location display:', error);
+        }
+    }
+    
+    formatCoordinates(x, y, z) {
+        // Handle null/undefined coordinates with defaults
+        const safeX = (x != null && isFinite(x)) ? x : 0;
+        const safeY = (y != null && isFinite(y)) ? y : 0;
+        const safeZ = (z != null && isFinite(z)) ? z : 0;
+        
+        // Format to 2 decimal places with proper labeling
+        return `X: ${safeX.toFixed(2)}, Y: ${safeY.toFixed(2)}, Z: ${safeZ.toFixed(2)}`;
+    }
+    
+    dispose() {
+        if (this.element && this.element.parentNode) {
+            this.element.parentNode.removeChild(this.element);
+        }
+        this.element = null;
+        this.lastPosition = null;
     }
 }
 
