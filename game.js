@@ -445,18 +445,28 @@ class TerrainGenerator {
         return BlockType.STONE;
     }
     
-    // Generate terrain for a specific chunk with guaranteed consistency
+    // Generate terrain for a specific chunk with guaranteed consistency (optimized)
     generateChunkTerrain(chunk) {
-        console.log(`Generating terrain for chunk (${chunk.chunkX}, ${chunk.chunkZ})`);
+        // Remove debug logging for performance
+        // console.log(`Generating terrain for chunk (${chunk.chunkX}, ${chunk.chunkZ})`);
         
-        // Generate blocks directly using world coordinates for perfect consistency
+        // Pre-calculate all heights for the chunk to minimize function calls
+        const heights = [];
+        for (let localX = 0; localX < 16; localX++) {
+            heights[localX] = [];
+            for (let localZ = 0; localZ < 16; localZ++) {
+                const worldX = chunk.chunkX * 16 + localX;
+                const worldZ = chunk.chunkZ * 16 + localZ;
+                heights[localX][localZ] = this.generateHeight(worldX, worldZ);
+            }
+        }
+        
+        // Generate blocks using pre-calculated heights
         for (let localX = 0; localX < 16; localX++) {
             for (let localZ = 0; localZ < 16; localZ++) {
                 const worldX = chunk.chunkX * 16 + localX;
                 const worldZ = chunk.chunkZ * 16 + localZ;
-                
-                // Get terrain height for this exact world coordinate
-                const terrainHeight = this.generateHeight(worldX, worldZ);
+                const terrainHeight = heights[localX][localZ];
                 
                 // Generate blocks from bottom to terrain height
                 for (let worldY = 0; worldY <= Math.min(terrainHeight, 255); worldY++) {
@@ -466,8 +476,8 @@ class TerrainGenerator {
             }
         }
         
-        // Test boundary consistency by checking adjacent coordinates
-        this.testBoundaryConsistency(chunk);
+        // Skip boundary testing for performance (only enable for debugging)
+        // this.testBoundaryConsistency(chunk);
     }
     
     // Test that terrain generation is consistent at chunk boundaries
@@ -1352,40 +1362,66 @@ class MinecraftClone {
     }
     
     loadChunksAroundPosition(centerChunkX, centerChunkZ, radius) {
+        const chunksToLoad = [];
+        
+        // First, identify which chunks need to be loaded
         for (let x = centerChunkX - radius; x <= centerChunkX + radius; x++) {
             for (let z = centerChunkZ - radius; z <= centerChunkZ + radius; z++) {
                 const chunkKey = `${x},${z}`;
                 
                 // Check if chunk is already loaded
                 if (!this.world.chunkManager.chunks.has(chunkKey)) {
-                    console.log(`Loading chunk (${x}, ${z})`);
-                    
-                    // Generate and load new chunk
-                    const chunk = this.world.chunkManager.getOrCreateChunk(x, z);
-                    this.world.terrainGenerator.generateChunkTerrain(chunk);
-                    
-                    // Debug: Check terrain height at chunk boundaries for consistency
-                    const worldX = x * 16;
-                    const worldZ = z * 16;
-                    
-                    // Check heights at chunk corners
-                    const corner1 = this.world.terrainGenerator.generateHeight(worldX, worldZ);
-                    const corner2 = this.world.terrainGenerator.generateHeight(worldX + 15, worldZ);
-                    const corner3 = this.world.terrainGenerator.generateHeight(worldX, worldZ + 15);
-                    const corner4 = this.world.terrainGenerator.generateHeight(worldX + 15, worldZ + 15);
-                    
-                    console.log(`Chunk (${x}, ${z}) at world (${worldX}, ${worldZ}) heights: ${corner1}, ${corner2}, ${corner3}, ${corner4}`);
-                    
-                    // Create optimized mesh for the new chunk
-                    if (!chunk.isEmpty && this.scene) {
-                        const chunkMesh = this.world.createChunkMesh(chunk);
-                        if (chunkMesh) {
-                            chunkMesh.name = `chunk_${x}_${z}`;
-                            this.scene.add(chunkMesh);
-                            chunk.mesh = chunkMesh;
-                        }
-                    }
+                    chunksToLoad.push({ x, z });
                 }
+            }
+        }
+        
+        // Load chunks with performance optimization
+        if (chunksToLoad.length > 0) {
+            console.log(`Loading ${chunksToLoad.length} new chunks...`);
+            this.loadChunksBatch(chunksToLoad);
+        }
+    }
+    
+    loadChunksBatch(chunksToLoad) {
+        // Load chunks in small batches to avoid frame drops
+        const batchSize = 2; // Load max 2 chunks per frame
+        let currentBatch = 0;
+        
+        const loadNextBatch = () => {
+            const startTime = performance.now();
+            const maxTime = 8; // Max 8ms per frame for chunk loading
+            
+            while (currentBatch < chunksToLoad.length && (performance.now() - startTime) < maxTime) {
+                const chunkInfo = chunksToLoad[currentBatch];
+                this.loadSingleChunk(chunkInfo.x, chunkInfo.z);
+                currentBatch++;
+            }
+            
+            // If more chunks to load, continue next frame
+            if (currentBatch < chunksToLoad.length) {
+                requestAnimationFrame(loadNextBatch);
+            } else {
+                console.log(`Finished loading ${chunksToLoad.length} chunks`);
+            }
+        };
+        
+        // Start loading
+        loadNextBatch();
+    }
+    
+    loadSingleChunk(x, z) {
+        // Generate and load new chunk (optimized)
+        const chunk = this.world.chunkManager.getOrCreateChunk(x, z);
+        this.world.terrainGenerator.generateChunkTerrain(chunk);
+        
+        // Create optimized mesh for the new chunk
+        if (!chunk.isEmpty && this.scene) {
+            const chunkMesh = this.world.createChunkMesh(chunk);
+            if (chunkMesh) {
+                chunkMesh.name = `chunk_${x}_${z}`;
+                this.scene.add(chunkMesh);
+                chunk.mesh = chunkMesh;
             }
         }
     }
