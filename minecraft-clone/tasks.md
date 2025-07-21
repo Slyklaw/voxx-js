@@ -21,14 +21,14 @@
   - Write unit tests for block creation and property management
   - _Requirements: 2.1, 2.2, 3.1, 3.3_
 
-- [ ] 4. Implement chunk-based world structure
+- [x] 4. Implement chunk-based world structure
   - Create Chunk class with 16x16x256 block array structure
   - Implement chunk coordinate system and position mapping
   - Create ChunkManager to handle chunk creation and storage
   - Write unit tests for chunk coordinate calculations and block access
   - _Requirements: 3.2, 3.4, 5.2_
 
-- [ ] 5. Add basic terrain generation
+- [x] 5. Add basic terrain generation
   - Implement simple height-based terrain generation using Math.random or noise
   - Create different block types (grass, dirt, stone) based on height
   - Generate initial world chunks around spawn point

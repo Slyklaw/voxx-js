@@ -61,6 +61,18 @@ export class BlockRenderer {
         return mesh;
     }
 
+    /**
+     * Get the color for a block type
+     * @param {BlockType} blockType - The type of block
+     * @returns {THREE.Color|null} The color for the block type
+     */
+    getBlockColor(blockType) {
+        const properties = BlockProperties[blockType];
+        if (!properties) return null;
+        
+        return new THREE.Color(properties.color);
+    }
+
     dispose() {
         // Clean up cached geometries and materials
         this.geometryCache.forEach(geometry => geometry.dispose());
