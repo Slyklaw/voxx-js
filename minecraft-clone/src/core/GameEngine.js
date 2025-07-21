@@ -1,3 +1,8 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { BlockRenderer } from '../rendering/BlockRenderer.js';
+import { BlockType } from '../world/BlockType.js';
+import { Block } from '../world/Block.js';
+
 export class GameEngine {
     constructor(canvas) {
         this.canvas = canvas;
@@ -11,6 +16,7 @@ export class GameEngine {
         
         this.cameraRotation = { x: 0, y: 0 };
         this.mouseSensitivity = 0.002;
+        this.blockRenderer = null;
         
         this.init();
     }
@@ -40,11 +46,14 @@ export class GameEngine {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
+        // Initialize block renderer
+        this.blockRenderer = new BlockRenderer();
+        
         // Add basic lighting
         this.setupLighting();
         
-        // Add a simple ground plane for testing
-        this.createTestEnvironment();
+        // Create test world with blocks
+        this.createTestWorld();
         
         console.log('GameEngine initialized');
     }
@@ -72,30 +81,72 @@ export class GameEngine {
         this.scene.add(directionalLight);
     }
 
-    createTestEnvironment() {
-        // Create a simple ground plane
-        const groundGeometry = new THREE.PlaneGeometry(100, 100);
-        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x90EE90 });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = 0;
-        ground.receiveShadow = true;
-        this.scene.add(ground);
+    createTestWorld() {
+        // Create a simple flat world with grass blocks
+        const worldSize = 16;
+        const groundHeight = 0;
         
-        // Add some test cubes
-        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        // Create grass layer
+        for (let x = -worldSize/2; x < worldSize/2; x++) {
+            for (let z = -worldSize/2; z < worldSize/2; z++) {
+                const grassBlock = new Block(BlockType.GRASS, x, groundHeight, z);
+                const grassMesh = this.blockRenderer.createBlockMesh(grassBlock);
+                if (grassMesh) {
+                    this.scene.add(grassMesh);
+                }
+                
+                // Add dirt blocks below grass
+                for (let y = groundHeight - 3; y < groundHeight; y++) {
+                    const dirtBlock = new Block(BlockType.DIRT, x, y, z);
+                    const dirtMesh = this.blockRenderer.createBlockMesh(dirtBlock);
+                    if (dirtMesh) {
+                        this.scene.add(dirtMesh);
+                    }
+                }
+                
+                // Add stone blocks below dirt
+                for (let y = groundHeight - 6; y < groundHeight - 3; y++) {
+                    const stoneBlock = new Block(BlockType.STONE, x, y, z);
+                    const stoneMesh = this.blockRenderer.createBlockMesh(stoneBlock);
+                    if (stoneMesh) {
+                        this.scene.add(stoneMesh);
+                    }
+                }
+            }
+        }
         
-        for (let i = 0; i < 10; i++) {
-            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-            cube.position.set(
-                (Math.random() - 0.5) * 20,
-                0.5,
-                (Math.random() - 0.5) * 20
-            );
-            cube.castShadow = true;
-            cube.receiveShadow = true;
-            this.scene.add(cube);
+        // Add some trees
+        this.createTree(-5, groundHeight + 1, -5);
+        this.createTree(5, groundHeight + 1, 5);
+        this.createTree(-3, groundHeight + 1, 7);
+        this.createTree(7, groundHeight + 1, -2);
+        
+        console.log('Test world created with blocks');
+    }
+
+    createTree(x, y, z) {
+        // Tree trunk
+        for (let i = 0; i < 4; i++) {
+            const woodBlock = new Block(BlockType.WOOD, x, y + i, z);
+            const woodMesh = this.blockRenderer.createBlockMesh(woodBlock);
+            if (woodMesh) {
+                this.scene.add(woodMesh);
+            }
+        }
+        
+        // Tree leaves
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = 3; dy <= 5; dy++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    if (Math.random() > 0.3) { // Random leaf placement
+                        const leafBlock = new Block(BlockType.LEAVES, x + dx, y + dy, z + dz);
+                        const leafMesh = this.blockRenderer.createBlockMesh(leafBlock);
+                        if (leafMesh) {
+                            this.scene.add(leafMesh);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -170,6 +221,9 @@ export class GameEngine {
         // Clean up resources
         if (this.renderer) {
             this.renderer.dispose();
+        }
+        if (this.blockRenderer) {
+            this.blockRenderer.dispose();
         }
     }
 }

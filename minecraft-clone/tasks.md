@@ -14,7 +14,7 @@
   - Write unit tests for input handling logic
   - _Requirements: 1.2, 1.3, 1.4_
 
-- [ ] 3. Create block system and basic world representation
+- [x] 3. Create block system and basic world representation
   - Define BlockType enum and Block interface with position and type properties
   - Implement basic block geometry creation using Three.js BoxGeometry
   - Create simple block texture system with color-coded materials
