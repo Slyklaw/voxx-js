@@ -21,6 +21,8 @@ export class WorkerPool {
     const workerEntry = this.workers.find(w => w.worker === worker);
     if (workerEntry) {
       workerEntry.busy = false;
+      
+      // Process next task from queue (priority tasks are already at front)
       const task = this.taskQueue.shift();
       if (task) {
         this.executeTask(worker, task);
@@ -64,7 +66,20 @@ export class WorkerPool {
     if (availableWorker) {
       this.executeTask(availableWorker.worker, { message, callbackId });
     } else {
-      this.taskQueue.push({ message, callbackId });
+      this.taskQueue.push({ message, callbackId, priority: false });
+    }
+  }
+
+  enqueuePriorityTask(message, callback) {
+    const callbackId = performance.now() + Math.random().toString(36).substring(2);
+    this.pendingCallbacks.set(callbackId, callback);
+
+    const availableWorker = this.workers.find(w => !w.busy);
+    if (availableWorker) {
+      this.executeTask(availableWorker.worker, { message, callbackId });
+    } else {
+      // Add to front of queue for priority processing
+      this.taskQueue.unshift({ message, callbackId, priority: true });
     }
   }
 

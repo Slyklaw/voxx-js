@@ -43,7 +43,42 @@ document.body.appendChild(stats.dom);
 const noiseSeed = Math.random();
 const noise = createNoise2D(() => noiseSeed);
 const world = new World(noiseSeed, scene);
-world.update(camera.position); // Initial world generation
+
+// Create loading indicator
+const loadingIndicator = document.createElement('div');
+loadingIndicator.id = 'loading-indicator';
+loadingIndicator.style.position = 'absolute';
+loadingIndicator.style.top = '50%';
+loadingIndicator.style.left = '50%';
+loadingIndicator.style.transform = 'translate(-50%, -50%)';
+loadingIndicator.style.color = 'white';
+loadingIndicator.style.fontSize = '18px';
+loadingIndicator.style.fontFamily = 'sans-serif';
+loadingIndicator.style.textAlign = 'center';
+loadingIndicator.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+loadingIndicator.style.padding = '20px';
+loadingIndicator.style.borderRadius = '10px';
+loadingIndicator.style.zIndex = '2000';
+loadingIndicator.innerHTML = `
+  <div>Loading Initial Chunk...</div>
+  <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+    Generating terrain at spawn location
+  </div>
+`;
+document.body.appendChild(loadingIndicator);
+
+// Preload the initial chunk where the camera spawns
+let worldInitialized = false;
+world.preloadInitialChunk(camera.position).then(() => {
+  console.log('Initial chunk loaded, enabling full world updates');
+  worldInitialized = true;
+  
+  // Remove loading indicator
+  document.body.removeChild(loadingIndicator);
+  
+  // Now allow normal world updates
+  world.update(camera.position);
+});
 
 // 4. VOXEL MODIFICATION SYSTEM
 // =================================================================
@@ -402,8 +437,10 @@ function animate() {
     if (keys['ShiftLeft']) camera.position.y -= moveSpeed * delta;
   }
 
-  // Update world based on camera position
-  world.update(camera.position);
+  // Update world based on camera position (only after initial chunk is loaded)
+  if (worldInitialized) {
+    world.update(camera.position);
+  }
 
   // Update block outline for visual feedback
   if (controls.isLocked) {
