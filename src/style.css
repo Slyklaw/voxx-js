@@ -36,3 +36,28 @@ canvas {
   border-radius: 4px;
   user-select: none;
 }
+
+#voxel-ui {
+  transition: opacity 0.3s ease;
+}
+
+#voxel-ui:hover {
+  opacity: 0.9;
+}
+
+#crosshair {
+  transition: all 0.2s ease;
+}
+
+#crosshair:hover {
+  transform: scale(1.1);
+}
+
+/* Hide UI elements when pointer is not locked */
+body:not(.pointer-locked) #voxel-ui {
+  opacity: 0.5;
+}
+
+body:not(.pointer-locked) #crosshair {
+  opacity: 0.3;
+}
