@@ -85,6 +85,7 @@ console.log(`Day: ${timeInfo.isDay}, Progress: ${timeInfo.dayProgress}`);
 - **Efficient Updates**: Only updates lighting when time changes
 - **Optimized Shadows**: Reasonable shadow map size for performance
 - **Minimal Overhead**: Lightweight time tracking system
+- **Throttled UI Updates**: UI refreshes every 100ms to balance responsiveness and performance
 
 ### Integration with Existing Systems
 - **Chunk Meshes**: Automatically configured for shadows
@@ -109,7 +110,7 @@ The `getTimeInfo()` method returns:
 
 ## Visual Feedback
 
-The UI displays:
+The UI displays (updated in real-time):
 - Current time phase (Day/Night with percentage)
 - Sun intensity percentage
 - Ambient light intensity percentage
