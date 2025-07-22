@@ -214,7 +214,7 @@ function updateBlockOutline() {
 }
 
 function positionFaceHighlight(face, voxelPos) {
-  const offset = 0.51; // Slightly outside the voxel
+  const offset = 0.1; // Very close to the voxel face (10% distance)
   
   switch (face) {
     case 'top':
