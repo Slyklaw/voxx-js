@@ -8,3 +8,4 @@ npm run preview
 * Kiro - Sonnet 4.0 added block placement/removal.
     - Improved chunk loading.
     - Block editing cleanup.
+    - Improved face targetting.
