@@ -1,7 +1,7 @@
 export class WorkerPool {
-  constructor(workerScript, poolSize = navigator.hardwareConcurrency || 4) {
+  constructor(workerConstructor, poolSize = navigator.hardwareConcurrency || 4) {
     this.poolSize = poolSize;
-    this.workerScript = workerScript;
+    this.workerConstructor = workerConstructor;
     this.workers = [];
     this.taskQueue = [];
     this.pendingCallbacks = new Map();
@@ -10,7 +10,7 @@ export class WorkerPool {
 
   initWorkers() {
     for (let i = 0; i < this.poolSize; i++) {
-      const worker = new Worker(this.workerScript, { type: 'module' });
+      const worker = new this.workerConstructor();
       worker.onmessage = (event) => this.handleWorkerResponse(worker, event);
       worker.onerror = (error) => this.handleWorkerError(worker, error);
       this.workers.push({ worker, busy: false });

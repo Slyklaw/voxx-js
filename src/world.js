@@ -1,5 +1,6 @@
 import { WorkerPool } from './workers/workerPool.js';
 import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
+import ChunkWorker from './workers/chunkWorker.js?worker';
 
 export class World {
   constructor(noiseSeed, scene) {
@@ -8,7 +9,7 @@ export class World {
     this.scene = scene;
     this.pendingChunks = new Map();
     this.workerPool = new WorkerPool(
-      new URL('./workers/chunkWorker.js', import.meta.url).href,
+      ChunkWorker,
       4
     );
   }
