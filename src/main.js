@@ -85,23 +85,49 @@ world.preloadInitialChunk(camera.position).then(() => {
 
 // Create block outline for visual feedback
 let blockOutline = null;
+let faceHighlight = null;
+let placementPreview = null;
 let targetedVoxelInfo = null;
 
 function createBlockOutline() {
-  // Create wireframe box geometry
+  // Create wireframe box geometry for the target block
   const geometry = new THREE.BoxGeometry(1.05, 1.05, 1.05); // Slightly larger than voxel
   const edges = new THREE.EdgesGeometry(geometry);
   const material = new THREE.LineBasicMaterial({ 
-    color: 0x000000, // Black outline
-    linewidth: 3,
+    color: 0xffffff, // White outline
+    linewidth: 2,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.8
   });
   
   blockOutline = new THREE.LineSegments(edges, material);
   blockOutline.visible = false; // Initially hidden
   
-  // Add a subtle pulsing animation
+  // Create face highlight - a plane that shows which face is targeted
+  const faceGeometry = new THREE.PlaneGeometry(1.02, 1.02);
+  const faceMaterial = new THREE.MeshBasicMaterial({
+    color: 0xff6600, // Orange highlight
+    transparent: true,
+    opacity: 0.4,
+    side: THREE.DoubleSide
+  });
+  
+  faceHighlight = new THREE.Mesh(faceGeometry, faceMaterial);
+  faceHighlight.visible = false;
+  
+  // Create placement preview - shows where new block will be placed
+  const previewGeometry = new THREE.BoxGeometry(1.02, 1.02, 1.02);
+  const previewMaterial = new THREE.MeshBasicMaterial({
+    color: 0x00ff00, // Green preview
+    transparent: true,
+    opacity: 0.3,
+    wireframe: true
+  });
+  
+  placementPreview = new THREE.Mesh(previewGeometry, previewMaterial);
+  placementPreview.visible = false;
+  
+  // Add pulsing animation data
   blockOutline.userData = { 
     originalScale: 1.0,
     pulseSpeed: 2.0,
@@ -109,10 +135,12 @@ function createBlockOutline() {
   };
   
   scene.add(blockOutline);
+  scene.add(faceHighlight);
+  scene.add(placementPreview);
 }
 
 function updateBlockOutline() {
-  if (!blockOutline) return;
+  if (!blockOutline || !faceHighlight || !placementPreview) return;
   
   const previousTargetInfo = targetedVoxelInfo;
   
@@ -121,29 +149,41 @@ function updateBlockOutline() {
   const hitResult = voxelInteractionSystem.raycaster.raycastFromScreen(mouse, camera, playerModifier.maxRange);
   
   if (hitResult && hitResult.hit) {
-    // Show both destroy target (current voxel) and place target (adjacent position)
     const destroyPos = hitResult.voxelPosition;
     const placePos = voxelInteractionSystem.raycaster.getPlacementPosition(hitResult);
+    const canPlace = placePos && voxelInteractionSystem.raycaster.isValidPlacementPosition(placePos);
     
-    // Use the destroy position as the primary target for outline
-    const targetPos = destroyPos;
-    
-    // Position the outline at the target voxel
+    // Position the outline at the target voxel (destroy target)
     blockOutline.position.set(
-      targetPos.x + 0.5, // Center of voxel
-      targetPos.y + 0.5,
-      targetPos.z + 0.5
+      destroyPos.x + 0.5, // Center of voxel
+      destroyPos.y + 0.5,
+      destroyPos.z + 0.5
     );
-    
-    // Use a neutral color since both actions are available
-    blockOutline.material.color.setHex(0xffffff); // White outline
-    
     blockOutline.visible = true;
+    
+    // Position and orient the face highlight
+    positionFaceHighlight(hitResult.face, destroyPos);
+    faceHighlight.visible = true;
+    
+    // Show placement preview if valid
+    if (canPlace) {
+      placementPreview.position.set(
+        placePos.x + 0.5,
+        placePos.y + 0.5,
+        placePos.z + 0.5
+      );
+      placementPreview.visible = true;
+    } else {
+      placementPreview.visible = false;
+    }
+    
     const newTargetInfo = {
       destroyPosition: destroyPos.clone(),
       placePosition: placePos ? placePos.clone() : null,
+      face: hitResult.face,
+      normal: hitResult.normal.clone(),
       distance: hitResult.distance,
-      canPlace: placePos && voxelInteractionSystem.raycaster.isValidPlacementPosition(placePos)
+      canPlace: canPlace
     };
     
     // Check if target changed significantly to avoid excessive UI updates
@@ -151,6 +191,7 @@ function updateBlockOutline() {
       !previousTargetInfo.destroyPosition.equals(newTargetInfo.destroyPosition) ||
       (previousTargetInfo.placePosition && newTargetInfo.placePosition && 
        !previousTargetInfo.placePosition.equals(newTargetInfo.placePosition)) ||
+      previousTargetInfo.face !== newTargetInfo.face ||
       previousTargetInfo.canPlace !== newTargetInfo.canPlace;
     
     targetedVoxelInfo = newTargetInfo;
@@ -161,12 +202,45 @@ function updateBlockOutline() {
   } else {
     // No valid target found
     blockOutline.visible = false;
+    faceHighlight.visible = false;
+    placementPreview.visible = false;
     targetedVoxelInfo = null;
     
     // Update UI if we had a target before
     if (previousTargetInfo !== null) {
       updateVoxelUI();
     }
+  }
+}
+
+function positionFaceHighlight(face, voxelPos) {
+  const offset = 0.51; // Slightly outside the voxel
+  
+  switch (face) {
+    case 'top':
+      faceHighlight.position.set(voxelPos.x + 0.5, voxelPos.y + 1 + offset, voxelPos.z + 0.5);
+      faceHighlight.rotation.set(-Math.PI / 2, 0, 0); // Horizontal plane
+      break;
+    case 'bottom':
+      faceHighlight.position.set(voxelPos.x + 0.5, voxelPos.y - offset, voxelPos.z + 0.5);
+      faceHighlight.rotation.set(Math.PI / 2, 0, 0); // Horizontal plane
+      break;
+    case 'north':
+      faceHighlight.position.set(voxelPos.x + 0.5, voxelPos.y + 0.5, voxelPos.z - offset);
+      faceHighlight.rotation.set(0, 0, 0); // Vertical plane facing Z
+      break;
+    case 'south':
+      faceHighlight.position.set(voxelPos.x + 0.5, voxelPos.y + 0.5, voxelPos.z + 1 + offset);
+      faceHighlight.rotation.set(0, Math.PI, 0); // Vertical plane facing Z
+      break;
+    case 'west':
+      faceHighlight.position.set(voxelPos.x - offset, voxelPos.y + 0.5, voxelPos.z + 0.5);
+      faceHighlight.rotation.set(0, Math.PI / 2, 0); // Vertical plane facing X
+      break;
+    case 'east':
+      faceHighlight.position.set(voxelPos.x + 1 + offset, voxelPos.y + 0.5, voxelPos.z + 0.5);
+      faceHighlight.rotation.set(0, -Math.PI / 2, 0); // Vertical plane facing X
+      break;
   }
 }
 
@@ -255,9 +329,11 @@ function updateVoxelUI() {
   if (targetedVoxelInfo) {
     const destroyPos = targetedVoxelInfo.destroyPosition;
     const placePos = targetedVoxelInfo.placePosition;
+    const face = targetedVoxelInfo.face;
     targetInfo = `
       <div><strong>Target:</strong></div>
       <div>Destroy: ${destroyPos.x}, ${destroyPos.y}, ${destroyPos.z}</div>
+      <div>Face: ${face.charAt(0).toUpperCase() + face.slice(1)}</div>
       ${placePos && targetedVoxelInfo.canPlace ? 
         `<div>Place: ${placePos.x}, ${placePos.y}, ${placePos.z}</div>` : 
         '<div>Place: Invalid position</div>'}
@@ -308,9 +384,15 @@ controls.addEventListener('unlock', () => {
   instructions.style.display = 'block';
   document.body.classList.remove('pointer-locked');
   
-  // Hide block outline when not in pointer lock mode
+  // Hide all visual elements when not in pointer lock mode
   if (blockOutline) {
     blockOutline.visible = false;
+  }
+  if (faceHighlight) {
+    faceHighlight.visible = false;
+  }
+  if (placementPreview) {
+    placementPreview.visible = false;
   }
   targetedVoxelInfo = null;
   updateVoxelUI();
@@ -429,11 +511,23 @@ function animate() {
   if (controls.isLocked) {
     updateBlockOutline();
     
-    // Animate block outline with subtle pulsing
+    // Animate visual elements with subtle pulsing
     if (blockOutline && blockOutline.visible) {
       blockOutline.userData.time += delta;
-      const pulse = 1.0 + Math.sin(blockOutline.userData.time * blockOutline.userData.pulseSpeed) * 0.05;
+      const pulse = 1.0 + Math.sin(blockOutline.userData.time * blockOutline.userData.pulseSpeed) * 0.03;
       blockOutline.scale.setScalar(pulse);
+    }
+    
+    // Animate face highlight with a different phase
+    if (faceHighlight && faceHighlight.visible) {
+      const faceOpacity = 0.4 + Math.sin(Date.now() * 0.003) * 0.1;
+      faceHighlight.material.opacity = faceOpacity;
+    }
+    
+    // Animate placement preview
+    if (placementPreview && placementPreview.visible) {
+      const previewOpacity = 0.3 + Math.sin(Date.now() * 0.005) * 0.1;
+      placementPreview.material.opacity = previewOpacity;
     }
   }
 
