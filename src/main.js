@@ -48,6 +48,111 @@ world.update(camera.position); // Initial world generation
 // 4. VOXEL MODIFICATION SYSTEM
 // =================================================================
 
+// Create block outline for visual feedback
+let blockOutline = null;
+let targetedVoxelInfo = null;
+
+function createBlockOutline() {
+  // Create wireframe box geometry
+  const geometry = new THREE.BoxGeometry(1.05, 1.05, 1.05); // Slightly larger than voxel
+  const edges = new THREE.EdgesGeometry(geometry);
+  const material = new THREE.LineBasicMaterial({ 
+    color: 0x000000, // Black outline
+    linewidth: 3,
+    transparent: true,
+    opacity: 0.9
+  });
+  
+  blockOutline = new THREE.LineSegments(edges, material);
+  blockOutline.visible = false; // Initially hidden
+  
+  // Add a subtle pulsing animation
+  blockOutline.userData = { 
+    originalScale: 1.0,
+    pulseSpeed: 2.0,
+    time: 0
+  };
+  
+  scene.add(blockOutline);
+}
+
+function updateBlockOutline() {
+  if (!blockOutline) return;
+  
+  const previousTargetInfo = targetedVoxelInfo;
+  
+  // Perform raycast to find targeted voxel
+  const mouse = new THREE.Vector2(0, 0); // Center of screen
+  const hitResult = voxelInteractionSystem.raycaster.raycastFromScreen(mouse, camera, playerModifier.maxRange);
+  
+  if (hitResult && hitResult.hit) {
+    // Determine target position based on current mode
+    let targetPos;
+    if (isDestroyMode) {
+      // For destroy mode, highlight the voxel that will be destroyed
+      targetPos = hitResult.voxelPosition;
+    } else {
+      // For place mode, highlight where the new voxel will be placed
+      targetPos = voxelInteractionSystem.raycaster.getPlacementPosition(hitResult);
+      
+      // Check if placement position is valid
+      if (!targetPos || !voxelInteractionSystem.raycaster.isValidPlacementPosition(targetPos)) {
+        blockOutline.visible = false;
+        targetedVoxelInfo = null;
+        // Update UI if target changed
+        if (previousTargetInfo !== null) {
+          updateVoxelUI();
+        }
+        return;
+      }
+    }
+    
+    // Position the outline at the target voxel
+    blockOutline.position.set(
+      targetPos.x + 0.5, // Center of voxel
+      targetPos.y + 0.5,
+      targetPos.z + 0.5
+    );
+    
+    // Change color based on mode and validity
+    if (isDestroyMode) {
+      blockOutline.material.color.setHex(0xff0000); // Red for destroy
+    } else {
+      blockOutline.material.color.setHex(0x00ff00); // Green for place
+    }
+    
+    blockOutline.visible = true;
+    const newTargetInfo = {
+      position: targetPos.clone(),
+      mode: isDestroyMode ? 'destroy' : 'place',
+      distance: hitResult.distance
+    };
+    
+    // Check if target changed significantly to avoid excessive UI updates
+    const targetChanged = !previousTargetInfo || 
+      !previousTargetInfo.position.equals(newTargetInfo.position) ||
+      previousTargetInfo.mode !== newTargetInfo.mode;
+    
+    targetedVoxelInfo = newTargetInfo;
+    
+    if (targetChanged) {
+      updateVoxelUI();
+    }
+  } else {
+    // No valid target found
+    blockOutline.visible = false;
+    targetedVoxelInfo = null;
+    
+    // Update UI if we had a target before
+    if (previousTargetInfo !== null) {
+      updateVoxelUI();
+    }
+  }
+}
+
+// Initialize block outline
+createBlockOutline();
+
 // Initialize voxel modification system
 const voxelInteractionSystem = new VoxelInteractionSystem(world, scene);
 const playerModifier = new VoxelModifier({
@@ -126,6 +231,24 @@ function updateVoxelUI() {
 
   const stats = voxelInteractionSystem.getStatistics();
   
+  // Target information
+  let targetInfo = '';
+  if (targetedVoxelInfo) {
+    const pos = targetedVoxelInfo.position;
+    targetInfo = `
+      <div><strong>Target:</strong></div>
+      <div>Position: ${pos.x}, ${pos.y}, ${pos.z}</div>
+      <div>Distance: ${targetedVoxelInfo.distance.toFixed(1)}m</div>
+      <div>Action: ${targetedVoxelInfo.mode}</div>
+      <br>
+    `;
+  } else {
+    targetInfo = `
+      <div><strong>Target:</strong> None</div>
+      <br>
+    `;
+  }
+  
   uiContainer.innerHTML = `
     <div><strong>Voxel Builder</strong></div>
     <div>Mode: ${isDestroyMode ? 'Destroy' : 'Place'}</div>
@@ -134,6 +257,7 @@ function updateVoxelUI() {
     <div>Cooldown: ${playerModifier.modificationCooldown}ms</div>
     <div>Dirty Chunks: ${stats.dirtyChunksCount}</div>
     <br>
+    ${targetInfo}
     <div><strong>Controls:</strong></div>
     <div>Left Click: ${isDestroyMode ? 'Destroy' : 'Place'} voxel</div>
     <div>Right Click: ${isDestroyMode ? 'Place' : 'Destroy'} voxel</div>
@@ -163,6 +287,13 @@ controls.addEventListener('lock', () => {
 controls.addEventListener('unlock', () => {
   instructions.style.display = 'block';
   document.body.classList.remove('pointer-locked');
+  
+  // Hide block outline when not in pointer lock mode
+  if (blockOutline) {
+    blockOutline.visible = false;
+  }
+  targetedVoxelInfo = null;
+  updateVoxelUI();
 });
 
 const keys = {};
@@ -273,6 +404,18 @@ function animate() {
 
   // Update world based on camera position
   world.update(camera.position);
+
+  // Update block outline for visual feedback
+  if (controls.isLocked) {
+    updateBlockOutline();
+    
+    // Animate block outline with subtle pulsing
+    if (blockOutline && blockOutline.visible) {
+      blockOutline.userData.time += delta;
+      const pulse = 1.0 + Math.sin(blockOutline.userData.time * blockOutline.userData.pulseSpeed) * 0.05;
+      blockOutline.scale.setScalar(pulse);
+    }
+  }
 
   // Update camera position display
   document.getElementById('camera-position').textContent = 
