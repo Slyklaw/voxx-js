@@ -36,6 +36,11 @@ export class World {
         chunk.voxels = new Uint8Array(chunkData.voxels);
         const mesh = chunk.createMesh();
         mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
+        
+        // Enable shadows on chunk meshes
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
         this.scene.add(mesh);
         chunk.mesh = mesh;
         this.pendingChunks.delete(key);

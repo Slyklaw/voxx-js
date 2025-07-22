@@ -232,6 +232,10 @@ export class VoxelInteractionSystem {
       chunk.chunkZ * CHUNK_DEPTH
     );
     
+    // Enable shadows on the new mesh
+    newMesh.castShadow = true;
+    newMesh.receiveShadow = true;
+    
     this.scene.add(newMesh);
     chunk.mesh = newMesh;
   }

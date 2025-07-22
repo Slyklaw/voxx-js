@@ -6,6 +6,7 @@ import { createNoise2D } from 'simplex-noise';
 import { World } from './world.js';
 import { VoxelModifier } from './voxelModifier.js';
 import { VoxelInteractionSystem } from './voxelInteractionSystem.js';
+import { SunSystem } from './sunSystem.js';
 
 // 1. SCENE SETUP
 // =================================================================
@@ -31,6 +32,9 @@ scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
+
+// Sun System for day/night cycle and shadows
+const sunSystem = new SunSystem(scene, renderer, ambientLight, directionalLight);
 
 // FPS Counter
 const stats = new Stats();
@@ -323,6 +327,7 @@ function updateVoxelUI() {
   };
 
   const stats = voxelInteractionSystem.getStatistics();
+  const timeInfo = sunSystem.getTimeInfo();
   
   // Target information
   let targetInfo = '';
@@ -347,6 +352,11 @@ function updateVoxelUI() {
     `;
   }
   
+  // Time display
+  const timeDisplay = timeInfo.isDay ? 
+    `Day (${(timeInfo.dayProgress * 100).toFixed(0)}%)` : 
+    `Night (${(timeInfo.nightProgress * 100).toFixed(0)}%)`;
+  
   uiContainer.innerHTML = `
     <div><strong>Voxel Builder</strong></div>
     <div>Block: ${blockNames[playerModifier.currentBlockType]}</div>
@@ -354,11 +364,17 @@ function updateVoxelUI() {
     <div>Cooldown: ${playerModifier.modificationCooldown}ms</div>
     <div>Dirty Chunks: ${stats.dirtyChunksCount}</div>
     <br>
+    <div><strong>Time:</strong> ${timeDisplay}</div>
+    <div>Sun: ${(timeInfo.sunIntensity * 100).toFixed(0)}%</div>
+    <div>Ambient: ${(timeInfo.ambientIntensity * 100).toFixed(0)}%</div>
+    <div>Sky: ${(timeInfo.skyBrightness * 100).toFixed(0)}%</div>
+    <br>
     ${targetInfo}
     <div><strong>Controls:</strong></div>
     <div>Left Click: Destroy voxel</div>
     <div>Right Click: Place voxel</div>
     <div>Mouse Wheel: Cycle block type</div>
+    <div>1: Skip to Day, 2: Skip to Night</div>
   `;
 }
 
@@ -399,7 +415,18 @@ controls.addEventListener('unlock', () => {
 });
 
 const keys = {};
-document.addEventListener('keydown', (event) => (keys[event.code] = true));
+document.addEventListener('keydown', (event) => {
+  keys[event.code] = true;
+  
+  // Sun system controls for testing
+  if (event.code === 'Digit1') {
+    sunSystem.skipTo(true); // Skip to day
+    updateVoxelUI();
+  } else if (event.code === 'Digit2') {
+    sunSystem.skipTo(false); // Skip to night
+    updateVoxelUI();
+  }
+});
 document.addEventListener('keyup', (event) => (keys[event.code] = false));
 
 // Mouse click handling for voxel modification
@@ -479,6 +506,10 @@ document.addEventListener('contextmenu', (event) => {
 const clock = new THREE.Clock();
 const moveSpeed = 15;
 
+// UI update throttling
+let lastUIUpdate = 0;
+const UI_UPDATE_INTERVAL = 100; // Update UI every 100ms (10 times per second)
+
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
@@ -505,6 +536,16 @@ function animate() {
   // Update world based on camera position (only after initial chunk is loaded)
   if (worldInitialized) {
     world.update(camera.position);
+  }
+
+  // Update sun system for day/night cycle
+  sunSystem.update(delta);
+
+  // Update UI periodically (throttled for performance)
+  const currentTime = Date.now();
+  if (currentTime - lastUIUpdate > UI_UPDATE_INTERVAL) {
+    updateVoxelUI();
+    lastUIUpdate = currentTime;
   }
 
   // Update block outline for visual feedback

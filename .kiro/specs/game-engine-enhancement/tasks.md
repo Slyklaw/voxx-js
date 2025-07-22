@@ -295,3 +295,14 @@
     - Add migration guide from existing voxx-js usage
     - Implement final error handling and edge case coverage
     - _Requirements: All requirements_
+
+  - [x] 14 Sun
+
+
+
+
+
+    - Add a directional light for the sun that goes from dust to dawn in 60 seconds.
+    - Night (no sun) will also last for 60 seconds.
+    - slightly lower the existing ambient light so that "night" is not too dark
+    - Add shadows cast by blocks onto other blocks
