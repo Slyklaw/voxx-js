@@ -3,6 +3,7 @@ body {
   margin: 0;
   height: 100%;
   overflow: hidden;
+  user-select: none; /* Prevent text selection globally */
 }
 
 canvas {
@@ -22,6 +23,7 @@ canvas {
   padding: 1em;
   border-radius: 5px;
   cursor: pointer;
+  user-select: none; /* Prevent text selection */
 }
 
 #camera-position {
@@ -39,6 +41,7 @@ canvas {
 
 #voxel-ui {
   transition: opacity 0.3s ease;
+  user-select: none; /* Prevent text selection */
 }
 
 #voxel-ui:hover {
@@ -73,4 +76,21 @@ body:not(.pointer-locked) #crosshair {
   50% {
     opacity: 0.7;
   }
+}
+
+/* Prevent text selection and dragging on all UI elements */
+#instructions,
+#camera-position,
+#voxel-ui,
+#crosshair,
+#loading-indicator {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
 }
