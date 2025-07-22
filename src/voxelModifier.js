@@ -79,6 +79,16 @@ export class VoxelModifier {
   }
 
   /**
+   * Get the previous available block type (for cycling through blocks)
+   * @returns {number} Previous block type
+   */
+  getPreviousBlockType() {
+    const currentIndex = this.availableBlocks.indexOf(this.currentBlockType);
+    const prevIndex = (currentIndex - 1 + this.availableBlocks.length) % this.availableBlocks.length;
+    return this.availableBlocks[prevIndex];
+  }
+
+  /**
    * Serialize component data
    * @returns {Object} Serialized data
    */

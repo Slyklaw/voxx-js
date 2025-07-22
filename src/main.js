@@ -121,26 +121,12 @@ function updateBlockOutline() {
   const hitResult = voxelInteractionSystem.raycaster.raycastFromScreen(mouse, camera, playerModifier.maxRange);
   
   if (hitResult && hitResult.hit) {
-    // Determine target position based on current mode
-    let targetPos;
-    if (isDestroyMode) {
-      // For destroy mode, highlight the voxel that will be destroyed
-      targetPos = hitResult.voxelPosition;
-    } else {
-      // For place mode, highlight where the new voxel will be placed
-      targetPos = voxelInteractionSystem.raycaster.getPlacementPosition(hitResult);
-      
-      // Check if placement position is valid
-      if (!targetPos || !voxelInteractionSystem.raycaster.isValidPlacementPosition(targetPos)) {
-        blockOutline.visible = false;
-        targetedVoxelInfo = null;
-        // Update UI if target changed
-        if (previousTargetInfo !== null) {
-          updateVoxelUI();
-        }
-        return;
-      }
-    }
+    // Show both destroy target (current voxel) and place target (adjacent position)
+    const destroyPos = hitResult.voxelPosition;
+    const placePos = voxelInteractionSystem.raycaster.getPlacementPosition(hitResult);
+    
+    // Use the destroy position as the primary target for outline
+    const targetPos = destroyPos;
     
     // Position the outline at the target voxel
     blockOutline.position.set(
@@ -149,24 +135,23 @@ function updateBlockOutline() {
       targetPos.z + 0.5
     );
     
-    // Change color based on mode and validity
-    if (isDestroyMode) {
-      blockOutline.material.color.setHex(0xff0000); // Red for destroy
-    } else {
-      blockOutline.material.color.setHex(0x00ff00); // Green for place
-    }
+    // Use a neutral color since both actions are available
+    blockOutline.material.color.setHex(0xffffff); // White outline
     
     blockOutline.visible = true;
     const newTargetInfo = {
-      position: targetPos.clone(),
-      mode: isDestroyMode ? 'destroy' : 'place',
-      distance: hitResult.distance
+      destroyPosition: destroyPos.clone(),
+      placePosition: placePos ? placePos.clone() : null,
+      distance: hitResult.distance,
+      canPlace: placePos && voxelInteractionSystem.raycaster.isValidPlacementPosition(placePos)
     };
     
     // Check if target changed significantly to avoid excessive UI updates
     const targetChanged = !previousTargetInfo || 
-      !previousTargetInfo.position.equals(newTargetInfo.position) ||
-      previousTargetInfo.mode !== newTargetInfo.mode;
+      !previousTargetInfo.destroyPosition.equals(newTargetInfo.destroyPosition) ||
+      (previousTargetInfo.placePosition && newTargetInfo.placePosition && 
+       !previousTargetInfo.placePosition.equals(newTargetInfo.placePosition)) ||
+      previousTargetInfo.canPlace !== newTargetInfo.canPlace;
     
     targetedVoxelInfo = newTargetInfo;
     
@@ -200,8 +185,7 @@ const playerModifier = new VoxelModifier({
   modificationCooldown: 150 // 150ms cooldown
 });
 
-// Track current mode (place or destroy)
-let isDestroyMode = false;
+// No longer need mode tracking - using direct mouse button mapping
 
 // Set up voxel modification event callbacks
 voxelInteractionSystem.onVoxelModified = (event) => {
@@ -269,12 +253,15 @@ function updateVoxelUI() {
   // Target information
   let targetInfo = '';
   if (targetedVoxelInfo) {
-    const pos = targetedVoxelInfo.position;
+    const destroyPos = targetedVoxelInfo.destroyPosition;
+    const placePos = targetedVoxelInfo.placePosition;
     targetInfo = `
       <div><strong>Target:</strong></div>
-      <div>Position: ${pos.x}, ${pos.y}, ${pos.z}</div>
+      <div>Destroy: ${destroyPos.x}, ${destroyPos.y}, ${destroyPos.z}</div>
+      ${placePos && targetedVoxelInfo.canPlace ? 
+        `<div>Place: ${placePos.x}, ${placePos.y}, ${placePos.z}</div>` : 
+        '<div>Place: Invalid position</div>'}
       <div>Distance: ${targetedVoxelInfo.distance.toFixed(1)}m</div>
-      <div>Action: ${targetedVoxelInfo.mode}</div>
       <br>
     `;
   } else {
@@ -286,7 +273,6 @@ function updateVoxelUI() {
   
   uiContainer.innerHTML = `
     <div><strong>Voxel Builder</strong></div>
-    <div>Mode: ${isDestroyMode ? 'Destroy' : 'Place'}</div>
     <div>Block: ${blockNames[playerModifier.currentBlockType]}</div>
     <div>Range: ${playerModifier.minRange}-${playerModifier.maxRange}</div>
     <div>Cooldown: ${playerModifier.modificationCooldown}ms</div>
@@ -294,10 +280,9 @@ function updateVoxelUI() {
     <br>
     ${targetInfo}
     <div><strong>Controls:</strong></div>
-    <div>Left Click: ${isDestroyMode ? 'Destroy' : 'Place'} voxel</div>
-    <div>Right Click: ${isDestroyMode ? 'Place' : 'Destroy'} voxel</div>
-    <div>Q: Cycle block type</div>
-    <div>E: Toggle place/destroy mode</div>
+    <div>Left Click: Destroy voxel</div>
+    <div>Right Click: Place voxel</div>
+    <div>Mouse Wheel: Cycle block type</div>
   `;
 }
 
@@ -342,24 +327,21 @@ document.addEventListener('mousedown', (event) => {
   }
 });
 
-// Keyboard controls for voxel modification
-document.addEventListener('keydown', (event) => {
+// Mouse wheel handling for block cycling
+document.addEventListener('wheel', (event) => {
   if (controls.isLocked) {
-    switch (event.code) {
-      case 'KeyQ':
-        // Cycle to next block type
-        const nextBlockType = playerModifier.getNextBlockType();
-        playerModifier.setCurrentBlockType(nextBlockType);
-        updateVoxelUI();
-        break;
-      case 'KeyE':
-        // Toggle between place and destroy mode
-        isDestroyMode = !isDestroyMode;
-        updateVoxelUI();
-        break;
-      case 'KeyR':
-        // Quick destroy mode (hold R and click)
-        break;
+    event.preventDefault(); // Prevent page scrolling
+    
+    if (event.deltaY > 0) {
+      // Scroll down - next block
+      const nextBlockType = playerModifier.getNextBlockType();
+      playerModifier.setCurrentBlockType(nextBlockType);
+      updateVoxelUI();
+    } else if (event.deltaY < 0) {
+      // Scroll up - previous block
+      const prevBlockType = playerModifier.getPreviousBlockType();
+      playerModifier.setCurrentBlockType(prevBlockType);
+      updateVoxelUI();
     }
   }
 });
@@ -368,15 +350,16 @@ function handleVoxelClick(event) {
   // Use center of screen for raycasting (crosshair position)
   const mouse = new THREE.Vector2(0, 0); // Center of screen
   
-  // Determine action based on mouse button and mode
-  let action = 'place';
+  // Determine action based on mouse button - direct mapping
+  let action;
   
-  if (event.button === 0) { // Left click
-    action = isDestroyMode ? 'destroy' : 'place';
-  } else if (event.button === 1) { // Middle click - always destroy
+  if (event.button === 0) { // Left click - destroy
     action = 'destroy';
-  } else if (event.button === 2) { // Right click
-    action = isDestroyMode ? 'place' : 'destroy';
+  } else if (event.button === 2) { // Right click - place
+    action = 'place';
+  } else {
+    // Ignore other mouse buttons (middle click, etc.)
+    return;
   }
   
   const success = voxelInteractionSystem.handleVoxelClick(

@@ -63,6 +63,19 @@
     - Write tests for mesh regeneration and performance
     - _Requirements: 3.2, 3.5, 3.7_
 
+  - [x] 3.4 Improved world editing
+
+
+
+
+
+    - Remove keycode Q for cycle blocks
+    - Add mouse wheel to cycle blocks next/prev
+    - Remove keycode E for toggle place/destroy
+    - Set left mouse button click to destroy
+    - Set right mouse button click to place
+    - Ignore mouse click and drag handling
+
 - [ ] 4. Implement basic physics system integration
   - [ ] 4.1 Set up physics engine and basic rigid body system
     - Choose and integrate physics library (Cannon.js or similar)
