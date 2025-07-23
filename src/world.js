@@ -18,6 +18,13 @@ export class World {
     this.initialChunkPosition = null;
     this.priorityQueue = [];
     this.isInitializing = false;
+    
+    // AO optimization statistics
+    this.aoStats = {
+      chunksWithAO: 0,
+      chunksWithoutAO: 0,
+      chunksUpgraded: 0
+    };
   }
 
   getChunk(chunkX, chunkZ, isPriority = false) {
@@ -34,16 +41,11 @@ export class World {
         if (!this.chunks[key]) return; // Chunk was unloaded before generation completed
         
         chunk.voxels = new Uint8Array(chunkData.voxels);
-        const mesh = chunk.createMesh();
-        mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
-        
-        // Enable shadows on chunk meshes
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        
-        this.scene.add(mesh);
-        chunk.mesh = mesh;
+        chunk.isGenerated = true;
         this.pendingChunks.delete(key);
+        
+        // Try to create mesh with AO if neighbors are ready, otherwise create basic mesh
+        this.createChunkMeshIfReady(chunk);
         
         // Mark initial chunk as loaded if this was the priority chunk
         if (isPriority && this.initialChunkPosition && 
@@ -53,9 +55,8 @@ export class World {
           console.log('Initial chunk loaded at:', chunkX, chunkZ);
         }
         
-        // Fix AO boundary seams: Regenerate neighboring chunks that might have
-        // calculated incorrect AO values due to this chunk being missing
-        this.regenerateNeighborMeshes(chunkX, chunkZ);
+        // Check if any neighbors can now create their AO meshes
+        this.checkNeighborsForAO(chunkX, chunkZ);
       };
 
       if (isPriority) {
@@ -157,41 +158,80 @@ export class World {
   }
 
   /**
+   * Create a mesh for a chunk, with AO if neighbors are ready
+   * @param {Chunk} chunk - The chunk to create a mesh for
+   */
+  createChunkMeshIfReady(chunk) {
+    if (chunk.hasMesh) return; // Already has a mesh
+    
+    const hasAO = chunk.areNeighborsReady();
+    const mesh = chunk.createMesh();
+    mesh.position.set(chunk.chunkX * CHUNK_WIDTH, 0, chunk.chunkZ * CHUNK_DEPTH);
+    
+    // Enable shadows on chunk meshes
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    
+    this.scene.add(mesh);
+    chunk.mesh = mesh;
+    
+    // Update statistics
+    if (hasAO) {
+      this.aoStats.chunksWithAO++;
+    } else {
+      this.aoStats.chunksWithoutAO++;
+    }
+  }
+
+  /**
+   * Check if neighboring chunks can now create AO meshes
+   * @param {number} chunkX - X coordinate of the newly loaded chunk
+   * @param {number} chunkZ - Z coordinate of the newly loaded chunk
+   */
+  checkNeighborsForAO(chunkX, chunkZ) {
+    // Check all 4 direct neighbors
+    const neighbors = [
+      [chunkX - 1, chunkZ], // West
+      [chunkX + 1, chunkZ], // East
+      [chunkX, chunkZ - 1], // North
+      [chunkX, chunkZ + 1]  // South
+    ];
+    
+    for (const [x, z] of neighbors) {
+      const key = `${x},${z}`;
+      const neighbor = this.chunks[key];
+      
+      // If neighbor exists, is generated, but doesn't have proper AO mesh yet
+      if (neighbor && neighbor.isGenerated && neighbor.areNeighborsReady()) {
+        console.log(`Upgrading chunk (${x}, ${z}) to AO mesh - neighbors now ready`);
+        
+        // Remove old mesh if it exists
+        if (neighbor.mesh) {
+          this.scene.remove(neighbor.mesh);
+          neighbor.mesh.geometry.dispose();
+          neighbor.mesh.material.dispose();
+          neighbor.hasMesh = false;
+          
+          // Update statistics - remove from without AO count
+          this.aoStats.chunksWithoutAO = Math.max(0, this.aoStats.chunksWithoutAO - 1);
+        }
+        
+        // Create new mesh with proper AO
+        this.createChunkMeshIfReady(neighbor);
+        this.aoStats.chunksUpgraded++;
+      }
+    }
+  }
+
+  /**
    * Regenerate meshes for neighboring chunks to fix AO boundary seams
    * @param {number} chunkX - X coordinate of the newly loaded chunk
    * @param {number} chunkZ - Z coordinate of the newly loaded chunk
    */
   regenerateNeighborMeshes(chunkX, chunkZ) {
-    // Check all 8 neighboring chunks (including diagonals)
-    const neighbors = [
-      [-1, -1], [-1, 0], [-1, 1],
-      [0, -1],           [0, 1],
-      [1, -1],  [1, 0],  [1, 1]
-    ];
-    
-    for (const [dx, dz] of neighbors) {
-      const neighborX = chunkX + dx;
-      const neighborZ = chunkZ + dz;
-      const neighborKey = `${neighborX},${neighborZ}`;
-      const neighborChunk = this.chunks[neighborKey];
-      
-      // Only regenerate if the neighbor exists and is not pending
-      if (neighborChunk && !this.pendingChunks.has(neighborKey) && neighborChunk.mesh) {
-        // Remove old mesh
-        this.scene.remove(neighborChunk.mesh);
-        neighborChunk.mesh.geometry.dispose();
-        neighborChunk.mesh.material.dispose();
-        
-        // Create new mesh with corrected AO
-        const newMesh = neighborChunk.createMesh();
-        newMesh.position.set(neighborX * CHUNK_WIDTH, 0, neighborZ * CHUNK_DEPTH);
-        newMesh.castShadow = true;
-        newMesh.receiveShadow = true;
-        
-        this.scene.add(newMesh);
-        neighborChunk.mesh = newMesh;
-      }
-    }
+    // This method is now handled by checkNeighborsForAO
+    // Keep for backward compatibility but delegate to the new method
+    this.checkNeighborsForAO(chunkX, chunkZ);
   }
 
   /**
@@ -223,6 +263,46 @@ export class World {
     
     // Use the chunk's safe voxel getter
     return chunk.getVoxelSafe(localX, worldY, localZ);
+  }
+
+  /**
+   * Force AO recalculation for a specific chunk
+   * @param {number} chunkX - X coordinate of the chunk
+   * @param {number} chunkZ - Z coordinate of the chunk
+   */
+  forceChunkAORecalculation(chunkX, chunkZ) {
+    const key = `${chunkX},${chunkZ}`;
+    const chunk = this.chunks[key];
+    
+    if (chunk && chunk.isGenerated && chunk.mesh) {
+      // Remove old mesh
+      this.scene.remove(chunk.mesh);
+      chunk.mesh.geometry.dispose();
+      chunk.mesh.material.dispose();
+      chunk.hasMesh = false;
+      
+      // Create new mesh with forced AO calculation
+      const mesh = chunk.createMesh(true); // Force AO even if neighbors aren't ready
+      mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      
+      this.scene.add(mesh);
+      chunk.mesh = mesh;
+    }
+  }
+
+  /**
+   * Get AO optimization statistics
+   * @returns {Object} Statistics about AO calculations
+   */
+  getAOStats() {
+    return {
+      ...this.aoStats,
+      totalChunks: this.aoStats.chunksWithAO + this.aoStats.chunksWithoutAO,
+      aoPercentage: this.aoStats.chunksWithAO + this.aoStats.chunksWithoutAO > 0 ? 
+        (this.aoStats.chunksWithAO / (this.aoStats.chunksWithAO + this.aoStats.chunksWithoutAO) * 100).toFixed(1) : 0
+    };
   }
 
   dispose() {

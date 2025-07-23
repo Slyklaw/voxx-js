@@ -328,6 +328,7 @@ function updateVoxelUI() {
 
   const stats = voxelInteractionSystem.getStatistics();
   const timeInfo = sunSystem.getTimeInfo();
+  const aoStats = world.getAOStats();
   
   // Target information
   let targetInfo = '';
@@ -363,6 +364,12 @@ function updateVoxelUI() {
     <div>Range: ${playerModifier.minRange}-${playerModifier.maxRange}</div>
     <div>Cooldown: ${playerModifier.modificationCooldown}ms</div>
     <div>Dirty Chunks: ${stats.dirtyChunksCount}</div>
+    <br>
+    <div><strong>AO Optimization:</strong></div>
+    <div>With AO: ${aoStats.chunksWithAO}</div>
+    <div>Without AO: ${aoStats.chunksWithoutAO}</div>
+    <div>Upgraded: ${aoStats.chunksUpgraded}</div>
+    <div>AO Coverage: ${aoStats.aoPercentage}%</div>
     <br>
     <div><strong>Time:</strong> ${timeDisplay}</div>
     <div>Sun: ${(timeInfo.sunIntensity * 100).toFixed(0)}%</div>

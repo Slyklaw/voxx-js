@@ -26,6 +26,8 @@ export class Chunk {
     // Voxel data: 1 for solid, 0 for air
     this.voxels = new Uint8Array(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH);
     this.mesh = null;
+    this.isGenerated = false; // Track if terrain generation is complete
+    this.hasMesh = false; // Track if mesh with AO has been created
   }
 
   /** Helper to get/set voxel data using 3D coordinates */
@@ -60,7 +62,7 @@ export class Chunk {
           const sampleX = (worldX / scale) * frequency;
           const sampleZ = (worldZ / scale) * frequency;
           const noiseValue = noise(sampleX, sampleZ);
-          
+
           height += noiseValue * amplitude;
           amplitude *= persistence;
           frequency *= lacunarity;
@@ -121,25 +123,73 @@ export class Chunk {
     }
   }
 
+  /**
+   * Check if all 4 direct neighbors (N, S, E, W) are loaded and generated
+   * @returns {boolean} True if all neighbors are available for AO calculations
+   */
+  areNeighborsReady() {
+    if (!this.world) return false;
+
+    const neighbors = [
+      [this.chunkX - 1, this.chunkZ], // West
+      [this.chunkX + 1, this.chunkZ], // East
+      [this.chunkX, this.chunkZ - 1], // North
+      [this.chunkX, this.chunkZ + 1]  // South
+    ];
+
+    let readyCount = 0;
+    for (const [x, z] of neighbors) {
+      const key = `${x},${z}`;
+      const neighbor = this.world.chunks[key];
+
+      // Neighbor must exist, be generated, and not be pending
+      if (neighbor && neighbor.isGenerated && !this.world.pendingChunks.has(key)) {
+        readyCount++;
+      }
+    }
+
+    // Debug logging for neighbor readiness (only for first few chunks to avoid spam)
+    if (readyCount < 4 && Math.abs(this.chunkX) <= 2 && Math.abs(this.chunkZ) <= 2) {
+      console.log(`Chunk (${this.chunkX}, ${this.chunkZ}) has ${readyCount}/4 neighbors ready`);
+    }
+
+    return readyCount === 4;
+  }
+
   /** Create a mesh from the voxel data with per-voxel faces for Ambient Occlusion */
-  createMesh() {
+  createMesh(forceAO = false) {
     const positions = [];
     const normals = [];
     const uvs = [];
     const indices = [];
     const colors = [];   // for vertex colors with AO
 
-    // Initialize AO components
-    const aoCalculator = new AmbientOcclusionCalculator();
-    const colorManager = new VertexColorManager();
-    const diagonalOptimizer = new DiagonalOptimizer();
+    // Check if we should calculate AO or use basic lighting
+    const shouldCalculateAO = forceAO || this.areNeighborsReady();
+
+    // Debug logging (only for chunks near origin to avoid spam)
+    if (Math.abs(this.chunkX) <= 2 && Math.abs(this.chunkZ) <= 2) {
+      if (this.world && !shouldCalculateAO && !forceAO) {
+        console.log(`Chunk (${this.chunkX}, ${this.chunkZ}) creating mesh without AO - neighbors not ready`);
+      } else if (shouldCalculateAO) {
+        console.log(`Chunk (${this.chunkX}, ${this.chunkZ}) creating mesh with AO`);
+      }
+    }
+
+    // Initialize AO components only if we're calculating AO
+    let aoCalculator, colorManager, diagonalOptimizer;
+    if (shouldCalculateAO) {
+      aoCalculator = new AmbientOcclusionCalculator();
+      colorManager = new VertexColorManager();
+      diagonalOptimizer = new DiagonalOptimizer();
+    }
 
     // Face definitions with proper winding order (counter-clockwise when viewed from outside)
     // Each face includes a mapping from vertex index to AO corner index
     const faces = [
       // Positive X (East) - looking at face from outside (+X direction)
-      { 
-        normal: [1, 0, 0], 
+      {
+        normal: [1, 0, 0],
         name: 'east',
         vertices: [
           [1, 0, 0], // vertex 0: bottom-left
@@ -151,8 +201,8 @@ export class Chunk {
         aoCornerMap: [3, 0, 1, 2] // vertex[0]->corner[3], vertex[1]->corner[0], vertex[2]->corner[1], vertex[3]->corner[2]
       },
       // Negative X (West) - looking at face from outside (-X direction)
-      { 
-        normal: [-1, 0, 0], 
+      {
+        normal: [-1, 0, 0],
         name: 'west',
         vertices: [
           [0, 0, 1], // vertex 0: bottom-left
@@ -163,8 +213,8 @@ export class Chunk {
         aoCornerMap: [3, 0, 1, 2]
       },
       // Positive Y (Top) - looking at face from outside (+Y direction)
-      { 
-        normal: [0, 1, 0], 
+      {
+        normal: [0, 1, 0],
         name: 'top',
         vertices: [
           [0, 1, 0], // vertex 0: (X-, Z-) -> AO corner 0 (northwest)
@@ -175,8 +225,8 @@ export class Chunk {
         aoCornerMap: [0, 3, 2, 1] // Map to correct AO corners for counter-clockwise winding
       },
       // Negative Y (Bottom) - looking at face from outside (-Y direction)
-      { 
-        normal: [0, -1, 0], 
+      {
+        normal: [0, -1, 0],
         name: 'bottom',
         vertices: [
           [0, 0, 1], // vertex 0: (X-, Z+) -> AO corner 0 (southwest when looking up)
@@ -187,8 +237,8 @@ export class Chunk {
         aoCornerMap: [0, 3, 2, 1] // Map to correct AO corners for counter-clockwise winding
       },
       // Positive Z (South) - looking at face from outside (+Z direction)
-      { 
-        normal: [0, 0, 1], 
+      {
+        normal: [0, 0, 1],
         name: 'south',
         vertices: [
           [1, 0, 1], // vertex 0: bottom-left
@@ -199,8 +249,8 @@ export class Chunk {
         aoCornerMap: [3, 0, 1, 2]
       },
       // Negative Z (North) - looking at face from outside (-Z direction)
-      { 
-        normal: [0, 0, -1], 
+      {
+        normal: [0, 0, -1],
         name: 'north',
         vertices: [
           [0, 0, 0], // vertex 0: bottom-left
@@ -232,7 +282,7 @@ export class Chunk {
 
             // Generate face vertices
             const vertexCount = positions.length / 3;
-            
+
             // Add vertex positions (offset by voxel position)
             for (const vertex of face.vertices) {
               positions.push(x + vertex[0], y + vertex[1], z + vertex[2]);
@@ -246,19 +296,24 @@ export class Chunk {
             // Add UVs (standard quad mapping)
             uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
 
-            // Calculate ambient occlusion for each vertex using the corner mapping
-            const aoValues = [];
-            for (let vertexIdx = 0; vertexIdx < 4; vertexIdx++) {
-              try {
-                // Map vertex index to AO corner index
-                const aoCornerIdx = face.aoCornerMap[vertexIdx];
-                const aoValue = aoCalculator.calculateVertexAO(
-                  this, x, y, z, face.name, aoCornerIdx
-                );
-                aoValues.push(aoValue);
-              } catch (error) {
-                // Fallback to full light if AO calculation fails
-                aoValues.push(1.0);
+            // Calculate ambient occlusion or use basic lighting
+            let aoValues = [1.0, 1.0, 1.0, 1.0]; // Default to full light
+
+            if (shouldCalculateAO) {
+              // Calculate AO for each vertex using the corner mapping
+              aoValues = [];
+              for (let vertexIdx = 0; vertexIdx < 4; vertexIdx++) {
+                try {
+                  // Map vertex index to AO corner index
+                  const aoCornerIdx = face.aoCornerMap[vertexIdx];
+                  const aoValue = aoCalculator.calculateVertexAO(
+                    this, x, y, z, face.name, aoCornerIdx
+                  );
+                  aoValues.push(aoValue);
+                } catch (error) {
+                  // Fallback to full light if AO calculation fails
+                  aoValues.push(1.0);
+                }
               }
             }
 
@@ -269,15 +324,24 @@ export class Chunk {
             const baseB = blockColor[2] / 255;
 
             // Apply AO to vertex colors
-            for (let aoIdx = 0; aoIdx < 4; aoIdx++) {
-              const aoColor = colorManager.aoToColor(aoValues[aoIdx]);
-              // Multiply base color by AO factor
-              colors.push(baseR * aoColor.r, baseG * aoColor.g, baseB * aoColor.b);
+            if (shouldCalculateAO) {
+              for (let aoIdx = 0; aoIdx < 4; aoIdx++) {
+                const aoColor = colorManager.aoToColor(aoValues[aoIdx]);
+                // Multiply base color by AO factor
+                colors.push(baseR * aoColor.r, baseG * aoColor.g, baseB * aoColor.b);
+              }
+            } else {
+              // Use basic lighting without AO
+              for (let aoIdx = 0; aoIdx < 4; aoIdx++) {
+                colors.push(baseR, baseG, baseB);
+              }
             }
 
             // Generate triangle indices with diagonal optimization
-            const useACDiagonal = diagonalOptimizer.chooseOptimalDiagonal(aoValues);
-            
+            const useACDiagonal = shouldCalculateAO ?
+              diagonalOptimizer.chooseOptimalDiagonal(aoValues) :
+              false; // Use default diagonal when no AO
+
             if (useACDiagonal) {
               // Use diagonal from vertex 0 to vertex 2 (A-C diagonal)
               indices.push(vertexCount, vertexCount + 1, vertexCount + 2);
@@ -299,10 +363,11 @@ export class Chunk {
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setIndex(indices);
 
-    const material = new THREE.MeshStandardMaterial({ 
+    const material = new THREE.MeshStandardMaterial({
       vertexColors: true
     });
     this.mesh = new THREE.Mesh(geometry, material);
+    this.hasMesh = true;
     return this.mesh;
   }
 
@@ -314,9 +379,9 @@ export class Chunk {
    * @returns {number} Voxel value or 0 if out of bounds
    */
   getVoxelSafe(x, y, z) {
-    if (x < 0 || x >= CHUNK_WIDTH || 
-        y < 0 || y >= CHUNK_HEIGHT || 
-        z < 0 || z >= CHUNK_DEPTH) {
+    if (x < 0 || x >= CHUNK_WIDTH ||
+      y < 0 || y >= CHUNK_HEIGHT ||
+      z < 0 || z >= CHUNK_DEPTH) {
       return 0; // Air
     }
     return this.getVoxel(x, y, z);
