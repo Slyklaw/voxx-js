@@ -77,6 +77,16 @@ export class AmbientOcclusionCalculator {
       throw new Error(`Invalid corner index: ${cornerIndex}. Must be 0-3.`);
     }
 
+    // Check if this vertex is near a chunk boundary and needs consistent calculation
+    const CHUNK_WIDTH = 32;
+    const CHUNK_DEPTH = 32;
+    const isNearBoundary = (x <= 1 || x >= CHUNK_WIDTH - 2 || z <= 1 || z >= CHUNK_DEPTH - 2);
+    
+    if (isNearBoundary && chunk.world) {
+      // Use world-space consistent AO calculation for boundary vertices
+      return this.calculateBoundaryVertexAO(chunk, x, y, z, face, cornerIndex);
+    }
+
     // Get the three neighboring voxel positions for this vertex
     const neighbors = this.getVertexNeighbors(x, y, z, face, cornerIndex);
     
@@ -93,6 +103,46 @@ export class AmbientOcclusionCalculator {
     // 1 solid neighbor = slight shadow (0.75)
     // 2 solid neighbors = medium shadow (0.5)
     // 3 solid neighbors = full shadow (0.25)
+    const aoValues = [1.0, 0.75, 0.5, 0.25];
+    return aoValues[solidCount];
+  }
+
+  /**
+   * Calculate AO for vertices near chunk boundaries using world-space coordinates
+   * This ensures consistent AO values for vertices at the same world position
+   * @param {Chunk} chunk - The chunk containing the voxel
+   * @param {number} x - Voxel X coordinate (local to chunk)
+   * @param {number} y - Voxel Y coordinate
+   * @param {number} z - Voxel Z coordinate (local to chunk)
+   * @param {string} face - Face direction
+   * @param {number} cornerIndex - Corner index (0-3)
+   * @returns {number} Ambient occlusion value
+   */
+  calculateBoundaryVertexAO(chunk, x, y, z, face, cornerIndex) {
+    const CHUNK_WIDTH = 32;
+    const CHUNK_DEPTH = 32;
+    
+    // Convert to world coordinates
+    const worldX = chunk.chunkX * CHUNK_WIDTH + x;
+    const worldZ = chunk.chunkZ * CHUNK_DEPTH + z;
+    
+    // Get neighbors in local coordinates
+    const localNeighbors = this.getVertexNeighbors(x, y, z, face, cornerIndex);
+    
+    // Convert neighbors to world coordinates and check using world.getVoxel
+    let solidCount = 0;
+    for (const neighbor of localNeighbors) {
+      const neighborWorldX = chunk.chunkX * CHUNK_WIDTH + neighbor.x;
+      const neighborWorldZ = chunk.chunkZ * CHUNK_DEPTH + neighbor.z;
+      
+      // Use world lookup for consistency
+      const voxelValue = chunk.world.getVoxel(neighborWorldX, neighbor.y, neighborWorldZ);
+      if (voxelValue > 0) {
+        solidCount++;
+      }
+    }
+    
+    // Convert solid count to AO value
     const aoValues = [1.0, 0.75, 0.5, 0.25];
     return aoValues[solidCount];
   }
@@ -202,9 +252,9 @@ export class AmbientOcclusionCalculator {
   /**
    * Check if a voxel position is solid (contributes to occlusion)
    * @param {Chunk} chunk - The chunk to check
-   * @param {number} x - Voxel X coordinate
+   * @param {number} x - Voxel X coordinate (local to chunk)
    * @param {number} y - Voxel Y coordinate
-   * @param {number} z - Voxel Z coordinate
+   * @param {number} z - Voxel Z coordinate (local to chunk)
    * @returns {boolean} True if voxel is solid, false if air or out of bounds
    */
   isVoxelSolid(chunk, x, y, z) {
@@ -213,15 +263,32 @@ export class AmbientOcclusionCalculator {
     const CHUNK_HEIGHT = 256;
     const CHUNK_DEPTH = 32;
     
-    // Handle boundary conditions - treat out-of-bounds as air (no occlusion)
-    if (x < 0 || x >= CHUNK_WIDTH || 
-        y < 0 || y >= CHUNK_HEIGHT || 
-        z < 0 || z >= CHUNK_DEPTH) {
+    // Handle vertical boundaries (Y) first - these don't require cross-chunk lookups
+    if (y < 0 || y >= CHUNK_HEIGHT) {
+      // Out of vertical bounds - treat as air for consistency with chunk.getVoxel behavior
       return false;
     }
-
-    // Get voxel value (0 = air, >0 = solid)
-    const voxelValue = chunk.getVoxel(x, y, z);
-    return voxelValue > 0;
+    
+    // Check if coordinates are within current chunk bounds
+    if (x >= 0 && x < CHUNK_WIDTH && z >= 0 && z < CHUNK_DEPTH) {
+      // Within current chunk - use direct lookup
+      const voxelValue = chunk.getVoxel(x, y, z);
+      return voxelValue > 0;
+    }
+    
+    // Coordinates are outside current chunk - need cross-chunk lookup
+    if (chunk.world && typeof chunk.world.getVoxel === 'function') {
+      // Calculate world coordinates
+      const worldX = chunk.chunkX * CHUNK_WIDTH + x;
+      const worldZ = chunk.chunkZ * CHUNK_DEPTH + z;
+      
+      // Use world's getVoxel method for cross-chunk lookup
+      const voxelValue = chunk.world.getVoxel(worldX, y, worldZ);
+      return voxelValue > 0;
+    } else {
+      // No world reference available - treat out-of-bounds as air
+      // This is the safest fallback that prevents incorrect AO calculations
+      return false;
+    }
   }
 }

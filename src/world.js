@@ -24,7 +24,7 @@ export class World {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
       // Create placeholder chunk
-      const chunk = new Chunk(chunkX, chunkZ);
+      const chunk = new Chunk(chunkX, chunkZ, this);
       this.chunks[key] = chunk;
       this.pendingChunks.set(key, chunk);
 
@@ -52,6 +52,10 @@ export class World {
           this.initialChunkLoaded = true;
           console.log('Initial chunk loaded at:', chunkX, chunkZ);
         }
+        
+        // Fix AO boundary seams: Regenerate neighboring chunks that might have
+        // calculated incorrect AO values due to this chunk being missing
+        this.regenerateNeighborMeshes(chunkX, chunkZ);
       };
 
       if (isPriority) {
@@ -150,6 +154,75 @@ export class World {
         delete this.chunks[key];
       }
     }
+  }
+
+  /**
+   * Regenerate meshes for neighboring chunks to fix AO boundary seams
+   * @param {number} chunkX - X coordinate of the newly loaded chunk
+   * @param {number} chunkZ - Z coordinate of the newly loaded chunk
+   */
+  regenerateNeighborMeshes(chunkX, chunkZ) {
+    // Check all 8 neighboring chunks (including diagonals)
+    const neighbors = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [0, -1],           [0, 1],
+      [1, -1],  [1, 0],  [1, 1]
+    ];
+    
+    for (const [dx, dz] of neighbors) {
+      const neighborX = chunkX + dx;
+      const neighborZ = chunkZ + dz;
+      const neighborKey = `${neighborX},${neighborZ}`;
+      const neighborChunk = this.chunks[neighborKey];
+      
+      // Only regenerate if the neighbor exists and is not pending
+      if (neighborChunk && !this.pendingChunks.has(neighborKey) && neighborChunk.mesh) {
+        // Remove old mesh
+        this.scene.remove(neighborChunk.mesh);
+        neighborChunk.mesh.geometry.dispose();
+        neighborChunk.mesh.material.dispose();
+        
+        // Create new mesh with corrected AO
+        const newMesh = neighborChunk.createMesh();
+        newMesh.position.set(neighborX * CHUNK_WIDTH, 0, neighborZ * CHUNK_DEPTH);
+        newMesh.castShadow = true;
+        newMesh.receiveShadow = true;
+        
+        this.scene.add(newMesh);
+        neighborChunk.mesh = newMesh;
+      }
+    }
+  }
+
+  /**
+   * Get voxel value at world coordinates
+   * @param {number} worldX - World X coordinate
+   * @param {number} worldY - World Y coordinate
+   * @param {number} worldZ - World Z coordinate
+   * @returns {number} Voxel value (0 = air, >0 = solid)
+   */
+  getVoxel(worldX, worldY, worldZ) {
+    // Calculate which chunk contains this world coordinate
+    const chunkX = Math.floor(worldX / CHUNK_WIDTH);
+    const chunkZ = Math.floor(worldZ / CHUNK_DEPTH);
+    
+    // Get local coordinates within the chunk
+    const localX = worldX - (chunkX * CHUNK_WIDTH);
+    const localZ = worldZ - (chunkZ * CHUNK_DEPTH);
+    
+    // Check if the chunk exists
+    const chunkKey = `${chunkX},${chunkZ}`;
+    const chunk = this.chunks[chunkKey];
+    
+    if (!chunk || this.pendingChunks.has(chunkKey)) {
+      // Chunk doesn't exist or is still loading
+      // For AO calculations, we need to make a reasonable assumption
+      // Treat unloaded chunks as air for now
+      return 0;
+    }
+    
+    // Use the chunk's safe voxel getter
+    return chunk.getVoxelSafe(localX, worldY, localZ);
   }
 
   dispose() {

@@ -18,9 +18,10 @@ const blocks = [
 ];
 
 export class Chunk {
-  constructor(chunkX, chunkZ) {
+  constructor(chunkX, chunkZ, world = null) {
     this.chunkX = chunkX;
     this.chunkZ = chunkZ;
+    this.world = world;
 
     // Voxel data: 1 for solid, 0 for air
     this.voxels = new Uint8Array(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH);
