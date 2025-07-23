@@ -55,8 +55,9 @@ export class World {
           console.log('Initial chunk loaded at:', chunkX, chunkZ);
         }
         
-        // Check if any neighbors can now create their AO meshes
+        // Check if any neighbors can now create their AO meshes or need mesh regeneration for face culling
         this.checkNeighborsForAO(chunkX, chunkZ);
+        this.regenerateNeighborMeshesForFaceCulling(chunkX, chunkZ);
       };
 
       if (isPriority) {
@@ -232,6 +233,40 @@ export class World {
     // This method is now handled by checkNeighborsForAO
     // Keep for backward compatibility but delegate to the new method
     this.checkNeighborsForAO(chunkX, chunkZ);
+  }
+
+  /**
+   * Regenerate meshes for neighboring chunks to improve face culling at boundaries
+   * @param {number} chunkX - X coordinate of the newly loaded chunk
+   * @param {number} chunkZ - Z coordinate of the newly loaded chunk
+   */
+  regenerateNeighborMeshesForFaceCulling(chunkX, chunkZ) {
+    // Check all 4 direct neighbors
+    const neighbors = [
+      [chunkX - 1, chunkZ], // West
+      [chunkX + 1, chunkZ], // East
+      [chunkX, chunkZ - 1], // North
+      [chunkX, chunkZ + 1]  // South
+    ];
+    
+    for (const [x, z] of neighbors) {
+      const key = `${x},${z}`;
+      const neighbor = this.chunks[key];
+      
+      // If neighbor exists, is generated, and has a mesh, regenerate it for better face culling
+      if (neighbor && neighbor.isGenerated && neighbor.mesh && !this.pendingChunks.has(key)) {
+        console.log(`Regenerating chunk (${x}, ${z}) mesh for improved face culling`);
+        
+        // Remove old mesh
+        this.scene.remove(neighbor.mesh);
+        neighbor.mesh.geometry.dispose();
+        neighbor.mesh.material.dispose();
+        neighbor.hasMesh = false;
+        
+        // Create new mesh with improved face culling
+        this.createChunkMeshIfReady(neighbor);
+      }
+    }
   }
 
   /**

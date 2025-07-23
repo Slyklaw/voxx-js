@@ -277,7 +277,17 @@ export class Chunk {
             const neighborZ = z + face.normal[2];
 
             // Check if neighbor is air or out of bounds (expose face)
-            const neighborVoxel = this.getVoxelSafe(neighborX, neighborY, neighborZ);
+            let neighborVoxel;
+            if (shouldCalculateAO && this.world) {
+              // When neighbors are ready, check across chunk boundaries
+              const worldX = this.chunkX * CHUNK_WIDTH + neighborX;
+              const worldY = neighborY;
+              const worldZ = this.chunkZ * CHUNK_DEPTH + neighborZ;
+              neighborVoxel = this.world.getVoxel(worldX, worldY, worldZ);
+            } else {
+              // Fallback to local chunk checking
+              neighborVoxel = this.getVoxelSafe(neighborX, neighborY, neighborZ);
+            }
             if (neighborVoxel !== 0) continue; // Face is hidden, skip
 
             // Generate face vertices
