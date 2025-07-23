@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { AmbientOcclusionCalculator } from './ambientOcclusionCalculator.js';
+import { VertexColorManager } from './vertexColorManager.js';
+import { DiagonalOptimizer } from './diagonalOptimizer.js';
 
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 256;
@@ -117,113 +120,171 @@ export class Chunk {
     }
   }
 
-  /** Create a mesh from the voxel data using Greedy Meshing */
+  /** Create a mesh from the voxel data with per-voxel faces for Ambient Occlusion */
   createMesh() {
     const positions = [];
     const normals = [];
     const uvs = [];
     const indices = [];
-    const colors = [];   // for vertex colors
+    const colors = [];   // for vertex colors with AO
 
-    const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
+    // Initialize AO components
+    const aoCalculator = new AmbientOcclusionCalculator();
+    const colorManager = new VertexColorManager();
+    const diagonalOptimizer = new DiagonalOptimizer();
 
-    // Sweep over the 3 dimensions
-    for (let d = 0; d < 3; d++) {
-      const u = (d + 1) % 3;
-      const v = (d + 2) % 3;
+    // Face definitions with proper winding order (counter-clockwise when viewed from outside)
+    // Each face includes a mapping from vertex index to AO corner index
+    const faces = [
+      // Positive X (East) - looking at face from outside (+X direction)
+      { 
+        normal: [1, 0, 0], 
+        name: 'east',
+        vertices: [
+          [1, 0, 0], // vertex 0: bottom-left
+          [1, 1, 0], // vertex 1: top-left  
+          [1, 1, 1], // vertex 2: top-right
+          [1, 0, 1]  // vertex 3: bottom-right
+        ],
+        // Map vertex index to AO corner index (AO expects: 0=top-left, 1=top-right, 2=bottom-right, 3=bottom-left)
+        aoCornerMap: [3, 0, 1, 2] // vertex[0]->corner[3], vertex[1]->corner[0], vertex[2]->corner[1], vertex[3]->corner[2]
+      },
+      // Negative X (West) - looking at face from outside (-X direction)
+      { 
+        normal: [-1, 0, 0], 
+        name: 'west',
+        vertices: [
+          [0, 0, 1], // vertex 0: bottom-left
+          [0, 1, 1], // vertex 1: top-left
+          [0, 1, 0], // vertex 2: top-right  
+          [0, 0, 0]  // vertex 3: bottom-right
+        ],
+        aoCornerMap: [3, 0, 1, 2]
+      },
+      // Positive Y (Top) - looking at face from outside (+Y direction)
+      { 
+        normal: [0, 1, 0], 
+        name: 'top',
+        vertices: [
+          [0, 1, 0], // vertex 0: (X-, Z-) -> AO corner 0 (northwest)
+          [0, 1, 1], // vertex 1: (X-, Z+) -> AO corner 3 (southwest)  
+          [1, 1, 1], // vertex 2: (X+, Z+) -> AO corner 2 (southeast)
+          [1, 1, 0]  // vertex 3: (X+, Z-) -> AO corner 1 (northeast)
+        ],
+        aoCornerMap: [0, 3, 2, 1] // Map to correct AO corners for counter-clockwise winding
+      },
+      // Negative Y (Bottom) - looking at face from outside (-Y direction)
+      { 
+        normal: [0, -1, 0], 
+        name: 'bottom',
+        vertices: [
+          [0, 0, 1], // vertex 0: (X-, Z+) -> AO corner 0 (southwest when looking up)
+          [0, 0, 0], // vertex 1: (X-, Z-) -> AO corner 3 (northwest when looking up)
+          [1, 0, 0], // vertex 2: (X+, Z-) -> AO corner 2 (northeast when looking up)
+          [1, 0, 1]  // vertex 3: (X+, Z+) -> AO corner 1 (southeast when looking up)
+        ],
+        aoCornerMap: [0, 3, 2, 1] // Map to correct AO corners for counter-clockwise winding
+      },
+      // Positive Z (South) - looking at face from outside (+Z direction)
+      { 
+        normal: [0, 0, 1], 
+        name: 'south',
+        vertices: [
+          [1, 0, 1], // vertex 0: bottom-left
+          [1, 1, 1], // vertex 1: top-left
+          [0, 1, 1], // vertex 2: top-right
+          [0, 0, 1]  // vertex 3: bottom-right
+        ],
+        aoCornerMap: [3, 0, 1, 2]
+      },
+      // Negative Z (North) - looking at face from outside (-Z direction)
+      { 
+        normal: [0, 0, -1], 
+        name: 'north',
+        vertices: [
+          [0, 0, 0], // vertex 0: bottom-left
+          [0, 1, 0], // vertex 1: top-left
+          [1, 1, 0], // vertex 2: top-right
+          [1, 0, 0]  // vertex 3: bottom-right
+        ],
+        aoCornerMap: [3, 0, 1, 2]
+      }
+    ];
 
-      const x = [0, 0, 0];
-      const q = [0, 0, 0];
-      q[d] = 1;
+    // Iterate through each voxel
+    for (let x = 0; x < CHUNK_WIDTH; x++) {
+      for (let y = 0; y < CHUNK_HEIGHT; y++) {
+        for (let z = 0; z < CHUNK_DEPTH; z++) {
+          const voxel = this.getVoxel(x, y, z);
+          if (voxel === 0) continue; // Skip air blocks
 
-      const mask = new Int32Array(dims[u] * dims[v]);
+          // Check each face of the voxel
+          for (const face of faces) {
+            // Calculate neighbor position
+            const neighborX = x + face.normal[0];
+            const neighborY = y + face.normal[1];
+            const neighborZ = z + face.normal[2];
 
-      // Sweep over the slices of the dimension
-      for (x[d] = -1; x[d] < dims[d]; ) {
-        let n = 0;
-        for (x[v] = 0; x[v] < dims[v]; x[v]++) {
-          for (x[u] = 0; x[u] < dims[u]; x[u]++) {
-            const val1 = x[d] >= 0 ? this.getVoxel(x[0], x[1], x[2]) : 0;
-            const val2 = x[d] < dims[d] - 1 ? this.getVoxel(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : 0;
-            mask[n++] = (val1 && !val2) ? val1 : (!val1 && val2) ? -val2 : 0;
-          }
-        }
+            // Check if neighbor is air or out of bounds (expose face)
+            const neighborVoxel = this.getVoxelSafe(neighborX, neighborY, neighborZ);
+            if (neighborVoxel !== 0) continue; // Face is hidden, skip
 
-        x[d]++;
-        n = 0;
+            // Generate face vertices
+            const vertexCount = positions.length / 3;
+            
+            // Add vertex positions (offset by voxel position)
+            for (const vertex of face.vertices) {
+              positions.push(x + vertex[0], y + vertex[1], z + vertex[2]);
+            }
 
-        // Generate mesh for this slice
-        for (let j = 0; j < dims[v]; j++) {
-          for (let i = 0; i < dims[u]; ) {
-            if (mask[n]) {
-              const val = mask[n];
-              // Find width
-              let w = 1;
-              while (i + w < dims[u] && mask[n + w] === val) {
-                w++;
+            // Add normals (same for all vertices of the face)
+            for (let i = 0; i < 4; i++) {
+              normals.push(face.normal[0], face.normal[1], face.normal[2]);
+            }
+
+            // Add UVs (standard quad mapping)
+            uvs.push(0, 0, 1, 0, 1, 1, 0, 1);
+
+            // Calculate ambient occlusion for each vertex using the corner mapping
+            const aoValues = [];
+            for (let vertexIdx = 0; vertexIdx < 4; vertexIdx++) {
+              try {
+                // Map vertex index to AO corner index
+                const aoCornerIdx = face.aoCornerMap[vertexIdx];
+                const aoValue = aoCalculator.calculateVertexAO(
+                  this, x, y, z, face.name, aoCornerIdx
+                );
+                aoValues.push(aoValue);
+              } catch (error) {
+                // Fallback to full light if AO calculation fails
+                aoValues.push(1.0);
               }
+            }
 
-              // Find height
-              let h = 1;
-              while (j + h < dims[v]) {
-                let k = 0;
-                while (k < w && mask[n + k + h * dims[u]] === val) {
-                  k++;
-                }
-                if (k < w) break;
-                h++;
-              }
+            // Get base block color
+            const blockColor = blocks[voxel].color;
+            const baseR = blockColor[0] / 255;
+            const baseG = blockColor[1] / 255;
+            const baseB = blockColor[2] / 255;
 
-              x[u] = i;
-              x[v] = j;
+            // Apply AO to vertex colors
+            for (let aoIdx = 0; aoIdx < 4; aoIdx++) {
+              const aoColor = colorManager.aoToColor(aoValues[aoIdx]);
+              // Multiply base color by AO factor
+              colors.push(baseR * aoColor.r, baseG * aoColor.g, baseB * aoColor.b);
+            }
 
-              const du = [0, 0, 0]; du[u] = w;
-              const dv = [0, 0, 0]; dv[v] = h;
-
-              const vertexCount = positions.length / 3;
-              positions.push(x[0], x[1], x[2]);
-              positions.push(x[0] + du[0], x[1] + du[1], x[2] + du[2]);
-              positions.push(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]);
-              positions.push(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]);
-
-              const normal = [0, 0, 0];
-              if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
-              normals.push(...normal, ...normal, ...normal, ...normal);
-
-        uvs.push(0, 0, w, 0, 0, h, w, h);
-
-        // Get the block color
-        const blockIndex = Math.abs(val);
-        const blockColor = blocks[blockIndex].color;
-        const r = blockColor[0] / 255;
-        const g = blockColor[1] / 255;
-        const b = blockColor[2] / 255;
-        // Push color for each vertex (4 times)
-        for (let i = 0; i < 4; i++) {
-          colors.push(r, g, b);
-        }
-
-        if (val > 0) {
-                // Front face
-                indices.push(vertexCount, vertexCount + 1, vertexCount + 2);
-                indices.push(vertexCount + 1, vertexCount + 3, vertexCount + 2);
-              } else {
-                // Back face (reverse winding)
-                indices.push(vertexCount, vertexCount + 2, vertexCount + 1);
-                indices.push(vertexCount + 1, vertexCount + 2, vertexCount + 3);
-              }
-
-              // Zero out the mask
-              for (let l = 0; l < h; ++l) {
-                for (let k = 0; k < w; ++k) {
-                  mask[n + k + l * dims[u]] = 0;
-                }
-              }
-              i += w;
-              n += w;
+            // Generate triangle indices with diagonal optimization
+            const useACDiagonal = diagonalOptimizer.chooseOptimalDiagonal(aoValues);
+            
+            if (useACDiagonal) {
+              // Use diagonal from vertex 0 to vertex 2 (A-C diagonal)
+              indices.push(vertexCount, vertexCount + 1, vertexCount + 2);
+              indices.push(vertexCount, vertexCount + 2, vertexCount + 3);
             } else {
-              i++;
-              n++;
+              // Use diagonal from vertex 1 to vertex 3 (B-D diagonal)
+              indices.push(vertexCount, vertexCount + 1, vertexCount + 3);
+              indices.push(vertexCount + 1, vertexCount + 2, vertexCount + 3);
             }
           }
         }
@@ -243,4 +304,22 @@ export class Chunk {
     this.mesh = new THREE.Mesh(geometry, material);
     return this.mesh;
   }
+
+  /**
+   * Safely get voxel value, returning 0 (air) for out-of-bounds coordinates
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {number} z - Z coordinate
+   * @returns {number} Voxel value or 0 if out of bounds
+   */
+  getVoxelSafe(x, y, z) {
+    if (x < 0 || x >= CHUNK_WIDTH || 
+        y < 0 || y >= CHUNK_HEIGHT || 
+        z < 0 || z >= CHUNK_DEPTH) {
+      return 0; // Air
+    }
+    return this.getVoxel(x, y, z);
+  }
+
+
 }
