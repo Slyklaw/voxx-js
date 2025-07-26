@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Voxel Engine</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div>Time of Day: <span id="timeOfDay">Day</span></div>
+        <div>Player Position: <span id="playerPosition">(0, 0, 5)</span></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Basic setup for Three.js
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create a grid of blocks
+        const blockSize = 1;
+        const gridSize = 10;
+        const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+        const blockMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+
+        for (let x = -gridSize; x < gridSize; x++) {
+            for (let y = -gridSize; y < gridSize; y++) {
+                for (let z = -gridSize; z < gridSize; z++) {
+                    // Generate random color for each block
+                    const randomColor = Math.random() * 0xffffff;
+                    const blockMaterial = new THREE.MeshStandardMaterial({ color: randomColor });
+                    const block = new THREE.Mesh(blockGeometry, blockMaterial);
+                    block.position.set(x, y, z);
+                    scene.add(block);
+                }
+            }
+        }
+
+        // Player controls
+        const player = {
+            position: new THREE.Vector3(0, 0, 5),
+            rotation: new THREE.Vector2(0, 0),
+            speed: 0.1,
+            sensitivity: 0.1
+        };
+
+        camera.position.copy(player.position);
+        camera.rotation.order = 'YXZ';
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.code) {
+                case 'KeyW':
+                    player.position.z -= player.speed;
+                    break;
+                case 'KeyS':
+                    player.position.z += player.speed;
+                    break;
+                case 'KeyA':
+                    player.position.x -= player.speed;
+                    break;
+                case 'KeyD':
+                    player.position.x += player.speed;
+                    break;
+                case 'Space':
+                    // Block placement
+                    const raycaster = new THREE.Raycaster();
+                    const mouse = new THREE.Vector2();
+                    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(scene.children);
+                    if (intersects.length > 0) {
+                        const block = intersects[0].object;
+                        const newBlock = new THREE.Mesh(blockGeometry, blockMaterial);
+                        newBlock.position.copy(block.position).add(camera.getWorldDirection(new THREE.Vector3()));
+                        scene.add(newBlock);
+                    }
+                    break;
+                case 'ShiftLeft':
+                    // Block destruction
+                    const raycaster2 = new THREE.Raycaster();
+                    const mouse2 = new THREE.Vector2();
+                    mouse2.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouse2.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                    raycaster2.setFromCamera(mouse2, camera);
+                    const intersects2 = raycaster2.intersectObjects(scene.children);
+                    if (intersects2.length > 0) {
+                        const block = intersects2[0].object;
+                        scene.remove(block);
+                    }
+                    break;
+            }
+            camera.position.copy(player.position);
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            player.rotation.y += event.movementX * player.sensitivity;
+            player.rotation.x -= event.movementY * player.sensitivity;
+            player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
+            camera.rotation.set(player.rotation.x, player.rotation.y, 0);
+        });
+
+        // Day/night cycle
+        const ambientLight = new THREE.AmbientLight(0x87CEEB, 1); // Sky blue color
+        scene.add(ambientLight);
+
+        const sun = new THREE.DirectionalLight(0xffffff, 1);
+        sun.position.set(0, 10, 0);
+        scene.add(sun);
+
+        let dayNightCycle = 0;
+        function updateDayNightCycle() {
+            dayNightCycle += 0.005;
+            const intensity = Math.abs(Math.sin(dayNightCycle));
+            ambientLight.intensity = intensity;
+            sun.intensity = intensity;
+
+            // Update UI
+            const timeOfDayElement = document.getElementById('timeOfDay');
+            if (intensity > 0.5) {
+                timeOfDayElement.textContent = 'Day';
+            } else {
+                timeOfDayElement.textContent = 'Night';
+            }
+
+            // Update player position in UI
+            const playerPositionElement = document.getElementById('playerPosition');
+            playerPositionElement.textContent = `(${player.position.x.toFixed(1)}, ${player.position.y.toFixed(1)}, ${player.position.z.toFixed(1)})`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateDayNightCycle();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
