@@ -17,6 +17,7 @@
 
 #### Stage 4: Block Interaction
 - [x] Add block selection (raycasting)
+- [ ] Draw an outline around selected block
 - [x] Implement block placement
 - [x] Implement block destruction
 

@@ -56,8 +56,15 @@
             position: new THREE.Vector3(0, 0, 5),
             rotation: new THREE.Vector2(0, 0),
             speed: 0.1,
-            sensitivity: 0.01
+            sensitivity: 0.1
         };
+
+        // Outline for selected block
+        const outlineGeometry = new THREE.BoxGeometry(1.02, 1.02, 1.02);
+        const outlineMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.BackSide, transparent: true });
+        const blockOutline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+        scene.add(blockOutline);
+        blockOutline.visible = false;
 
         camera.position.copy(player.position);
         camera.rotation.order = 'YXZ';
@@ -79,36 +86,37 @@
                 case 'KeyD':
                     player.position.add(right.multiplyScalar(player.speed));
                     break;
-                case 'Space':
-                    // Block placement
-                    const raycaster = new THREE.Raycaster();
-                    const mouse = new THREE.Vector2();
-                    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                    raycaster.setFromCamera(mouse, camera);
-                    const intersects = raycaster.intersectObjects(scene.children);
-                    if (intersects.length > 0) {
-                        const block = intersects[0].object;
-                        const newBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-                        newBlock.position.copy(block.position).add(camera.getWorldDirection(new THREE.Vector3()));
-                        scene.add(newBlock);
-                    }
-                    break;
-                case 'ShiftLeft':
-                    // Block destruction
-                    const raycaster2 = new THREE.Raycaster();
-                    const mouse2 = new THREE.Vector2();
-                    mouse2.x = (event.clientX / window.innerWidth) * 2 - 1;
-                    mouse2.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                    raycaster2.setFromCamera(mouse2, camera);
-                    const intersects2 = raycaster2.intersectObjects(scene.children);
-                    if (intersects2.length > 0) {
-                        const block = intersects2[0].object;
-                        scene.remove(block);
-                    }
-                    break;
             }
             camera.position.copy(player.position);
+        });
+
+        // Mouse click events for block interaction
+        // Prevent default context menu
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
+        document.addEventListener('mousedown', (event) => {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children);
+
+            if (event.button === 0) { // Left click - destroy block
+                if (intersects.length > 0) {
+                    const block = intersects[0].object;
+                    scene.remove(block);
+                }
+            } else if (event.button === 2) { // Right click - place block
+                if (intersects.length > 0) {
+                    const block = intersects[0].object;
+                    const newBlock = new THREE.Mesh(blockGeometry, blockMaterial);
+                    newBlock.position.copy(block.position).add(camera.getWorldDirection(new THREE.Vector3()));
+                    scene.add(newBlock);
+                }
+            }
         });
 
         document.addEventListener('mousemove', (event) => {
@@ -116,6 +124,22 @@
             player.rotation.x -= event.movementY * player.sensitivity;
             player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
             camera.rotation.set(player.rotation.x, player.rotation.y, 0);
+
+            // Show/hide outline based on block selection
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children);
+
+            if (intersects.length > 0) {
+                const block = intersects[0].object;
+                blockOutline.position.copy(block.position);
+                blockOutline.visible = true;
+            } else {
+                blockOutline.visible = false;
+            }
         });
 
         // Day/night cycle
