@@ -1,124 +1,38 @@
-# 3D Voxel Engine Development Plan
+### Voxel Engine Development Checklist
 
-## 1. Core Engine Architecture
+#### Stage 1: Project Setup
+- [ ] Initialize project structure - single index.html file with inline css and js
+- [ ] Set up build tools (if needed)
+- [ ] Import necessary libraries (Three.js, etc.)
 
-### World Management System
-- [ ] Chunk-based world generation and storage
-- [ ] World serialization/deserialization
-- [ ] Multi-threaded world generation
-- [ ] Infinite world streaming/loading
+#### Stage 2: Basic Rendering
+- [ ] Create a 3D scene
+- [ ] Render a single block
+- [ ] Render a grid of blocks
 
-### Voxel Data Structure
-- [ ] Efficient voxel storage (sparse voxel octrees or chunk arrays)
-- [ ] Memory management and garbage collection
-- [ ] Voxel type system and metadata
-- [ ] Compression algorithms for storage
+#### Stage 3: Player Controls
+- [ ] Add first-person camera movement
+- [ ] Handle mouse look
+- [ ] Implement WASD movement
 
-## 2. Rendering System
+#### Stage 4: Block Interaction
+- [ ] Add block selection (raycasting)
+- [ ] Implement block placement
+- [ ] Implement block destruction
 
-### 3D Graphics Pipeline
-- [ ] WebGL/Three.js integration
-- [ ] Vertex buffer management
-- [ ] Frustum culling and occlusion culling
-- [ ] Level of Detail (LOD) system
+#### Stage 5: World Management
+- [ ] Implement chunking system
+- [ ] Generate terrain procedurally
+- [ ] Optimize rendering with frustum culling
 
-### Mesh Generation
-- [ ] Greedy meshing algorithm
-- [ ] Face culling optimization
-- [ ] Dynamic mesh updates
-- [ ] Multi-material support
+#### Stage 6: Visual Enhancements
+- [ ] Add textures to blocks
+- [ ] Implement basic lighting
+- [ ] Add skybox and fog
 
-### Lighting System
-- [ ] Ambient lighting
-- [ ] Directional lighting (sun/moon)
-- [ ] Point lights and dynamic lighting
-- [ ] Shadow mapping
-- [ ] Ambient Occlusion
+#### Stage 7: Additional Features
+- [ ] Add day/night cycle
+- [ ] Implement simple physics (falling blocks)
+- [ ] Add multiplayer support
 
-## 3. Physics and Collision
-
-### Collision Detection
-- [ ] AABB collision detection
-- [ ] Voxel-based collision mesh
-- [ ] Player-object collision
-- [ ] Physics simulation integration
-
-### Movement System
-- [ ] Player movement and controls
-- [ ] Gravity and jumping mechanics
-- [ ] Fluid dynamics (water/lava)
-- [ ] Block physics (falling sand, etc.)
-
-## 4. World Generation
-
-### Procedural Generation
-- [ ] Noise function implementation (Perlin/Simplex)
-- [ ] Biome system
-- [ ] Terrain features (caves, structures, etc.)
-- [ ] Heightmap generation
-
-### Chunk System
-- [ ] Chunk loading/unloading
-- [ ] Async chunk generation
-- [ ] Chunk mesh building
-- [ ] Neighbor chunk handling
-
-## 5. User Interface
-
-### Game UI
-- [ ] HUD system
-- [ ] Inventory management
-- [ ] Block selection toolbar
-- [ ] Health/hunger bars
-
-### World Interaction
-- [ ] Block placement/breaking
-- [ ] Raycasting for block selection
-- [ ] Tool system
-- [ ] Building mechanics
-
-## 6. Audio System
-
-### 3D Audio
-- [ ] Spatial audio positioning
-- [ ] Sound effects for actions
-- [ ] Ambient sound system
-- [ ] Music system
-
-## 7. Input Handling
-
-### Control System
-- [ ] Keyboard/mouse input
-- [ ] Gamepad support
-- [ ] Custom key bindings
-- [ ] First/third person camera
-
-## 8. Performance Optimization
-
-### Memory Management
-- [ ] Object pooling
-- [ ] Texture atlasing
-- [ ] Memory leak prevention
-- [ ] Garbage collection optimization
-
-### Rendering Optimization
-- [ ] Instanced rendering
-- [ ] Batch processing
-- [ ] Texture streaming
-- [ ] GPU memory management
-
-## 9. Save/Load System
-
-### World Persistence
-- [ ] Save file format design
-- [ ] Serialization system
-- [ ] Backup and recovery
-- [ ] Cloud sync capabilities
-
-## 10. Multiplayer Support (Optional)
-
-### Networking
-- [ ] Client-server architecture
-- [ ] State synchronization
-- [ ] Latency compensation
-- [ ] Chat system
+Each stage builds upon the previous one. Start with the core functionality and add features incrementally. This checklist provides a structured approach to developing a 3D voxel engine similar to Minecraft.
