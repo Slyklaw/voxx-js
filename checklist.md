@@ -1,24 +1,24 @@
 ### Voxel Engine Development Checklist
 
 #### Stage 1: Project Setup
-- [ ] Initialize project structure - single index.html file with inline css and js
-- [ ] Set up build tools (if needed)
-- [ ] Import necessary libraries (Three.js, etc.)
+- [x] Initialize project structure - single index.html file with inline css and js
+- [x] Set up build tools (if needed)
+- [x] Import necessary libraries (Three.js, etc.)
 
 #### Stage 2: Basic Rendering
-- [ ] Create a 3D scene
-- [ ] Render a single block
-- [ ] Render a grid of blocks
+- [x] Create a 3D scene
+- [x] Render a single block
+- [x] Render a grid of blocks
 
 #### Stage 3: Player Controls
-- [ ] Add first-person camera movement
-- [ ] Handle mouse look
-- [ ] Implement WASD movement
+- [x] Add first-person camera movement
+- [x] Handle mouse look
+- [x] Implement WASD movement
 
 #### Stage 4: Block Interaction
-- [ ] Add block selection (raycasting)
-- [ ] Implement block placement
-- [ ] Implement block destruction
+- [x] Add block selection (raycasting)
+- [x] Implement block placement
+- [x] Implement block destruction
 
 #### Stage 5: World Management
 - [ ] Implement chunking system
@@ -27,11 +27,11 @@
 
 #### Stage 6: Visual Enhancements
 - [ ] Add textures to blocks
-- [ ] Implement basic lighting
+- [x] Implement basic lighting
 - [ ] Add skybox and fog
 
 #### Stage 7: Additional Features
-- [ ] Add day/night cycle
+- [x] Add day/night cycle
 - [ ] Implement simple physics (falling blocks)
 - [ ] Add multiplayer support
 
