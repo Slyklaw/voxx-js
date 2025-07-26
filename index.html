@@ -56,25 +56,28 @@
             position: new THREE.Vector3(0, 0, 5),
             rotation: new THREE.Vector2(0, 0),
             speed: 0.1,
-            sensitivity: 0.1
+            sensitivity: 0.01
         };
 
         camera.position.copy(player.position);
         camera.rotation.order = 'YXZ';
 
         document.addEventListener('keydown', (event) => {
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+
             switch (event.code) {
                 case 'KeyW':
-                    player.position.z -= player.speed;
+                    player.position.add(forward.multiplyScalar(player.speed));
                     break;
                 case 'KeyS':
-                    player.position.z += player.speed;
+                    player.position.add(forward.multiplyScalar(-player.speed));
                     break;
                 case 'KeyA':
-                    player.position.x -= player.speed;
+                    player.position.add(right.multiplyScalar(-player.speed));
                     break;
                 case 'KeyD':
-                    player.position.x += player.speed;
+                    player.position.add(right.multiplyScalar(player.speed));
                     break;
                 case 'Space':
                     // Block placement
@@ -109,7 +112,7 @@
         });
 
         document.addEventListener('mousemove', (event) => {
-            player.rotation.y += event.movementX * player.sensitivity;
+            player.rotation.y -= event.movementX * player.sensitivity;
             player.rotation.x -= event.movementY * player.sensitivity;
             player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
             camera.rotation.set(player.rotation.x, player.rotation.y, 0);
