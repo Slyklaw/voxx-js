@@ -112,8 +112,18 @@
             } else if (event.button === 2) { // Right click - place block
                 if (intersects.length > 0) {
                     const block = intersects[0].object;
+                    const direction = camera.getWorldDirection(new THREE.Vector3());
+                    const newPosition = new THREE.Vector3()
+                        .copy(block.position)
+                        .add(direction);
+
+                    // Round to nearest grid unit (1 in this case)
+                    newPosition.x = Math.round(newPosition.x);
+                    newPosition.y = Math.round(newPosition.y);
+                    newPosition.z = Math.round(newPosition.z);
+
                     const newBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-                    newBlock.position.copy(block.position).add(camera.getWorldDirection(new THREE.Vector3()));
+                    newBlock.position.copy(newPosition);
                     scene.add(newBlock);
                 }
             }
