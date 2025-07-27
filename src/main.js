@@ -4,6 +4,7 @@ import Stats from 'stats.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { createNoise2D } from 'simplex-noise';
 import { World } from './world.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 
 // 1. SCENE SETUP
 // =================================================================
@@ -48,6 +49,7 @@ world.update(camera.position); // Initial world generation
 
 const controls = new PointerLockControls(camera, document.body);
 const instructions = document.getElementById('instructions');
+const crosshair = document.getElementById('crosshair');
 
 document.body.addEventListener('click', () => {
   controls.lock();
@@ -55,15 +57,166 @@ document.body.addEventListener('click', () => {
 
 controls.addEventListener('lock', () => {
   instructions.style.display = 'none';
+  crosshair.style.display = 'block';
 });
 
 controls.addEventListener('unlock', () => {
   instructions.style.display = 'block';
+  crosshair.style.display = 'none';
 });
 
 const keys = {};
 document.addEventListener('keydown', (event) => (keys[event.code] = true));
 document.addEventListener('keyup', (event) => (keys[event.code] = false));
+
+// 4. VOXEL EDITING
+// =================================================================
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const maxReach = 10; // Maximum distance for block interaction
+
+// Selection outline
+const outlineGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01);
+const outlineMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.8
+});
+const selectionOutline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+selectionOutline.visible = false;
+scene.add(selectionOutline);
+
+// Current selected block
+let selectedBlock = null;
+let selectedFace = null;
+
+// Mouse click handlers
+document.addEventListener('mousedown', (event) => {
+  if (!controls.isLocked) return;
+
+  if (selectedBlock) {
+    const { chunk, x, y, z } = selectedBlock;
+    
+    if (event.button === 0) { // Left click - destroy block
+      chunk.setVoxel(x, y, z, 0); // Set to air
+      updateChunkMesh(chunk);
+    } else if (event.button === 2) { // Right click - place block
+      if (selectedFace) {
+        const newX = x + selectedFace.x;
+        const newY = y + selectedFace.y;
+        const newZ = z + selectedFace.z;
+        
+        // Check bounds
+        if (newX >= 0 && newX < CHUNK_WIDTH && 
+            newY >= 0 && newY < CHUNK_HEIGHT && 
+            newZ >= 0 && newZ < CHUNK_DEPTH) {
+          chunk.setVoxel(newX, newY, newZ, 1); // Place stone block
+          updateChunkMesh(chunk);
+        }
+      }
+    }
+  }
+});
+
+// Prevent context menu on right click
+document.addEventListener('contextmenu', (event) => {
+  event.preventDefault();
+});
+
+// Update chunk mesh after modification
+function updateChunkMesh(chunk) {
+  if (chunk.mesh) {
+    scene.remove(chunk.mesh);
+    chunk.mesh.geometry.dispose();
+    chunk.mesh.material.dispose();
+  }
+  
+  const newMesh = chunk.createMesh();
+  newMesh.position.set(chunk.chunkX * CHUNK_WIDTH, 0, chunk.chunkZ * CHUNK_DEPTH);
+  scene.add(newMesh);
+  chunk.mesh = newMesh;
+}
+
+// Raycasting for block selection
+function updateBlockSelection() {
+  if (!controls.isLocked) {
+    selectionOutline.visible = false;
+    selectedBlock = null;
+    return;
+  }
+
+  raycaster.setFromCamera(mouse, camera);
+  
+  // Get all chunk meshes
+  const meshes = [];
+  for (const key in world.chunks) {
+    const chunk = world.chunks[key];
+    if (chunk.mesh && chunk.voxels) {
+      meshes.push(chunk.mesh);
+    }
+  }
+  
+  const intersects = raycaster.intersectObjects(meshes);
+  
+  if (intersects.length > 0 && intersects[0].distance <= maxReach) {
+    const intersection = intersects[0];
+    const mesh = intersection.object;
+    
+    // Find which chunk this mesh belongs to
+    let targetChunk = null;
+    for (const key in world.chunks) {
+      const chunk = world.chunks[key];
+      if (chunk.mesh === mesh) {
+        targetChunk = chunk;
+        break;
+      }
+    }
+    
+    if (targetChunk) {
+      // Calculate local voxel coordinates
+      const localX = Math.floor(intersection.point.x - mesh.position.x);
+      const localY = Math.floor(intersection.point.y);
+      const localZ = Math.floor(intersection.point.z - mesh.position.z);
+      
+      // Adjust for the face we're looking at
+      const normal = intersection.face.normal;
+      const blockX = localX - (normal.x > 0 ? 1 : 0);
+      const blockY = localY - (normal.y > 0 ? 1 : 0);
+      const blockZ = localZ - (normal.z > 0 ? 1 : 0);
+      
+      // Ensure coordinates are within bounds
+      if (blockX >= 0 && blockX < CHUNK_WIDTH && 
+          blockY >= 0 && blockY < CHUNK_HEIGHT && 
+          blockZ >= 0 && blockZ < CHUNK_DEPTH) {
+        
+        selectedBlock = {
+          chunk: targetChunk,
+          x: blockX,
+          y: blockY,
+          z: blockZ
+        };
+        
+        selectedFace = { x: normal.x, y: normal.y, z: normal.z };
+        
+        // Update selection outline position
+        selectionOutline.position.set(
+          mesh.position.x + blockX + 0.5,
+          blockY + 0.5,
+          mesh.position.z + blockZ + 0.5
+        );
+        selectionOutline.visible = true;
+      }
+    }
+  } else {
+    selectionOutline.visible = false;
+    selectedBlock = null;
+  }
+}
+
+// 5. ANIMATION LOOP
+// =================================================================
 
 const clock = new THREE.Clock();
 const moveSpeed = 15;
@@ -93,6 +246,9 @@ function animate() {
 
   // Update world based on camera position
   world.update(camera.position);
+
+  // Update block selection
+  updateBlockSelection();
 
   // Update camera position display
   document.getElementById('camera-position').textContent = 
