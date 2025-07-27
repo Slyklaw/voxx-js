@@ -59,3 +59,70 @@ body {
   height: 100%;
   transform: translateX(-50%);
 }
+
+#block-selector {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 100;
+}
+
+.block-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  min-width: 60px;
+}
+
+.block-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.block-item.selected {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.block-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.block-icon.stone {
+  background-color: rgb(128, 128, 128);
+}
+
+.block-icon.dirt {
+  background-color: rgb(139, 69, 19);
+}
+
+.block-icon.grass {
+  background-color: rgb(95, 159, 53);
+}
+
+.block-icon.water {
+  background-color: rgb(30, 144, 255);
+}
+
+.block-icon.snow {
+  background-color: rgb(255, 255, 255);
+}
+
+.block-item span {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}

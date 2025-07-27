@@ -76,6 +76,14 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const maxReach = 10; // Maximum distance for block interaction
 
+// Block selection system
+let selectedBlockType = 1; // Default to stone
+const blockSelector = document.getElementById('block-selector');
+const blockItems = blockSelector.querySelectorAll('.block-item');
+
+// Initialize first block as selected
+blockItems[0].classList.add('selected');
+
 // Selection outline
 const outlineGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01);
 const outlineMaterial = new THREE.MeshBasicMaterial({
@@ -91,6 +99,48 @@ scene.add(selectionOutline);
 // Current selected block
 let selectedBlock = null;
 let selectedFace = null;
+
+// Block selection UI handlers
+blockItems.forEach((item, index) => {
+  item.addEventListener('click', () => {
+    // Remove selected class from all items
+    blockItems.forEach(i => i.classList.remove('selected'));
+    // Add selected class to clicked item
+    item.classList.add('selected');
+    // Update selected block type (index + 1 because block types start at 1)
+    selectedBlockType = parseInt(item.dataset.block);
+  });
+});
+
+// Mouse wheel handler for block selection
+document.addEventListener('wheel', (event) => {
+  if (!controls.isLocked) return;
+  
+  event.preventDefault();
+  
+  // Get current selected index
+  let currentIndex = -1;
+  blockItems.forEach((item, index) => {
+    if (item.classList.contains('selected')) {
+      currentIndex = index;
+    }
+  });
+  
+  // Calculate new index based on wheel direction
+  let newIndex;
+  if (event.deltaY > 0) {
+    // Scroll down - next block
+    newIndex = (currentIndex + 1) % blockItems.length;
+  } else {
+    // Scroll up - previous block
+    newIndex = (currentIndex - 1 + blockItems.length) % blockItems.length;
+  }
+  
+  // Update selection
+  blockItems.forEach(i => i.classList.remove('selected'));
+  blockItems[newIndex].classList.add('selected');
+  selectedBlockType = parseInt(blockItems[newIndex].dataset.block);
+});
 
 // Mouse click handlers
 document.addEventListener('mousedown', (event) => {
@@ -112,7 +162,7 @@ document.addEventListener('mousedown', (event) => {
         if (newX >= 0 && newX < CHUNK_WIDTH && 
             newY >= 0 && newY < CHUNK_HEIGHT && 
             newZ >= 0 && newZ < CHUNK_DEPTH) {
-          chunk.setVoxel(newX, newY, newZ, 1); // Place stone block
+          chunk.setVoxel(newX, newY, newZ, selectedBlockType); // Place selected block type
           updateChunkMesh(chunk);
         }
       }
@@ -219,7 +269,7 @@ function updateBlockSelection() {
 // =================================================================
 
 const clock = new THREE.Clock();
-const moveSpeed = 50;
+const moveSpeed = 15;
 
 // Animation loop
 function animate() {
