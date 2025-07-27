@@ -21,15 +21,61 @@ camera.position.set(16, 225, 16); // Position above terrain for 32-block world
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+// Lighting - Sun Cycle System
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // 30% ambient light for better shadow contrast
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(5, 10, 7.5);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+directionalLight.position.set(0, 100, 0);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 4096;
+directionalLight.shadow.mapSize.height = 4096;
+directionalLight.shadow.camera.near = 1;
+directionalLight.shadow.camera.far = 1000;
+directionalLight.shadow.camera.left = -200;
+directionalLight.shadow.camera.right = 200;
+directionalLight.shadow.camera.top = 200;
+directionalLight.shadow.camera.bottom = -200;
+directionalLight.shadow.bias = -0.0001;
 scene.add(directionalLight);
+scene.add(directionalLight.target);
+
+// Debug helper for shadow camera (uncomment to visualize)
+// const shadowCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+// scene.add(shadowCameraHelper);
+
+// Test shadow cube (uncomment to test shadows)
+// const testGeometry = new THREE.BoxGeometry(2, 8, 2);
+// const testMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+// const testCube = new THREE.Mesh(testGeometry, testMaterial);
+// testCube.position.set(20, 72, 20);
+// testCube.castShadow = true;
+// testCube.receiveShadow = true;
+// scene.add(testCube);
+
+// Sun cycle configuration
+const SUN_CYCLE = {
+  dayDuration: 60, // 1 minute in seconds
+  nightDuration: 60, // 1 minute in seconds
+  totalCycle: 120, // 2 minutes total
+  sunRadius: 100, // Distance from center
+  sunHeight: 50, // Base height above ground
+};
+
+// Sky colors for different times of day
+const SKY_COLORS = {
+  day: new THREE.Color(0x87ceeb), // Sky blue
+  sunset: new THREE.Color(0xff6b35), // Orange
+  night: new THREE.Color(0x191970), // Midnight blue
+  sunrise: new THREE.Color(0xffa500), // Orange
+};
+
+// Sun cycle state
+let sunCycleTime = 0; // Current time in the cycle (0-120 seconds)
 
 // FPS Counter
 const stats = new Stats();
@@ -185,8 +231,76 @@ function updateChunkMesh(chunk) {
   
   const newMesh = chunk.createMesh();
   newMesh.position.set(chunk.chunkX * CHUNK_WIDTH, 0, chunk.chunkZ * CHUNK_DEPTH);
+  newMesh.castShadow = true;
+  newMesh.receiveShadow = true;
   scene.add(newMesh);
   chunk.mesh = newMesh;
+}
+
+// Sun cycle update function
+function updateSunCycle(deltaTime) {
+  sunCycleTime += deltaTime;
+  if (sunCycleTime >= SUN_CYCLE.totalCycle) {
+    sunCycleTime = 0; // Reset cycle
+  }
+
+  // Calculate sun position (0 = sunrise, 0.5 = sunset, 1 = sunrise again)
+  const cycleProgress = sunCycleTime / SUN_CYCLE.totalCycle;
+  const sunAngle = cycleProgress * Math.PI * 2; // Full circle
+
+  // Position sun in an arc across the sky
+  const sunX = Math.cos(sunAngle) * SUN_CYCLE.sunRadius;
+  const sunY = Math.sin(sunAngle) * SUN_CYCLE.sunRadius + SUN_CYCLE.sunHeight;
+  const sunZ = 0;
+
+  directionalLight.position.set(sunX, sunY, sunZ);
+  directionalLight.target.position.set(0, 0, 0);
+  directionalLight.target.updateMatrixWorld();
+  
+  // Update shadow camera to follow the light properly
+  directionalLight.shadow.camera.updateMatrixWorld();
+
+  // Calculate light intensity based on sun height
+  const sunHeight = Math.max(0, sunY - SUN_CYCLE.sunHeight);
+  const maxHeight = SUN_CYCLE.sunRadius;
+  const lightIntensity = Math.max(0.1, sunHeight / maxHeight);
+  
+  directionalLight.intensity = lightIntensity;
+
+  // Update sky color based on sun position
+  let skyColor;
+  const timeOfDay = cycleProgress;
+  
+  if (timeOfDay < 0.2) { // Early morning (0-0.2)
+    skyColor = SKY_COLORS.sunrise.clone().lerp(SKY_COLORS.day, timeOfDay / 0.2);
+  } else if (timeOfDay < 0.3) { // Morning to day (0.2-0.3)
+    skyColor = SKY_COLORS.day;
+  } else if (timeOfDay < 0.7) { // Day (0.3-0.7)
+    skyColor = SKY_COLORS.day;
+  } else if (timeOfDay < 0.8) { // Evening to sunset (0.7-0.8)
+    skyColor = SKY_COLORS.day.clone().lerp(SKY_COLORS.sunset, (timeOfDay - 0.7) / 0.1);
+  } else if (timeOfDay < 0.9) { // Sunset to night (0.8-0.9)
+    skyColor = SKY_COLORS.sunset.clone().lerp(SKY_COLORS.night, (timeOfDay - 0.8) / 0.1);
+  } else { // Night to sunrise (0.9-1.0)
+    skyColor = SKY_COLORS.night.clone().lerp(SKY_COLORS.sunrise, (timeOfDay - 0.9) / 0.1);
+  }
+
+  scene.background = skyColor;
+
+  // Update sun light color based on time of day
+  if (sunHeight < maxHeight * 0.1) { // Near horizon
+    directionalLight.color.setHex(0xffa500); // Orange
+  } else {
+    directionalLight.color.setHex(0xffffff); // White
+  }
+
+  // Update time display
+  const dayTime = (timeOfDay < 0.5) ? timeOfDay * 2 : (timeOfDay - 0.5) * 2; // 0-1 for day portion
+  const hours = Math.floor(dayTime * 24);
+  const minutes = Math.floor((dayTime * 24 - hours) * 60);
+  const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  const dayNight = (timeOfDay < 0.5) ? 'Day' : 'Night';
+  document.getElementById('time-display').textContent = `${dayNight}: ${timeString}`;
 }
 
 // Raycasting for block selection
@@ -296,6 +410,9 @@ function animate() {
 
   // Update world based on camera position
   world.update(camera.position);
+
+  // Update sun cycle
+  updateSunCycle(delta);
 
   // Update block selection
   updateBlockSelection();

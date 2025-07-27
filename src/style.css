@@ -20,11 +20,31 @@ body {
 #camera-position {
   position: absolute;
   top: 10px;
-  left: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   color: white;
   font-family: monospace;
   font-size: 14px;
   z-index: 100;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+#time-display {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
 }
 
 #crosshair {

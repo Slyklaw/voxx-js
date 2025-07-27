@@ -230,9 +230,13 @@ export class Chunk {
     geometry.setIndex(indices);
 
     const material = new THREE.MeshStandardMaterial({ 
-      vertexColors: true
+      vertexColors: true,
+      roughness: 0.8,
+      metalness: 0.1
     });
     this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
     return this.mesh;
   }
 }
