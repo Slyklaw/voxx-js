@@ -5,3 +5,8 @@
 
 # Switching to Kiro/Claude4
 - crosshair added
+- new height
+- block type selection
+
+Prompt:
+Review the current project and implement the Milestone listed in checklist.md.

@@ -73,3 +73,22 @@ This checklist is structured into milestones to provide a clear development path
 - [ ] Visual inspection of terrain features
 - [ ] Memory usage profiling
 - [ ] Cross-browser compatibility testing
+
+
+Milestone 3, Interaction
+ - [x] Implement voxel editing (adding/removing blocks) via raycasting.
+    - [x] When the camera is looking at block within range (~10 meters), draw an outline of the selected block
+    - [x] Left mouse click destroys the selected block
+    - [x] Right mouse click places a new block on the face that the camera is looking directly at
+    - [x] Add a '+' reticule where the camera is looking
+
+Milestone, performance
+ - [x] Reduce world height 32 blocks
+ - [x] Adjust terrain noise to fit lower world height
+ - [x] Lower sea level to 10
+ - [x] Increase noise frequency by 2x
+ 
+ ## Milestone: Tall world
+- [x] Expand the world from 1-layer chunks, to 8-layers
+- [x] Adjust the terrain noise parameters to fit the new world height
+- [x] Reduce view distance

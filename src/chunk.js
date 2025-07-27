@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 export const CHUNK_WIDTH = 32;
-export const CHUNK_HEIGHT = 32;
+export const CHUNK_HEIGHT = 256; // 8 layers * 32 = 256 blocks tall
 export const CHUNK_DEPTH = 32;
-export const SEA_LEVEL = 10;
+export const SEA_LEVEL = 80; // Adjusted for taller world
 
 const blocks = [
   { type: 'AIR', color: [0, 0, 0, 0] },
@@ -37,10 +37,10 @@ export class Chunk {
 
   /** Generate terrain data using a noise function */
   generate(noise) {
-    const octaves = 5;
-    const persistence = 0.1; // Ultra-low persistence for maximum lowlands
+    const octaves = 6;
+    const persistence = 0.5; // Increased for more varied terrain
     const lacunarity = 2.0;
-    const scale = 100; // Increased frequency by 2x (500 -> 250)
+    const scale = 1000; // Adjusted scale for taller world
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -62,25 +62,25 @@ export class Chunk {
           frequency *= lacunarity;
         }
 
-        // Normalize and scale height for 32-block world with sea level at 10
-        // Map noise (-1 to 1) to height range (5 to 25, with sea level at 10)
-        height = Math.floor((height + 1) * 10) + 5;
-        height = Math.max(0, Math.min(31, height));
+        // Normalize and scale height for 256-block world with sea level at 80
+        // Map noise (-1 to 1) to height range (40 to 200, with sea level at 80)
+        height = Math.floor((height + 1) * 80) + 40;
+        height = Math.max(0, Math.min(255, height));
 
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
             let blockType = 1; // STONE by default
-            if (height > 20) { // Snow line for high peaks (above 20 blocks)
-              if (y >= height - 2) {
-                blockType = 5; // SNOW for top 2 layers
-              } else if (y >= height - 3) {
+            if (height > 160) { // Snow line for high peaks (above 160 blocks)
+              if (y >= height - 4) {
+                blockType = 5; // SNOW for top 4 layers
+              } else if (y >= height - 8) {
                 blockType = 2; // DIRT below snow
               }
             } else {
               if (y === height - 1) {
                 blockType = 3; // GRASS
-              } else if (y >= height - 3) {
-                blockType = 2; // DIRT
+              } else if (y >= height - 6) {
+                blockType = 2; // DIRT (thicker dirt layer for taller world)
               }
             }
             this.setVoxel(x, y, z, blockType);
