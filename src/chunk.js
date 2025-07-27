@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 256; // 8 layers * 32 = 256 blocks tall
 export const CHUNK_DEPTH = 32;
-export const SEA_LEVEL = 80; // Adjusted for taller world
+export const SEA_LEVEL = 64; // Adjusted for taller world
 
 const blocks = [
   { type: 'AIR', color: [0, 0, 0, 0] },
@@ -70,7 +70,7 @@ export class Chunk {
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < height) {
             let blockType = 1; // STONE by default
-            if (height > 160) { // Snow line for high peaks (above 160 blocks)
+            if (height > 200) { // Snow line for high peaks (above 160 blocks)
               if (y >= height - 4) {
                 blockType = 5; // SNOW for top 4 layers
               } else if (y >= height - 8) {
