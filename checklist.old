@@ -92,3 +92,10 @@ Milestone, performance
 - [x] Expand the world from 1-layer chunks, to 8-layers
 - [x] Adjust the terrain noise parameters to fit the new world height
 - [x] Reduce view distance
+
+## Milestone: Block selection UI
+- [x] Display the set of blocks along the bottom of the screen UI
+- [x] Use mouse wheel to select the current block type
+- [x] Highlight the selected block type in the UI
+- [x] Adjust block placement code to use the currently selected block type
+
