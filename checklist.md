@@ -1,7 +1,8 @@
-## Milestone: Sun cycle
-- [x] Directional sun light follows day/night cycle
-- [x] 1 minute for day, 1 minute for night
-- [x] Ambient light at 50%
-- [x] Sky color adjusts along with sun progression
-- [x] Add shadows to rendering
+## Milestone: Biomes
+- [x] Add a new noise function to determine biomes
+- [x] Blend between neighboring biomes to avoid harsh changes
+- [x] Support any number of biomes
+- [x] Implement the first 2 biomes:
+    - [x] Lowland: Mostly near sealevel, with mostly flat terrain
+    - [x] Mountains: Tall mountains
 

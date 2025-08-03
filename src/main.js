@@ -5,6 +5,7 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { createNoise2D } from 'simplex-noise';
 import { World } from './world.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
+import { BiomeCalculator } from './biomes.js';
 
 // 1. SCENE SETUP
 // =================================================================
@@ -119,6 +120,7 @@ document.body.appendChild(stats.dom);
 const noiseSeed = Math.random();
 const noise = createNoise2D(() => noiseSeed);
 const world = new World(noiseSeed, scene);
+const biomeCalculator = new BiomeCalculator(noiseSeed);
 world.update(camera.position); // Initial world generation
 
 // 2. PLAYER CONTROLS
@@ -466,6 +468,34 @@ function updateBlockSelection() {
   }
 }
 
+// Biome display update timer
+let biomeUpdateTimer = 0;
+const BIOME_UPDATE_INTERVAL = 0.1; // Update every 100ms
+
+// Update biome display based on camera position
+function updateBiomeDisplay(deltaTime) {
+  if (!controls.isLocked) return;
+
+  biomeUpdateTimer += deltaTime;
+  if (biomeUpdateTimer < BIOME_UPDATE_INTERVAL) return;
+  
+  biomeUpdateTimer = 0;
+
+  const contributions = biomeCalculator.getBiomeContributions(camera.position.x, camera.position.z);
+  const biomeItems = document.querySelectorAll('.biome-item');
+  
+  contributions.forEach((contrib, index) => {
+    if (index < biomeItems.length) {
+      const item = biomeItems[index];
+      const fill = item.querySelector('.biome-fill');
+      const percent = item.querySelector('.biome-percent');
+      
+      fill.style.width = `${contrib.contribution}%`;
+      percent.textContent = `${contrib.contribution}%`;
+    }
+  });
+}
+
 // 5. ANIMATION LOOP
 // =================================================================
 
@@ -504,9 +534,12 @@ function animate() {
   // Update block selection
   updateBlockSelection();
 
-  // Update camera position display
+    // Update camera position display
   document.getElementById('camera-position').textContent =
     `X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)}`;
+
+  // Update biome display
+  updateBiomeDisplay(delta);
 
   renderer.render(scene, camera);
   stats.end();

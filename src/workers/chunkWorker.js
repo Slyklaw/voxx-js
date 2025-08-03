@@ -5,9 +5,12 @@ self.onmessage = function(e) {
   const { chunkX, chunkZ, noiseSeed } = e.data;
   
   try {
-    const noise = createNoise2D(() => noiseSeed);
+    // Create separate noise functions for height and biome generation
+    const heightNoise = createNoise2D(() => noiseSeed);
+    const biomeNoise = createNoise2D(() => noiseSeed * 1.337); // Different seed for biome noise
+    
     const chunk = new Chunk(chunkX, chunkZ);
-    chunk.generate(noise);
+    chunk.generate(heightNoise, biomeNoise);
     
     // Serialize chunk data
     const chunkData = {
