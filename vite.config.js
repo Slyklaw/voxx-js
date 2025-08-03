@@ -1,15 +1,16 @@
 import { defineConfig } from 'vite';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [viteSingleFile()],
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
+    assetsInlineLimit: 100000000, // 100MB - inlines all assets
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
-        entryFileNames: `assets/[name].[hash].js`,
-        chunkFileNames: `assets/[name].[hash].js`,
-        assetFileNames: `assets/[name].[hash].[ext]`
+        inlineDynamicImports: true
       }
     }
   }
