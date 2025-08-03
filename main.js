@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/cjs/simplex-noise.js';
+import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { World } from './world.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 import { BiomeCalculator } from './biomes.js';
