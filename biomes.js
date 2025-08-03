@@ -1,4 +1,4 @@
-import { createNoise2D } from 'simplex-noise';
+import { createNoise2D } from './simplex-noise.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { SUN_CYCLE_CONFIG } from './config.js';
 
