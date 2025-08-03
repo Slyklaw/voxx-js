@@ -1,7 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import Stats from './stats.js';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
+import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/controls/PointerLockControls.js';
 import { createNoise2D } from 'simplex-noise';
 import { World } from './world.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
