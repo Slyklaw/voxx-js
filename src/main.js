@@ -6,21 +6,40 @@ import { createNoise2D } from 'simplex-noise';
 import { World } from './world.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 import { BiomeCalculator } from './biomes.js';
+import { 
+  RENDER_CONFIG, 
+  LIGHTING_CONFIG, 
+  PLAYER_CONFIG, 
+  SUN_CYCLE_CONFIG, 
+  SKY_COLORS, 
+  UI_CONFIG, 
+  TEST_CONFIG 
+} from './config.js';
+import { BLOCK_TYPES } from './blocks.js';
 
 // 1. SCENE SETUP
 // =================================================================
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // Sky blue
+scene.background = new THREE.Color(LIGHTING_CONFIG.SKY_COLOR);
 
 // Add fog for atmospheric depth
-const fog = new THREE.Fog(0x87ceeb, 100, 400);
+const fog = new THREE.Fog(LIGHTING_CONFIG.SKY_COLOR, RENDER_CONFIG.FOG_NEAR, RENDER_CONFIG.FOG_FAR);
 scene.fog = fog;
 
 // Camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(16, 225, 16); // Position above terrain for 32-block world
+const camera = new THREE.PerspectiveCamera(
+  RENDER_CONFIG.FOV, 
+  window.innerWidth / window.innerHeight, 
+  RENDER_CONFIG.NEAR_PLANE, 
+  RENDER_CONFIG.FAR_PLANE
+);
+camera.position.set(
+  PLAYER_CONFIG.SPAWN_POSITION.x, 
+  PLAYER_CONFIG.SPAWN_POSITION.y, 
+  PLAYER_CONFIG.SPAWN_POSITION.z
+);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -30,34 +49,42 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.VSMShadowMap; // Variance Shadow Maps can reduce banding
 renderer.outputColorSpace = THREE.SRGBColorSpace; // Ensure proper color space
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // Add tone mapping to reduce banding
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = RENDER_CONFIG.TONE_MAPPING_EXPOSURE;
 document.body.appendChild(renderer.domElement);
 
 // Lighting - Sun Cycle System
-const ambientLight = new THREE.AmbientLight(0x87ceeb, 0.4); // Sky-colored ambient light
+const ambientLight = new THREE.AmbientLight(LIGHTING_CONFIG.SKY_COLOR, LIGHTING_CONFIG.AMBIENT_INTENSITY);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-directionalLight.position.set(50, 100, 50);
+const directionalLight = new THREE.DirectionalLight(0xffffff, LIGHTING_CONFIG.DIRECTIONAL_INTENSITY);
+directionalLight.position.set(
+  LIGHTING_CONFIG.DIRECTIONAL_LIGHT_POSITION.x,
+  LIGHTING_CONFIG.DIRECTIONAL_LIGHT_POSITION.y,
+  LIGHTING_CONFIG.DIRECTIONAL_LIGHT_POSITION.z
+);
 directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 4096; // Higher resolution to reduce banding
-directionalLight.shadow.mapSize.height = 4096;
-directionalLight.shadow.camera.near = 1;
-directionalLight.shadow.camera.far = 400; // Reduced for better precision
-directionalLight.shadow.camera.left = -100;
-directionalLight.shadow.camera.right = 100;
-directionalLight.shadow.camera.top = 100;
-directionalLight.shadow.camera.bottom = -100;
+directionalLight.shadow.mapSize.width = RENDER_CONFIG.SHADOW_MAP_SIZE;
+directionalLight.shadow.mapSize.height = RENDER_CONFIG.SHADOW_MAP_SIZE;
+directionalLight.shadow.camera.near = RENDER_CONFIG.SHADOW_CAMERA_NEAR;
+directionalLight.shadow.camera.far = RENDER_CONFIG.SHADOW_CAMERA_FAR;
+directionalLight.shadow.camera.left = -RENDER_CONFIG.SHADOW_CAMERA_BOUNDS;
+directionalLight.shadow.camera.right = RENDER_CONFIG.SHADOW_CAMERA_BOUNDS;
+directionalLight.shadow.camera.top = RENDER_CONFIG.SHADOW_CAMERA_BOUNDS;
+directionalLight.shadow.camera.bottom = -RENDER_CONFIG.SHADOW_CAMERA_BOUNDS;
 // Fixed bias settings to eliminate banding
-directionalLight.shadow.bias = -0.0005; // Increased bias to prevent shadow acne
-directionalLight.shadow.normalBias = 0.05; // Increased normal bias
-directionalLight.shadow.radius = 2; // Slightly softer shadows
+directionalLight.shadow.bias = LIGHTING_CONFIG.SHADOW_BIAS;
+directionalLight.shadow.normalBias = LIGHTING_CONFIG.SHADOW_NORMAL_BIAS;
+directionalLight.shadow.radius = LIGHTING_CONFIG.SHADOW_RADIUS;
 scene.add(directionalLight);
 scene.add(directionalLight.target);
 
 // Add a subtle fill light to brighten shadowed areas
-const fillLight = new THREE.DirectionalLight(0x87ceeb, 0.5);
-fillLight.position.set(-50, 50, -50); // Opposite direction from main light
+const fillLight = new THREE.DirectionalLight(LIGHTING_CONFIG.SKY_COLOR, LIGHTING_CONFIG.FILL_INTENSITY);
+fillLight.position.set(
+  LIGHTING_CONFIG.FILL_LIGHT_POSITION.x,
+  LIGHTING_CONFIG.FILL_LIGHT_POSITION.y,
+  LIGHTING_CONFIG.FILL_LIGHT_POSITION.z
+);
 scene.add(fillLight);
 
 // Debug helper for shadow camera (toggle with 'H' key)
@@ -73,10 +100,18 @@ document.addEventListener('keydown', (event) => {
 });
 
 // Test shadow cube (toggle with 'T' key for testing)
-const testGeometry = new THREE.BoxGeometry(3, 6, 3);
-const testMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+const testGeometry = new THREE.BoxGeometry(
+  TEST_CONFIG.CUBE_SIZE.width,
+  TEST_CONFIG.CUBE_SIZE.height,
+  TEST_CONFIG.CUBE_SIZE.depth
+);
+const testMaterial = new THREE.MeshStandardMaterial({ color: TEST_CONFIG.CUBE_COLOR });
 const testCube = new THREE.Mesh(testGeometry, testMaterial);
-testCube.position.set(20, 70, 20);
+testCube.position.set(
+  TEST_CONFIG.CUBE_POSITION.x,
+  TEST_CONFIG.CUBE_POSITION.y,
+  TEST_CONFIG.CUBE_POSITION.z
+);
 testCube.castShadow = true;
 testCube.receiveShadow = true;
 testCube.visible = false; // Hidden by default
@@ -89,25 +124,16 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-// Sun cycle configuration
-const SUN_CYCLE = {
-  dayDuration: 60, // 1 minute in seconds
-  nightDuration: 60, // 1 minute in seconds
-  totalCycle: 120, // 2 minutes total
-  sunRadius: 100, // Distance from center
-  sunHeight: 50, // Base height above ground
-};
-
-// Sky colors for different times of day
-const SKY_COLORS = {
-  day: new THREE.Color(0x87ceeb), // Sky blue
-  sunset: new THREE.Color(0xff6b35), // Orange
-  night: new THREE.Color(0x191970), // Midnight blue
-  sunrise: new THREE.Color(0xffa500), // Orange
+// Sky colors for different times of day (converted to THREE.Color objects)
+const SKY_COLOR_OBJECTS = {
+  day: new THREE.Color(SKY_COLORS.DAY),
+  sunset: new THREE.Color(SKY_COLORS.SUNSET),
+  night: new THREE.Color(SKY_COLORS.NIGHT),
+  sunrise: new THREE.Color(SKY_COLORS.SUNRISE),
 };
 
 // Sun cycle state
-let sunCycleTime = 0; // Current time in the cycle (0-120 seconds)
+let sunCycleTime = 0; // Current time in the cycle
 
 // FPS Counter
 const stats = new Stats();
@@ -153,10 +179,9 @@ document.addEventListener('keyup', (event) => (keys[event.code] = false));
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-const maxReach = 10; // Maximum distance for block interaction
 
 // Block selection system
-let selectedBlockType = 1; // Default to stone
+let selectedBlockType = BLOCK_TYPES.STONE; // Default to stone
 const blockSelector = document.getElementById('block-selector');
 const blockItems = blockSelector.querySelectorAll('.block-item');
 
@@ -164,12 +189,16 @@ const blockItems = blockSelector.querySelectorAll('.block-item');
 blockItems[0].classList.add('selected');
 
 // Selection outline
-const outlineGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01);
+const outlineGeometry = new THREE.BoxGeometry(
+  UI_CONFIG.SELECTION_OUTLINE_SIZE,
+  UI_CONFIG.SELECTION_OUTLINE_SIZE,
+  UI_CONFIG.SELECTION_OUTLINE_SIZE
+);
 const outlineMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffffff,
+  color: UI_CONFIG.SELECTION_OUTLINE_COLOR,
   wireframe: true,
   transparent: true,
-  opacity: 0.8
+  opacity: UI_CONFIG.SELECTION_OUTLINE_OPACITY
 });
 const selectionOutline = new THREE.Mesh(outlineGeometry, outlineMaterial);
 selectionOutline.visible = false;
@@ -229,7 +258,7 @@ document.addEventListener('mousedown', (event) => {
     const { chunk, x, y, z } = selectedBlock;
 
     if (event.button === 0) { // Left click - destroy block
-      chunk.setVoxel(x, y, z, 0); // Set to air
+      chunk.setVoxel(x, y, z, BLOCK_TYPES.AIR); // Set to air
       updateChunkMesh(chunk);
     } else if (event.button === 2) { // Right click - place block
       if (selectedFace) {
@@ -299,26 +328,26 @@ function updateShadowFrustum() {
  */
 function updateSunCycle(deltaTime) {
   sunCycleTime += deltaTime;
-  if (sunCycleTime >= SUN_CYCLE.totalCycle) {
+  if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
     sunCycleTime = 0; // Reset cycle
   }
 
   // Calculate sun position (0 = sunrise, 0.5 = sunset, 1 = sunrise again)
-  const cycleProgress = sunCycleTime / SUN_CYCLE.totalCycle;
+  const cycleProgress = sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE;
 
   // Keep a minimum elevation so shadows remain noticeable
-  const minElevation = THREE.MathUtils.degToRad(15); // 15 degrees above horizon
-  const maxElevation = THREE.MathUtils.degToRad(75); // avoid straight overhead
+  const minElevation = THREE.MathUtils.degToRad(SUN_CYCLE_CONFIG.MIN_ELEVATION_DEG);
+  const maxElevation = THREE.MathUtils.degToRad(SUN_CYCLE_CONFIG.MAX_ELEVATION_DEG);
 
   // Create a more natural sun arc
   const sunAngle = cycleProgress * Math.PI * 2; // Full circle
   const elevation = minElevation + (Math.sin(sunAngle) * 0.5 + 0.5) * (maxElevation - minElevation);
   const azimuth = sunAngle * 0.5; // Slower azimuth change for more natural movement
 
-  const r = SUN_CYCLE.sunRadius;
+  const r = SUN_CYCLE_CONFIG.SUN_RADIUS;
   const sunPos = new THREE.Vector3(
     Math.cos(azimuth) * Math.cos(elevation) * r + camera.position.x,
-    Math.sin(elevation) * r + SUN_CYCLE.sunHeight + camera.position.y,
+    Math.sin(elevation) * r + SUN_CYCLE_CONFIG.SUN_HEIGHT + camera.position.y,
     Math.sin(azimuth) * Math.cos(elevation) * r + camera.position.z
   );
 
@@ -350,17 +379,17 @@ function updateSunCycle(deltaTime) {
   const timeOfDay = cycleProgress;
 
   if (timeOfDay < 0.15) { // Early morning (0-0.15)
-    skyColor = SKY_COLORS.night.clone().lerp(SKY_COLORS.sunrise, timeOfDay / 0.15);
+    skyColor = SKY_COLOR_OBJECTS.night.clone().lerp(SKY_COLOR_OBJECTS.sunrise, timeOfDay / 0.15);
   } else if (timeOfDay < 0.25) { // Sunrise to day (0.15-0.25)
-    skyColor = SKY_COLORS.sunrise.clone().lerp(SKY_COLORS.day, (timeOfDay - 0.15) / 0.1);
+    skyColor = SKY_COLOR_OBJECTS.sunrise.clone().lerp(SKY_COLOR_OBJECTS.day, (timeOfDay - 0.15) / 0.1);
   } else if (timeOfDay < 0.75) { // Day (0.25-0.75)
-    skyColor = SKY_COLORS.day;
+    skyColor = SKY_COLOR_OBJECTS.day;
   } else if (timeOfDay < 0.85) { // Day to sunset (0.75-0.85)
-    skyColor = SKY_COLORS.day.clone().lerp(SKY_COLORS.sunset, (timeOfDay - 0.75) / 0.1);
+    skyColor = SKY_COLOR_OBJECTS.day.clone().lerp(SKY_COLOR_OBJECTS.sunset, (timeOfDay - 0.75) / 0.1);
   } else if (timeOfDay < 0.95) { // Sunset to night (0.85-0.95)
-    skyColor = SKY_COLORS.sunset.clone().lerp(SKY_COLORS.night, (timeOfDay - 0.85) / 0.1);
+    skyColor = SKY_COLOR_OBJECTS.sunset.clone().lerp(SKY_COLOR_OBJECTS.night, (timeOfDay - 0.85) / 0.1);
   } else { // Night (0.95-1.0)
-    skyColor = SKY_COLORS.night;
+    skyColor = SKY_COLOR_OBJECTS.night;
   }
 
   scene.background = skyColor;
@@ -413,7 +442,7 @@ function updateBlockSelection() {
 
   const intersects = raycaster.intersectObjects(meshes);
 
-  if (intersects.length > 0 && intersects[0].distance <= maxReach) {
+  if (intersects.length > 0 && intersects[0].distance <= PLAYER_CONFIG.MAX_REACH) {
     const intersection = intersects[0];
     const mesh = intersection.object;
 
@@ -470,14 +499,13 @@ function updateBlockSelection() {
 
 // Biome display update timer
 let biomeUpdateTimer = 0;
-const BIOME_UPDATE_INTERVAL = 0.1; // Update every 100ms
 
 // Update biome display based on camera position
 function updateBiomeDisplay(deltaTime) {
   if (!controls.isLocked) return;
 
   biomeUpdateTimer += deltaTime;
-  if (biomeUpdateTimer < BIOME_UPDATE_INTERVAL) return;
+  if (biomeUpdateTimer < UI_CONFIG.BIOME_UPDATE_INTERVAL) return;
   
   biomeUpdateTimer = 0;
 
@@ -500,7 +528,6 @@ function updateBiomeDisplay(deltaTime) {
 // =================================================================
 
 const clock = new THREE.Clock();
-const moveSpeed = 15;
 
 // Animation loop
 function animate() {
@@ -517,12 +544,12 @@ function animate() {
 
     const right = new THREE.Vector3().crossVectors(camera.up, forward).normalize();
 
-    if (keys['KeyW']) camera.position.addScaledVector(forward, moveSpeed * delta);
-    if (keys['KeyS']) camera.position.addScaledVector(forward, -moveSpeed * delta);
-    if (keys['KeyA']) camera.position.addScaledVector(right, moveSpeed * delta);
-    if (keys['KeyD']) camera.position.addScaledVector(right, -moveSpeed * delta);
-    if (keys['Space']) camera.position.y += moveSpeed * delta;
-    if (keys['ShiftLeft']) camera.position.y -= moveSpeed * delta;
+    if (keys['KeyW']) camera.position.addScaledVector(forward, PLAYER_CONFIG.MOVE_SPEED * delta);
+    if (keys['KeyS']) camera.position.addScaledVector(forward, -PLAYER_CONFIG.MOVE_SPEED * delta);
+    if (keys['KeyA']) camera.position.addScaledVector(right, PLAYER_CONFIG.MOVE_SPEED * delta);
+    if (keys['KeyD']) camera.position.addScaledVector(right, -PLAYER_CONFIG.MOVE_SPEED * delta);
+    if (keys['Space']) camera.position.y += PLAYER_CONFIG.MOVE_SPEED * delta;
+    if (keys['ShiftLeft']) camera.position.y -= PLAYER_CONFIG.MOVE_SPEED * delta;
   }
 
   // Update world based on camera position

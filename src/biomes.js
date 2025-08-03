@@ -1,4 +1,6 @@
 import { createNoise2D } from 'simplex-noise';
+import { BLOCK_TYPES } from './blocks.js';
+import { SUN_CYCLE_CONFIG } from './config.js';
 
 // World configuration constants
 export const SEA_LEVEL = 64; // Adjusted for taller world
@@ -72,33 +74,33 @@ export function getBiomeBlockType(y, surfaceHeight, biome) {
 
   if (biome.id === 0) { // LOWLAND
     if (depthFromSurface === 1) {
-      return 3; // GRASS on surface
+      return BLOCK_TYPES.GRASS; // GRASS on surface
     } else if (depthFromSurface <= 4) {
-      return 2; // DIRT layer
+      return BLOCK_TYPES.DIRT; // DIRT layer
     } else {
-      return 1; // STONE below
+      return BLOCK_TYPES.STONE; // STONE below
     }
   } else if (biome.id === 1) { // MOUNTAINS
-    if (surfaceHeight > 180) { // Snow line for high peaks
+    if (surfaceHeight > SUN_CYCLE_CONFIG.SNOW_LINE_HEIGHT) { // Snow line for high peaks
       if (depthFromSurface <= 3) {
-        return 5; // SNOW on high peaks
+        return BLOCK_TYPES.SNOW; // SNOW on high peaks
       } else if (depthFromSurface <= 6) {
-        return 2; // DIRT below snow
+        return BLOCK_TYPES.DIRT; // DIRT below snow
       } else {
-        return 1; // STONE
+        return BLOCK_TYPES.STONE; // STONE
       }
     } else {
       if (depthFromSurface === 1) {
-        return 3; // GRASS
+        return BLOCK_TYPES.GRASS; // GRASS
       } else if (depthFromSurface <= 3) {
-        return 2; // DIRT (thinner on mountains)
+        return BLOCK_TYPES.DIRT; // DIRT (thinner on mountains)
       } else {
-        return 1; // STONE
+        return BLOCK_TYPES.STONE; // STONE
       }
     }
   }
 
-  return 1; // Default to stone
+  return BLOCK_TYPES.STONE; // Default to stone
 }
 
 export class BiomeCalculator {

@@ -1,18 +1,10 @@
 import * as THREE from 'three';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
+import { BLOCKS, BLOCK_TYPES, getBlockColor } from './blocks.js';
 
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 256; // 8 layers * 32 = 256 blocks tall
 export const CHUNK_DEPTH = 32;
-
-const blocks = [
-  { type: 'AIR', color: [0, 0, 0, 0] },
-  { type: 'STONE', color: [128, 128, 128, 255] },
-  { type: 'DIRT', color: [139, 69, 19, 255] },
-  { type: 'GRASS', color: [95, 159, 53, 255] },
-  { type: 'WATER', color: [30, 144, 255, 200] },
-  { type: 'SNOW', color: [255, 255, 255, 255] },
-];
 
 export class Chunk {
   constructor(chunkX, chunkZ) {
@@ -82,8 +74,8 @@ export class Chunk {
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
         for (let y = SEA_LEVEL; y >= 0; y--) {
-          if (this.getVoxel(x, y, z) === 0) { // AIR
-            this.setVoxel(x, y, z, 4); // WATER
+          if (this.getVoxel(x, y, z) === BLOCK_TYPES.AIR) {
+            this.setVoxel(x, y, z, BLOCK_TYPES.WATER);
           }
         }
       }
@@ -177,13 +169,10 @@ export class Chunk {
 
               // Get the block color
               const blockIndex = Math.abs(val);
-              const blockColor = blocks[blockIndex].color;
-              const r = blockColor[0] / 255;
-              const g = blockColor[1] / 255;
-              const b = blockColor[2] / 255;
+              const blockColor = getBlockColor(blockIndex);
               // Push color for each vertex (4 times)
               for (let i = 0; i < 4; i++) {
-                colors.push(r, g, b);
+                colors.push(blockColor.r, blockColor.g, blockColor.b);
               }
 
               if (val > 0) {
