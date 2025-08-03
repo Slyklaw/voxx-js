@@ -1,5 +1,5 @@
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/cjs/simplex-noise.min.js';
-import { Chunk, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from 'chunk.js';
+import { Chunk, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 import { BIOME_CONFIG } from './biomes.js';
 
 self.onmessage = function(e) {
