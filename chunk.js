@@ -92,13 +92,53 @@ export class Chunk {
     }
   }
 
-  /** Create a mesh from the voxel data using Greedy Meshing */
-  createMesh() {
+  /** Create a mesh from pre-generated mesh data */
+  createMesh(meshData = null) {
+    // If no mesh data provided, create empty mesh (for chunks still being processed)
+    if (!meshData) {
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.9,
+        metalness: 0.0,
+        shadowSide: THREE.DoubleSide
+      });
+      this.mesh = new THREE.Mesh(geometry, material);
+      this.mesh.castShadow = true;
+      this.mesh.receiveShadow = true;
+      this.mesh.frustumCulled = true;
+      return this.mesh;
+    }
+
+    // Create geometry from worker-generated mesh data
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
+    geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
+    geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+
+    const material = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 0.9,
+      metalness: 0.0,
+      shadowSide: THREE.DoubleSide
+    });
+    
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
+    this.mesh.frustumCulled = true;
+    return this.mesh;
+  }
+
+  /** Generate mesh data on main thread (fallback for block editing) */
+  generateMeshData() {
     const positions = [];
     const normals = [];
     const uvs = [];
     const indices = [];
-    const colors = [];   // for vertex colors
+    const colors = [];
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -202,23 +242,12 @@ export class Chunk {
       }
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geometry.setIndex(indices);
-
-    const material = new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 0.9,
-      metalness: 0.0,
-      shadowSide: THREE.DoubleSide // Ensure shadows work on both sides
-    });
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.castShadow = true;
-    this.mesh.receiveShadow = true;
-    this.mesh.frustumCulled = true; // Enable frustum culling for performance
-    return this.mesh;
+    return {
+      positions: new Float32Array(positions),
+      normals: new Float32Array(normals),
+      uvs: new Float32Array(uvs),
+      indices: new Uint32Array(indices),
+      colors: new Float32Array(colors)
+    };
   }
 }

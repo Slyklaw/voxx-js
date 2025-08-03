@@ -16,10 +16,16 @@ export class World {
   getChunk(chunkX, chunkZ) {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
-      // Create placeholder chunk
+      // Create placeholder chunk with empty mesh
       const chunk = new Chunk(chunkX, chunkZ);
       this.chunks[key] = chunk;
       this.pendingChunks.set(key, chunk);
+
+      // Create empty placeholder mesh immediately
+      const placeholderMesh = chunk.createMesh();
+      placeholderMesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
+      this.scene.add(placeholderMesh);
+      chunk.mesh = placeholderMesh;
 
       // Queue generation task
       this.workerPool.enqueueTask(
@@ -27,11 +33,18 @@ export class World {
         (chunkData) => {
           if (!this.chunks[key]) return; // Chunk was unloaded before generation completed
           
+          // Update chunk with generated data
           chunk.voxels = new Uint8Array(chunkData.voxels);
-          const mesh = chunk.createMesh();
+          
+          // Remove old mesh and create new one with mesh data
+          if (chunk.mesh) {
+            this.scene.remove(chunk.mesh);
+            chunk.mesh.geometry.dispose();
+            chunk.mesh.material.dispose();
+          }
+          
+          const mesh = chunk.createMesh(chunkData.meshData);
           mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
-          mesh.castShadow = true;
-          mesh.receiveShadow = true;
           this.scene.add(mesh);
           chunk.mesh = mesh;
           this.pendingChunks.delete(key);

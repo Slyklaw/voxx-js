@@ -290,10 +290,10 @@ function updateChunkMesh(chunk) {
     chunk.mesh.material.dispose();
   }
 
-  const newMesh = chunk.createMesh();
+  // Generate mesh data on main thread for immediate update
+  const meshData = chunk.generateMeshData();
+  const newMesh = chunk.createMesh(meshData);
   newMesh.position.set(chunk.chunkX * CHUNK_WIDTH, 0, chunk.chunkZ * CHUNK_DEPTH);
-  newMesh.castShadow = true;
-  newMesh.receiveShadow = true;
   scene.add(newMesh);
   chunk.mesh = newMesh;
 }
