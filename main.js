@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Stats from 'https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js';
+import Stats from 'https://cdn.jsdelivr.net/npm/stats.js@0.17.0/src/Stats.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { World } from './world.js';
