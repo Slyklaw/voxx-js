@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import Stats from 'stats.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { createNoise2D } from 'simplex-noise';
-import { World } from './src/world.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './src/chunk.js';
-import { BiomeCalculator } from './src/biomes.js';
+import { World } from 'world.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from 'chunk.js';
+import { BiomeCalculator } from 'biomes.js';
 import { 
   RENDER_CONFIG, 
   LIGHTING_CONFIG, 
@@ -14,8 +14,8 @@ import {
   SKY_COLORS, 
   UI_CONFIG, 
   TEST_CONFIG 
-} from './src/config.js';
-import { BLOCK_TYPES } from './src/blocks.js';
+} from 'config.js';
+import { BLOCK_TYPES } from 'blocks.js';
 
 // 1. SCENE SETUP
 // =================================================================

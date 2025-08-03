@@ -1,6 +1,6 @@
 import { createNoise2D } from 'simplex-noise';
-import { Chunk, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../chunk.js';
-import { BIOME_CONFIG } from '../biomes.js';
+import { Chunk, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from 'chunk.js';
+import { BIOME_CONFIG } from 'biomes.js';
 
 self.onmessage = function(e) {
   const { chunkX, chunkZ, noiseSeed } = e.data;

@@ -1,4 +1,4 @@
-import { WorkerPool } from './workers/workerPool.js';
+import { WorkerPool } from './workerPool.js';
 import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
 
 export class World {
@@ -8,7 +8,7 @@ export class World {
     this.scene = scene;
     this.pendingChunks = new Map();
     this.workerPool = new WorkerPool(
-      new URL('./workers/chunkWorker.js', import.meta.url).href,
+      new URL('./chunkWorker.js', import.meta.url).href,
       4
     );
   }
