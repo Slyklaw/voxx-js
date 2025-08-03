@@ -2,7 +2,7 @@ import './style.css';
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js';
 import Stats from './stats.js';
 import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/controls/PointerLockControls.js';
-import { createNoise2D } from 'simplex-noise';
+import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/cjs/simplex-noise.min.js';
 import { World } from './world.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 import { BiomeCalculator } from './biomes.js';
