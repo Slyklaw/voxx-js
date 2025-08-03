@@ -231,12 +231,14 @@ export class Chunk {
 
     const material = new THREE.MeshStandardMaterial({ 
       vertexColors: true,
-      roughness: 0.8,
-      metalness: 0.1
+      roughness: 0.9,
+      metalness: 0.0,
+      shadowSide: THREE.DoubleSide // Ensure shadows work on both sides
     });
     this.mesh = new THREE.Mesh(geometry, material);
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = true;
+    this.mesh.frustumCulled = true; // Enable frustum culling for performance
     return this.mesh;
   }
 }

@@ -4,13 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voxel Engine</title>
-    <script type="module" crossorigin src="/assets/index.TRJYWJ5i.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index.B1Ey50sI.css">
+    <script type="module" crossorigin src="/assets/index.B1RYGoaj.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index.BtmNE3ts.css">
   </head>
   <body>
     <div id="instructions">
-      Click to play<br />(W, A, S, D = Move, SPACE = Up, SHIFT = Down, MOUSE = Look)
+      Click to play<br />(W, A, S, D = Move, SPACE = Up, SHIFT = Down, MOUSE = Look)<br />
+      Debug: H = Shadow Camera, T = Test Cube
     </div>
-    <div id="camera-position">X: 0.00 Y: 0.00 Z: 0.00</div>
+    <div id="camera-position">X: 0.00 Y: 0.00 Z: 0.00</div>
+    <div id="time-display">Day: 00:00</div>
+    <div id="crosshair">
+      <div class="crosshair-line horizontal"></div>
+      <div class="crosshair-line vertical"></div>
+    </div>
+    <div id="block-selector">
+      <div class="block-item" data-block="1">
+        <div class="block-icon stone"></div>
+        <span>Stone</span>
+      </div>
+      <div class="block-item" data-block="2">
+        <div class="block-icon dirt"></div>
+        <span>Dirt</span>
+      </div>
+      <div class="block-item" data-block="3">
+        <div class="block-icon grass"></div>
+        <span>Grass</span>
+      </div>
+      <div class="block-item" data-block="4">
+        <div class="block-icon water"></div>
+        <span>Water</span>
+      </div>
+      <div class="block-item" data-block="5">
+        <div class="block-icon snow"></div>
+        <span>Snow</span>
+      </div>
+    </div>
   </body>
 </html>
