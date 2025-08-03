@@ -1,9 +1,9 @@
 import * as THREE from 'three';
+import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 256; // 8 layers * 32 = 256 blocks tall
 export const CHUNK_DEPTH = 32;
-export const SEA_LEVEL = 64; // Adjusted for taller world
 
 const blocks = [
   { type: 'AIR', color: [0, 0, 0, 0] },
@@ -37,29 +37,7 @@ export class Chunk {
 
   /** Generate terrain data using biome-based noise functions */
   generate(heightNoise, biomeNoise) {
-    // Biome definitions
-    const biomes = {
-      LOWLAND: {
-        id: 0,
-        baseHeight: SEA_LEVEL - 10, // Near sea level
-        heightVariation: 20, // Low variation for flat terrain
-        octaves: 3,
-        persistence: 0.3,
-        lacunarity: 2.0,
-        scale: 2000 // Large scale for gentle rolling hills
-      },
-      MOUNTAINS: {
-        id: 1,
-        baseHeight: SEA_LEVEL + 60, // Well above sea level
-        heightVariation: 120, // High variation for tall peaks
-        octaves: 6,
-        persistence: 0.6,
-        lacunarity: 2.0,
-        scale: 800 // Smaller scale for more dramatic terrain
-      }
-    };
-
-    const biomeList = Object.values(biomes);
+    const biomeList = Object.values(BIOMES);
 
     for (let x = 0; x < CHUNK_WIDTH; x++) {
       for (let z = 0; z < CHUNK_DEPTH; z++) {
@@ -67,7 +45,7 @@ export class Chunk {
         const worldZ = this.chunkZ * CHUNK_DEPTH + z;
 
         // Sample biome noise to determine biome blend
-        const biomeValue = biomeNoise(worldX / 1500, worldZ / 1500); // Large scale for biome regions
+        const biomeValue = biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
         const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
 
         // Determine primary and secondary biomes for blending
@@ -80,8 +58,8 @@ export class Chunk {
         const secondaryBiome = biomeList[secondaryBiomeIdx];
 
         // Generate height for each biome
-        const primaryHeight = this.generateBiomeHeight(worldX, worldZ, primaryBiome, heightNoise);
-        const secondaryHeight = this.generateBiomeHeight(worldX, worldZ, secondaryBiome, heightNoise);
+        const primaryHeight = generateBiomeHeight(worldX, worldZ, primaryBiome, heightNoise);
+        const secondaryHeight = generateBiomeHeight(worldX, worldZ, secondaryBiome, heightNoise);
 
         // Blend heights between biomes
         const finalHeight = Math.floor(primaryHeight * (1 - blendFactor) + secondaryHeight * blendFactor);
@@ -93,7 +71,7 @@ export class Chunk {
         // Generate terrain blocks
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < clampedHeight) {
-            const blockType = this.getBiomeBlockType(y, clampedHeight, dominantBiome);
+            const blockType = getBiomeBlockType(y, clampedHeight, dominantBiome);
             this.setVoxel(x, y, z, blockType);
           }
         }
@@ -112,60 +90,7 @@ export class Chunk {
     }
   }
 
-  /** Generate height for a specific biome */
-  generateBiomeHeight(worldX, worldZ, biome, noise) {
-    let amplitude = 1;
-    let frequency = 1;
-    let height = 0;
 
-    for (let i = 0; i < biome.octaves; i++) {
-      const sampleX = (worldX / biome.scale) * frequency;
-      const sampleZ = (worldZ / biome.scale) * frequency;
-      const noiseValue = noise(sampleX, sampleZ);
-
-      height += noiseValue * amplitude;
-      amplitude *= biome.persistence;
-      frequency *= biome.lacunarity;
-    }
-
-    // Scale height based on biome characteristics
-    return biome.baseHeight + (height * biome.heightVariation);
-  }
-
-  /** Get appropriate block type based on biome and height */
-  getBiomeBlockType(y, surfaceHeight, biome) {
-    const depthFromSurface = surfaceHeight - y;
-
-    if (biome.id === 0) { // LOWLAND
-      if (depthFromSurface === 1) {
-        return 3; // GRASS on surface
-      } else if (depthFromSurface <= 4) {
-        return 2; // DIRT layer
-      } else {
-        return 1; // STONE below
-      }
-    } else if (biome.id === 1) { // MOUNTAINS
-      if (surfaceHeight > 180) { // Snow line for high peaks
-        if (depthFromSurface <= 3) {
-          return 5; // SNOW on high peaks
-        } else if (depthFromSurface <= 6) {
-          return 2; // DIRT below snow
-        } else {
-          return 1; // STONE
-        }
-      } else {
-        if (depthFromSurface === 1) {
-          return 3; // GRASS
-        } else if (depthFromSurface <= 3) {
-          return 2; // DIRT (thinner on mountains)
-        } else {
-          return 1; // STONE
-        }
-      }
-    }
-
-    return 1; // Default to stone
-  }
 
   dispose() {
     if (this.mesh) {
