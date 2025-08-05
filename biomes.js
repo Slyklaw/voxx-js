@@ -31,8 +31,9 @@ export const BIOMES = {
 
 // Biome configuration constants
 export const BIOME_CONFIG = {
-  BIOME_SCALE: 1500, // Scale for biome noise sampling
-  BIOME_SEED_MULTIPLIER: 1.337 // Multiplier for biome noise seed
+  BIOME_SCALE: 2200, // Larger scale -> broader, fewer mountain regions
+  BIOME_SEED_MULTIPLIER: 1.337, // Multiplier for biome noise seed
+  MOUNTAIN_BIAS: 0.35 // Bias to favor lowlands over mountains
 };
 
 /**
@@ -117,7 +118,12 @@ export class BiomeCalculator {
    */
   getBiomeContributions(worldX, worldZ) {
     // Sample biome noise to determine biome blend
-    const biomeValue = this.biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
+    let biomeValue = this.biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
+
+    // Apply bias to reduce mountain frequency:
+    // Pull values toward -1 (lowland) slightly, so fewer samples map to the mountain range.
+    biomeValue = Math.max(-1, Math.min(1, biomeValue - BIOME_CONFIG.MOUNTAIN_BIAS));
+
     const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
 
     // Determine primary and secondary biomes for blending
@@ -126,23 +132,33 @@ export class BiomeCalculator {
     const secondaryBiomeIdx = Math.min(primaryBiomeIdx + 1, this.biomeList.length - 1);
     const blendFactor = biomeIndex - primaryBiomeIdx;
 
-    const contributions = [];
-
-    // Calculate contributions for all biomes
-    for (let i = 0; i < this.biomeList.length; i++) {
-      let contribution = 0;
-
-      if (i === primaryBiomeIdx) {
-        contribution = (1 - blendFactor) * 100;
-      } else if (i === secondaryBiomeIdx && primaryBiomeIdx !== secondaryBiomeIdx) {
-        contribution = blendFactor * 100;
-      }
-
-      contributions.push({
-        biome: this.biomeList[i],
-        contribution: Math.round(contribution)
-      });
+    // Start with raw weights (sum to 1)
+    const weights = new Array(this.biomeList.length).fill(0);
+    weights[primaryBiomeIdx] += (1 - blendFactor);
+    if (secondaryBiomeIdx !== primaryBiomeIdx) {
+      weights[secondaryBiomeIdx] += blendFactor;
     }
+
+    // Normalize to protect against any numeric drift, then convert to integer percentages that sum to 100.
+    const total = weights.reduce((a, b) => a + b, 0) || 1;
+    const percentages = weights.map(w => (w / total) * 100);
+
+    // Round while preserving sum=100 via largest-remainder method
+    const floored = percentages.map(p => Math.floor(p));
+    let remainder = 100 - floored.reduce((a, b) => a + b, 0);
+
+    // Compute remainders and sort indices by largest fractional part
+    const remainders = percentages.map((p, i) => ({ i, frac: p - Math.floor(p) }));
+    remainders.sort((a, b) => b.frac - a.frac);
+
+    for (let k = 0; k < remainder; k++) {
+      floored[remainders[k].i] += 1;
+    }
+
+    const contributions = this.biomeList.map((biome, i) => ({
+      biome,
+      contribution: floored[i]
+    }));
 
     return contributions;
   }

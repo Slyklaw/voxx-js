@@ -11,8 +11,8 @@ export class WebGPUCamera {
     this.far = far;
     
     // Position camera for better terrain viewing
-    this.position = { x: 16, y: 80, z: 16 }; // Above chunk 0,0
-    this.rotation = { x: -0.3, y: 0, z: 0 }; // Look down slightly
+    this.position = { x: 16, y: 280, z: 16 }; // Above chunk 0,0
+    this.rotation = { x: -0.5, y: 0, z: 0 }; // Look down slightly
     
     // Matrices
     this.viewMatrix = new Float32Array(16);
