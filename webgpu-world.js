@@ -5,8 +5,8 @@
 
 import { WebGPUChunk, CHUNK_WIDTH, CHUNK_DEPTH } from './webgpu-chunk.js';
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
-import { BiomeCalculator } from '../biomes.js';
-import { WorkerPool } from '../workerPool.js';
+import { BiomeCalculator } from './biomes.js';
+import { WorkerPool } from './workerPool.js';
 
 export class WebGPUWorld {
   constructor(noiseSeed, device) {

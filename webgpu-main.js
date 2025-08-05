@@ -3,9 +3,9 @@
  * Replaces Three.js with native WebGPU implementation
  */
 
-import { WebGPURenderer } from './webgpu/webgpu-renderer.js';
-import { WebGPUCamera } from './webgpu/webgpu-camera.js';
-import { WebGPUWorld } from './webgpu/webgpu-world.js';
+import { WebGPURenderer } from './webgpu-renderer.js';
+import { WebGPUCamera } from './webgpu-camera.js';
+import { WebGPUWorld } from './webgpu-world.js';
 import { BiomeCalculator } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { 

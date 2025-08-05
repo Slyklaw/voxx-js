@@ -3,8 +3,8 @@
  * Replaces Three.js mesh generation with WebGPU buffers
  */
 
-import { getBlockColor, BLOCK_TYPES } from '../blocks.js';
-import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from '../biomes.js';
+import { getBlockColor, BLOCK_TYPES } from './blocks.js';
+import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 
 // Chunk constants (copied from chunk.js to avoid Three.js dependency)
 export const CHUNK_WIDTH = 32;
