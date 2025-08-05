@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Engine Launcher</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        .version-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .version-btn {
+            display: inline-block;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-width: 200px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .version-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .version-btn.recommended {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+        }
+        .version-btn.experimental {
+            border-color: #FF9800;
+            background: rgba(255, 152, 0, 0.3);
+        }
+        .version-description {
+            font-size: 0.9em;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        .features {
+            margin-top: 30px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .features h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .features li:before {
+            content: "🎮";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Voxel Engine</h1>
+        <p class="subtitle">Choose your preferred rendering technology</p>
+        
+        <div class="version-buttons">
+            <a href="index.html" class="version-btn recommended">
+                <div>Three.js Version</div>
+                <div class="version-description">Stable • Compatible with all browsers</div>
+            </a>
+            
+            <a href="webgpu-index.html" class="version-btn experimental">
+                <div>WebGPU Version</div>
+                <div class="version-description">Experimental • Requires Chrome 113+</div>
+            </a>
+        </div>
+
+        <div class="features">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>Infinite procedural world generation</li>
+                <li>Multiple biomes with smooth blending</li>
+                <li>Dynamic day/night cycle</li>
+                <li>Block building and destruction</li>
+                <li>Optimized chunk rendering</li>
+                <li>First-person exploration</li>
+            </ul>
+        </div>
+
+        <p style="margin-top: 30px; opacity: 0.7; font-size: 0.9em;">
+            Both versions offer the same gameplay experience.<br>
+            WebGPU version provides better performance on supported browsers.
+        </p>
+    </div>
+</body>
+</html>

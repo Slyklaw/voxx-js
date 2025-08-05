@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebGPU Single Chunk Test</title>
+    <style>
+        body { margin: 0; background: #000; font-family: Arial, sans-serif; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div id="instructions">
+        Click to lock pointer<br>
+        WASD: Move<br>
+        Mouse: Look<br>
+        ESC: Release pointer
+    </div>
+    <div id="info">
+        Position: <span id="position">0, 0, 0</span><br>
+        Rotation: <span id="rotation">0, 0</span>
+    </div>
+    
+    <script type="module">
+        import { WebGPURenderer } from './webgpu/webgpu-renderer.js';
+        import { WebGPUCamera } from './webgpu/webgpu-camera.js';
+        import { WebGPUChunk } from './webgpu/webgpu-chunk.js';
+        import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
+        
+        async function testSingleChunk() {
+            const canvas = document.getElementById('canvas');
+            
+            try {
+                // Initialize renderer
+                const renderer = new WebGPURenderer();
+                await renderer.init(canvas);
+                
+                // Create camera
+                const camera = new WebGPUCamera(75, canvas.width / canvas.height, 0.1, 2000);
+                // Start farther back on +Z, above the terrain, looking toward the chunk center (16,64,16)
+                camera.position = { x: 16, y: 120, z: 80 };
+                // Yaw toward chunk center and pitch down a bit
+                camera.rotation = { x: -0.35, y: Math.PI, z: 0 };
+                
+                // Create single chunk at origin (0,0)
+                const chunk = new WebGPUChunk(0, 0, renderer.device);
+                
+                // Generate terrain for the chunk
+                const noiseSeed = 12345; // Fixed seed for consistent results
+                const heightNoise = createNoise2D(() => noiseSeed);
+                const biomeNoise = createNoise2D(() => noiseSeed + 1000);
+                
+                chunk.generate(heightNoise, biomeNoise);
+                chunk.updateMesh();
+                
+                console.log(`Generated chunk with ${chunk.indexCount} indices`);
+                
+                // Controls
+                let isPointerLocked = false;
+                const keys = {};
+                
+                // Pointer lock
+                canvas.addEventListener('click', () => {
+                    canvas.requestPointerLock();
+                });
+                
+                document.addEventListener('pointerlockchange', () => {
+                    isPointerLocked = document.pointerLockElement === canvas;
+                });
+                
+                // Mouse movement
+                document.addEventListener('mousemove', (event) => {
+                    if (!isPointerLocked) return;
+                    
+                    const sensitivity = 0.002;
+                    camera.rotation.y -= event.movementX * sensitivity;
+                    camera.rotation.x -= event.movementY * sensitivity;
+                    
+                    // Clamp vertical rotation
+                    camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
+                });
+                
+                // Keyboard
+                document.addEventListener('keydown', (event) => {
+                    keys[event.code] = true;
+                });
+                
+                document.addEventListener('keyup', (event) => {
+                    keys[event.code] = false;
+                });
+                
+                // Movement function
+                function updateMovement(deltaTime) {
+                    if (!isPointerLocked) return;
+                    
+                    const forward = camera.getWorldDirection();
+                    const right = {
+                        x: forward.z,
+                        y: 0,
+                        z: -forward.x
+                    };
+                    
+                    // Normalize right vector
+                    const rightLength = Math.sqrt(right.x * right.x + right.z * right.z);
+                    right.x /= rightLength;
+                    right.z /= rightLength;
+                    
+                    const speed = 20 * deltaTime; // 20 units per second
+                    
+                    if (keys['KeyW']) {
+                        camera.position.x += forward.x * speed;
+                        camera.position.z += forward.z * speed;
+                    }
+                    if (keys['KeyS']) {
+                        camera.position.x -= forward.x * speed;
+                        camera.position.z -= forward.z * speed;
+                    }
+                    if (keys['KeyA']) {
+                        camera.position.x += right.x * speed;
+                        camera.position.z += right.z * speed;
+                    }
+                    if (keys['KeyD']) {
+                        camera.position.x -= right.x * speed;
+                        camera.position.z -= right.z * speed;
+                    }
+                    if (keys['Space']) {
+                        camera.position.y += speed;
+                    }
+                    if (keys['ShiftLeft']) {
+                        camera.position.y -= speed;
+                    }
+                }
+                
+                // Update info display
+                function updateInfo() {
+                    document.getElementById('position').textContent = 
+                        `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+                    document.getElementById('rotation').textContent = 
+                        `${(camera.rotation.x * 180 / Math.PI).toFixed(1)}°, ${(camera.rotation.y * 180 / Math.PI).toFixed(1)}°`;
+                }
+                
+                // Temporary debug: draw a small triangle marker at chunk center (16,64,16)
+                const debugVertices = new Float32Array([
+                    // Position (x,y,z), Normal (x,y,z), Color (r,g,b)
+                    16.0,  64.5, 16.0,   0,1,0,   1,0,0,
+                    15.7,  64.0, 16.0,   0,1,0,   1,0,0,
+                    16.3,  64.0, 16.0,   0,1,0,   1,0,0,
+                ]);
+                const debugVB = renderer.device.createBuffer({
+                    size: debugVertices.byteLength,
+                    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+                });
+                renderer.device.queue.writeBuffer(debugVB, 0, debugVertices);
+
+                // Large debug quad at y=64 from (0,64,0) to (32,64,32) to validate camera/projection
+                const quadVertices = new Float32Array([
+                    // two triangles, greenish
+                    0,   64,  0,   0,1,0,   0,0.7,0.2,
+                    32,  64,  0,   0,1,0,   0,0.7,0.2,
+                    0,   64, 32,   0,1,0,   0,0.7,0.2,
+
+                    32,  64,  0,   0,1,0,   0,0.7,0.2,
+                    32,  64, 32,   0,1,0,   0,0.7,0.2,
+                    0,   64, 32,   0,1,0,   0,0.7,0.2,
+                ]);
+                const quadVB = renderer.device.createBuffer({
+                    size: quadVertices.byteLength,
+                    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+                });
+                renderer.device.queue.writeBuffer(quadVB, 0, quadVertices);
+
+                // Render loop
+                let lastTime = 0;
+                function render(currentTime) {
+                    requestAnimationFrame(render);
+                    
+                    const deltaTime = (currentTime - lastTime) / 1000;
+                    lastTime = currentTime;
+                    
+                    // Update movement
+                    updateMovement(deltaTime);
+                    
+                    // Update camera
+                    camera.updateViewProjectionMatrix();
+                    
+                    // Update info
+                    updateInfo();
+                    
+                    // Update uniforms
+                    const modelMatrix = new Float32Array([
+                        1, 0, 0, 0,
+                        0, 1, 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, 1
+                    ]);
+                    
+                    const lightDirection = [0.5, -1.0, 0.5];
+                    const lightColor = [1.0, 1.0, 1.0];
+                    const ambientColor = [0.4, 0.4, 0.6];
+                    
+                    renderer.updateUniforms(
+                        camera.viewMatrix,
+                        camera.projectionMatrix,
+                        modelMatrix,
+                        lightDirection,
+                        lightColor,
+                        ambientColor
+                    );
+                    
+                    // Render the single chunk
+                    if (chunk.indexCount > 0) {
+                        renderer.render([chunk], camera);
+                    }
+
+                    // Render debug geometry (overlay pass sharing same pipeline/uniforms)
+                    {
+                        const cmd = renderer.device.createCommandEncoder();
+                        const pass = cmd.beginRenderPass({
+                            colorAttachments: [{
+                                view: renderer.context.getCurrentTexture().createView(),
+                                clearValue: { r: 0.53, g: 0.81, b: 0.92, a: 1.0 },
+                                loadOp: 'load',
+                                storeOp: 'store'
+                            }],
+                            depthStencilAttachment: {
+                                view: renderer.depthTexture.createView(),
+                                depthClearValue: 1.0,
+                                depthLoadOp: 'load',
+                                depthStoreOp: 'store'
+                            }
+                        });
+
+                        pass.setPipeline(renderer.renderPipeline);
+                        const bindGroup = renderer.device.createBindGroup({
+                            layout: renderer.renderPipeline.getBindGroupLayout(0),
+                            entries: [{ binding: 0, resource: { buffer: renderer.uniformBuffer } }]
+                        });
+                        pass.setBindGroup(0, bindGroup);
+
+                        // Draw large quad
+                        pass.setVertexBuffer(0, quadVB);
+                        pass.draw(6);
+
+                        // Draw small marker triangle
+                        pass.setVertexBuffer(0, debugVB);
+                        pass.draw(3);
+
+                        pass.end();
+                        renderer.device.queue.submit([cmd.finish()]);
+                    }
+                }
+                
+                render(0);
+                console.log('✅ Single chunk test running!');
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+            }
+        }
+        
+        testSingleChunk();
+    </script>
+</body>
+</html>

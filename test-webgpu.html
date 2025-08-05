@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebGPU Test</title>
+</head>
+<body>
+    <div id="status">Testing WebGPU imports...</div>
+    <script type="module">
+        try {
+            // Test imports
+            const { WebGPUChunk, CHUNK_WIDTH } = await import('./webgpu/webgpu-chunk.js');
+            const { WebGPUWorld } = await import('./webgpu/webgpu-world.js');
+            const { WebGPURenderer } = await import('./webgpu/webgpu-renderer.js');
+            const { WebGPUCamera } = await import('./webgpu/webgpu-camera.js');
+            
+            document.getElementById('status').innerHTML = `
+                ✅ All WebGPU modules imported successfully!<br>
+                - WebGPUChunk: ${typeof WebGPUChunk}<br>
+                - WebGPUWorld: ${typeof WebGPUWorld}<br>
+                - WebGPURenderer: ${typeof WebGPURenderer}<br>
+                - WebGPUCamera: ${typeof WebGPUCamera}<br>
+                - CHUNK_WIDTH: ${CHUNK_WIDTH}<br>
+                <br>
+                <a href="webgpu-index.html">Launch WebGPU Version</a>
+            `;
+        } catch (error) {
+            document.getElementById('status').innerHTML = `
+                ❌ Import error: ${error.message}<br>
+                <pre>${error.stack}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGPU Voxel Engine</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="instructions">
+      Click to play<br />(W, A, S, D = Move, SPACE = Up, SHIFT = Down, MOUSE = Look)<br />
+      WebGPU Version
+    </div>
+    <div id="camera-position">X: 0.00 Y: 0.00 Z: 0.00</div>
+    <div id="time-display">Day: 00:00</div>
+    <div id="biome-display">
+      <div class="biome-title">Biomes</div>
+      <div class="biome-info">
+        <div class="biome-item">
+          <span class="biome-name">Lowland:</span>
+          <div class="biome-bar">
+            <div class="biome-fill lowland" style="width: 0%"></div>
+          </div>
+          <span class="biome-percent">0%</span>
+        </div>
+        <div class="biome-item">
+          <span class="biome-name">Mountains:</span>
+          <div class="biome-bar">
+            <div class="biome-fill mountains" style="width: 0%"></div>
+          </div>
+          <span class="biome-percent">0%</span>
+        </div>
+      </div>
+    </div>
+    <div id="crosshair">
+      <div class="crosshair-line horizontal"></div>
+      <div class="crosshair-line vertical"></div>
+    </div>
+    <div id="block-selector">
+      <div class="block-item" data-block="1">
+        <div class="block-icon stone"></div>
+        <span>Stone</span>
+      </div>
+      <div class="block-item" data-block="2">
+        <div class="block-icon dirt"></div>
+        <span>Dirt</span>
+      </div>
+      <div class="block-item" data-block="3">
+        <div class="block-icon grass"></div>
+        <span>Grass</span>
+      </div>
+      <div class="block-item" data-block="4">
+        <div class="block-icon water"></div>
+        <span>Water</span>
+      </div>
+      <div class="block-item" data-block="5">
+        <div class="block-icon snow"></div>
+        <span>Snow</span>
+      </div>
+    </div>
+    <script type="module" src="./webgpu-main.js" type="text/javascript"></script>
+  </body>
+</html>

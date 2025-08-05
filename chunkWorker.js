@@ -15,7 +15,7 @@ self.onmessage = function (e) {
     chunk.generate(heightNoise, biomeNoise);
 
     // Generate mesh data using greedy meshing
-    const meshData = generateMeshData(chunk);
+    const meshData = generateMeshData(chunk, chunkX, chunkZ);
 
     // Serialize chunk data with mesh
     const chunkData = {
@@ -43,12 +43,16 @@ self.onmessage = function (e) {
  * Generate mesh data using greedy meshing algorithm
  * This is moved from the main thread to improve performance
  */
-function generateMeshData(chunk) {
+function generateMeshData(chunk, chunkX, chunkZ) {
   const positions = [];
   const normals = [];
   const uvs = [];
   const indices = [];
   const colors = [];
+  
+  // World-space offsets for this chunk
+  const worldOffsetX = chunkX * CHUNK_WIDTH;
+  const worldOffsetZ = chunkZ * CHUNK_DEPTH;
 
   const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -106,10 +110,11 @@ function generateMeshData(chunk) {
             const dv = [0, 0, 0]; dv[v] = h;
 
             const vertexCount = positions.length / 3;
-            positions.push(x[0], x[1], x[2]);
-            positions.push(x[0] + du[0], x[1] + du[1], x[2] + du[2]);
-            positions.push(x[0] + dv[0], x[1] + dv[1], x[2] + dv[2]);
-            positions.push(x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2]);
+            // Push positions in WORLD coordinates by adding chunk offsets
+            positions.push(x[0] + worldOffsetX, x[1], x[2] + worldOffsetZ);
+            positions.push(x[0] + du[0] + worldOffsetX, x[1] + du[1], x[2] + du[2] + worldOffsetZ);
+            positions.push(x[0] + dv[0] + worldOffsetX, x[1] + dv[1], x[2] + dv[2] + worldOffsetZ);
+            positions.push(x[0] + du[0] + dv[0] + worldOffsetX, x[1] + du[1] + dv[1], x[2] + du[2] + dv[2] + worldOffsetZ);
 
             const normal = [0, 0, 0];
             if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }

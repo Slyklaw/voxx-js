@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebGPU Simple Test</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div id="status" style="position: absolute; top: 10px; left: 10px; color: white;">Testing simple rendering...</div>
+
+    <script type="module">
+        async function testSimple() {
+            const canvas = document.getElementById('canvas');
+            const status = document.getElementById('status');
+
+            try {
+                // Get WebGPU device
+                const adapter = await navigator.gpu.requestAdapter();
+                const device = await adapter.requestDevice();
+
+                // Configure canvas
+                const context = canvas.getContext('webgpu');
+                context.configure({
+                    device: device,
+                    format: 'bgra8unorm'
+                });
+
+                // No uniform buffer needed for this simple test
+
+                // Vertex shader without uniforms for simplicity
+                const vertexShader = device.createShaderModule({
+                    code: `
+                        struct VertexInput {
+                            @location(0) position: vec3<f32>,
+                            @location(1) normal: vec3<f32>,
+                            @location(2) color: vec3<f32>,
+                        }
+                        
+                        struct VertexOutput {
+                            @builtin(position) position: vec4<f32>,
+                            @location(0) color: vec3<f32>,
+                        }
+                        
+                        @vertex
+                        fn vs_main(input: VertexInput) -> VertexOutput {
+                            var output: VertexOutput;
+                            // Use input position directly in clip space (no transformation)
+                            output.position = vec4<f32>(input.position * 0.5, 1.0); // Scale down to fit
+                            output.color = input.color;
+                            return output;
+                        }
+                    `
+                });
+
+                // Fragment shader
+                const fragmentShader = device.createShaderModule({
+                    code: `
+                        @fragment
+                        fn fs_main(@location(0) color: vec3<f32>) -> @location(0) vec4<f32> {
+                            return vec4<f32>(color, 1.0);
+                        }
+                    `
+                });
+
+                // Create render pipeline
+                const pipeline = device.createRenderPipeline({
+                    layout: 'auto',
+                    vertex: {
+                        module: vertexShader,
+                        entryPoint: 'vs_main',
+                        buffers: [{
+                            arrayStride: 9 * 4, // 3 floats position + 3 floats normal + 3 floats color
+                            attributes: [
+                                { format: 'float32x3', offset: 0, shaderLocation: 0 }, // position
+                                { format: 'float32x3', offset: 12, shaderLocation: 1 }, // normal
+                                { format: 'float32x3', offset: 24, shaderLocation: 2 }, // color
+                            ]
+                        }]
+                    },
+                    fragment: {
+                        module: fragmentShader,
+                        entryPoint: 'fs_main',
+                        targets: [{ format: 'bgra8unorm' }]
+                    },
+                    primitive: {
+                        topology: 'triangle-list',
+                        cullMode: 'none'
+                    }
+                });
+
+                // Create a simple triangle in our vertex format
+                const vertices = new Float32Array([
+                    // Position (x,y,z), Normal (x,y,z), Color (r,g,b)
+                    0.0, 0.8, 0.0, 0, 0, 1, 1, 0, 0,  // top (red)
+                    -0.8, -0.8, 0.0, 0, 0, 1, 0, 1, 0,  // bottom-left (green)
+                    0.8, -0.8, 0.0, 0, 0, 1, 0, 0, 1,  // bottom-right (blue)
+                ]);
+
+                // Create vertex buffer
+                const vertexBuffer = device.createBuffer({
+                    size: vertices.byteLength,
+                    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+                });
+                device.queue.writeBuffer(vertexBuffer, 0, vertices);
+
+                // Render (no bind group needed since we removed uniforms)
+                const commandEncoder = device.createCommandEncoder();
+                const renderPass = commandEncoder.beginRenderPass({
+                    colorAttachments: [{
+                        view: context.getCurrentTexture().createView(),
+                        clearValue: { r: 0.0, g: 0.0, b: 0.5, a: 1.0 }, // Dark blue background
+                        loadOp: 'clear',
+                        storeOp: 'store'
+                    }]
+                });
+
+                renderPass.setPipeline(pipeline);
+                renderPass.setVertexBuffer(0, vertexBuffer);
+                renderPass.draw(3); // Draw 3 vertices (1 triangle)
+                renderPass.end();
+
+                device.queue.submit([commandEncoder.finish()]);
+
+                status.textContent = '✅ Simple test rendered! Should see a colored triangle.';
+
+            } catch (error) {
+                status.textContent = `❌ Error: ${error.message}`;
+                console.error(error);
+            }
+        }
+
+        testSimple();
+    </script>
+</body>
+
+</html>
