@@ -10,18 +10,18 @@ export const BIOMES = {
   LOWLAND: {
     id: 0,
     name: 'Lowland',
-    baseHeight: SEA_LEVEL - 10, // Near sea level
-    heightVariation: 20, // Low variation for flat terrain
-    octaves: 3,
-    persistence: 0.3,
-    lacunarity: 2.0,
-    scale: 2000 // Large scale for gentle rolling hills
+    baseHeight: SEA_LEVEL - 6, // Slightly closer to sea level
+    heightVariation: 6, // Much lower variation for near-flat terrain
+    octaves: 1, // Single octave to eliminate fractal roughness
+    persistence: 0.2,
+    lacunarity: 1.6,
+    scale: 6000 // Very large scale so changes are extremely gradual
   },
   MOUNTAINS: {
     id: 1,
     name: 'Mountains',
     baseHeight: SEA_LEVEL + 60, // Well above sea level
-    heightVariation: 120, // High variation for tall peaks
+    heightVariation: 80, // High variation for tall peaks
     octaves: 6,
     persistence: 0.6,
     lacunarity: 2.0,
@@ -33,7 +33,7 @@ export const BIOMES = {
 export const BIOME_CONFIG = {
   BIOME_SCALE: 2200, // Larger scale -> broader, fewer mountain regions
   BIOME_SEED_MULTIPLIER: 1.337, // Multiplier for biome noise seed
-  MOUNTAIN_BIAS: 0.35 // Bias to favor lowlands over mountains
+  MOUNTAIN_BIAS: 0.5 // Bias to favor lowlands over mountains
 };
 
 /**
@@ -45,6 +45,11 @@ export const BIOME_CONFIG = {
  * @returns {number} Generated height
  */
 export function generateBiomeHeight(worldX, worldZ, biome, noise) {
+  // TEST: Force perfectly flat Lowland to isolate any other sources of elevation.
+  if (biome.id === BIOMES.LOWLAND.id) {
+    return biome.baseHeight; // exactly flat
+  }
+
   let amplitude = 1;
   let frequency = 1;
   let height = 0;
@@ -121,7 +126,6 @@ export class BiomeCalculator {
     let biomeValue = this.biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
 
     // Apply bias to reduce mountain frequency:
-    // Pull values toward -1 (lowland) slightly, so fewer samples map to the mountain range.
     biomeValue = Math.max(-1, Math.min(1, biomeValue - BIOME_CONFIG.MOUNTAIN_BIAS));
 
     const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
@@ -139,18 +143,14 @@ export class BiomeCalculator {
       weights[secondaryBiomeIdx] += blendFactor;
     }
 
-    // Normalize to protect against any numeric drift, then convert to integer percentages that sum to 100.
+    // Normalize and convert to integer percentages that sum to 100.
     const total = weights.reduce((a, b) => a + b, 0) || 1;
     const percentages = weights.map(w => (w / total) * 100);
 
-    // Round while preserving sum=100 via largest-remainder method
+    // Largest-remainder rounding to ensure exact 100% total
     const floored = percentages.map(p => Math.floor(p));
     let remainder = 100 - floored.reduce((a, b) => a + b, 0);
-
-    // Compute remainders and sort indices by largest fractional part
-    const remainders = percentages.map((p, i) => ({ i, frac: p - Math.floor(p) }));
-    remainders.sort((a, b) => b.frac - a.frac);
-
+    const remainders = percentages.map((p, i) => ({ i, frac: p - Math.floor(p) })).sort((a, b) => b.frac - a.frac);
     for (let k = 0; k < remainder; k++) {
       floored[remainders[k].i] += 1;
     }

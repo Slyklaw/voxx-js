@@ -36,12 +36,10 @@ export class Chunk {
         const worldX = this.chunkX * CHUNK_WIDTH + x;
         const worldZ = this.chunkZ * CHUNK_DEPTH + z;
 
-        // Sample biome noise to determine biome blend
+        // Restore normal biome selection and blending
         const biomeValue = biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
-        const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
-
-        // Determine primary and secondary biomes for blending
-        const biomeIndex = normalizedBiome * (biomeList.length - 0.001); // Slight offset to avoid edge case
+        const normalizedBiome = (biomeValue + 1) * 0.5; // [-1,1] -> [0,1]
+        const biomeIndex = normalizedBiome * (biomeList.length - 0.001);
         const primaryBiomeIdx = Math.floor(biomeIndex);
         const secondaryBiomeIdx = Math.min(primaryBiomeIdx + 1, biomeList.length - 1);
         const blendFactor = biomeIndex - primaryBiomeIdx;
