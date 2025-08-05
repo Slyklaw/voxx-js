@@ -1,6 +1,5 @@
 /**
  * WebGPU Camera implementation
- * Replaces Three.js camera with custom matrix calculations
  */
 
 export class WebGPUCamera {

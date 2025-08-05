@@ -1,11 +1,10 @@
 /**
  * WebGPU Voxel Engine Main File
- * Replaces Three.js with native WebGPU implementation
  */
 
-import { WebGPURenderer } from './webgpu-renderer.js';
-import { WebGPUCamera } from './webgpu-camera.js';
-import { WebGPUWorld } from './webgpu-world.js';
+import { WebGPURenderer } from './renderer.js';
+import { WebGPUCamera } from './camera.js';
+import { WebGPUWorld } from './world.js';
 import { BiomeCalculator } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { 

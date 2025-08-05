@@ -1,6 +1,5 @@
 /**
  * WebGPU Renderer for Voxel Engine
- * Replaces Three.js renderer with native WebGPU implementation
  */
 
 export class WebGPURenderer {

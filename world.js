@@ -1,103 +1,112 @@
-import { WorkerPool } from './workerPool.js';
-import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
+/**
+ * WebGPU World implementation
+ */
 
-export class World {
-  constructor(noiseSeed, scene) {
-    this.chunks = {}; // key: `${chunkX},${chunkZ}`
+import { WebGPUChunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
+import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
+import { BiomeCalculator } from './biomes.js';
+import { WorkerPool } from './workerPool.js';
+
+export class WebGPUWorld {
+  constructor(noiseSeed, device) {
+    this.chunks = {};
     this.noiseSeed = noiseSeed;
-    this.scene = scene;
+    this.device = device;
+
+    // Track pending worker jobs keyed by "x,z"
     this.pendingChunks = new Map();
-    this.workerPool = new WorkerPool(
-      new URL('./chunkWorker.js', import.meta.url).href,
-      4
-    );
+
+    // Worker pool for chunk generation/meshing (reuse existing chunkWorker.js)
+    this.pool = new WorkerPool('./chunkWorker.js');
+
+    // Create noise functions (kept for any main-thread quick tests, not used for generation now)
+    this.heightNoise = createNoise2D(() => noiseSeed);
+    this.biomeNoise = createNoise2D(() => noiseSeed + 1000);
+    this.biomeCalculator = new BiomeCalculator(noiseSeed);
   }
 
   getChunk(chunkX, chunkZ) {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
-      // Create placeholder chunk with empty mesh
-      const chunk = new Chunk(chunkX, chunkZ);
+      const chunk = new WebGPUChunk(chunkX, chunkZ, this.device);
       this.chunks[key] = chunk;
-      this.pendingChunks.set(key, chunk);
 
-      // Create empty placeholder mesh immediately
-      const placeholderMesh = chunk.createMesh();
-      placeholderMesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
-      this.scene.add(placeholderMesh);
-      chunk.mesh = placeholderMesh;
-
-      // Queue generation task
-      this.workerPool.enqueueTask(
-        { chunkX, chunkZ, noiseSeed: this.noiseSeed },
-        (chunkData) => {
-          if (!this.chunks[key]) return; // Chunk was unloaded before generation completed
-          
-          // Update chunk with generated data
-          chunk.voxels = new Uint8Array(chunkData.voxels);
-          
-          // Remove old mesh and create new one with mesh data
-          if (chunk.mesh) {
-            this.scene.remove(chunk.mesh);
-            chunk.mesh.geometry.dispose();
-            chunk.mesh.material.dispose();
+      // Enqueue async generation via worker if not already pending
+      if (!this.pendingChunks.has(key)) {
+        const payload = { chunkX, chunkZ, noiseSeed: this.noiseSeed };
+        const onComplete = (chunkData) => {
+          // Guard if chunk was unloaded while job ran
+          if (!this.chunks[key]) {
+            this.pendingChunks.delete(key);
+            return;
           }
-          
-          const mesh = chunk.createMesh(chunkData.meshData);
-          mesh.position.set(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_DEPTH);
-          this.scene.add(mesh);
-          chunk.mesh = mesh;
+          // Build GPU buffers from worker mesh
+          if (chunkData && chunkData.meshData) {
+            this.chunks[key].fromWorkerMesh(chunkData.meshData);
+          }
           this.pendingChunks.delete(key);
-        }
-      );
+        };
+        this.pendingChunks.set(key, true);
+        this.pool.enqueueTask(payload, onComplete);
+      }
+      return chunk;
     }
     return this.chunks[key];
   }
 
+  // Main-thread generation retained for reference or debugging; no longer used in normal flow.
+  generateChunk(chunk) {
+    chunk.generate(this.heightNoise, this.biomeNoise);
+    chunk.updateMesh();
+  }
+
   update(cameraPosition, renderDistance = 8) {
-    // Determine current camera chunk
     const camChunkX = Math.floor(cameraPosition.x / CHUNK_WIDTH);
     const camChunkZ = Math.floor(cameraPosition.z / CHUNK_DEPTH);
 
-    // Create a set for chunks that should be loaded
     const chunksToKeep = new Set();
 
-    // Load chunks around the camera
+    // Prioritize loading near-to-far by pushing coordinates into a list with distance sort
+    const coords = [];
     for (let x = camChunkX - renderDistance; x <= camChunkX + renderDistance; x++) {
       for (let z = camChunkZ - renderDistance; z <= camChunkZ + renderDistance; z++) {
-        const key = `${x},${z}`;
-        chunksToKeep.add(key);
-        if (!this.chunks[key]) {
-          this.getChunk(x, z);
-        }
+        const dx = x - camChunkX;
+        const dz = z - camChunkZ;
+        coords.push({ x, z, d2: dx * dx + dz * dz });
+      }
+    }
+    coords.sort((a, b) => a.d2 - b.d2);
+
+    for (const c of coords) {
+      const key = `${c.x},${c.z}`;
+      chunksToKeep.add(key);
+      if (!this.chunks[key]) {
+        this.getChunk(c.x, c.z);
       }
     }
 
-    // Unload chunks that are too far away
+    // Unload distant chunks (and ignore any late worker results)
     for (const key in this.chunks) {
       if (!chunksToKeep.has(key)) {
         const chunk = this.chunks[key];
-        
-        // Cancel pending generation if exists
-        if (this.pendingChunks.has(key)) {
-          this.pendingChunks.delete(key);
-        }
-        
-        this.scene.remove(chunk.mesh);
         chunk.dispose();
         delete this.chunks[key];
+        // Mark as not needed. We cannot cancel an in-flight worker easily, but we can ignore late results.
+        // pendingChunks entry will be cleared when the result arrives; leaving it is harmless.
       }
     }
   }
 
+  getVisibleChunks() {
+    return Object.values(this.chunks).filter(chunk => chunk.indexCount > 0);
+  }
+
   dispose() {
-    this.workerPool.terminate();
     for (const key in this.chunks) {
-      const chunk = this.chunks[key];
-      this.scene.remove(chunk.mesh);
-      chunk.dispose();
+      this.chunks[key].dispose();
     }
     this.chunks = {};
     this.pendingChunks.clear();
+    if (this.pool) this.pool.terminate();
   }
 }
