@@ -314,16 +314,18 @@ export class SkyRenderer {
               
               if (sunUV.x >= 0.0 && sunUV.x <= 1.0 && sunUV.y >= 0.0 && sunUV.y <= 1.0) {
                 let sunSample = textureSample(sunTexture, celestialSampler, sunUV);
-                let sunColor = sunSample.xyz * 2.0 * sunElevation;
-                finalColor = mix(finalColor, sunColor, sunSample.w * sunElevation);
+                let sunColor = sunSample.xyz * 2.2 * sunElevation;
+                // Additive blend to avoid dark halo or over-mixing with background
+                finalColor += sunColor * sunSample.w * sunElevation;
               }
             }
             
-            // Sun glow
-            if (angularDistance < sunRadius * 2.0) {
-              let glowIntensity = (1.0 - (angularDistance / (sunRadius * 2.0))) * 0.2;
-              let glowColor = vec3<f32>(1.0, 0.9, 0.4) * glowIntensity * sunElevation;
-              finalColor = mix(finalColor, glowColor, 0.3);
+            // Remove dark halo by switching to soft additive glow with tighter falloff
+            if (angularDistance < sunRadius * 1.5) {
+              let t = 1.0 - (angularDistance / (sunRadius * 1.5));
+              let glowIntensity = smoothstep(0.0, 1.0, t) * 0.35;
+              let glowColor = vec3<f32>(1.0, 0.95, 0.5) * glowIntensity * sunElevation;
+              finalColor += glowColor;
             }
           }
           
