@@ -24,6 +24,8 @@ let isPointerLocked = false;
 let keys = {};
 let selectedBlockType = BLOCK_TYPES.STONE;
 let sunCycleTime = 0;
+// Axial tilt in degrees for the world's rotation (affects max altitude; 0 = straight over equator)
+const AXIAL_TILT_DEG = 23.5;
 let targetedBlock = null;
 
 // Lighting state
@@ -262,63 +264,107 @@ function updateSunCycle(deltaTime) {
 
   const cycleProgress = sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE;
 
-  // Calculate sun position - rises in east (+X), sets in west (-X)
-  // At cycleProgress 0: sun at eastern horizon
-  // At cycleProgress 0.5: sun at western horizon
-  const minElevation = SUN_CYCLE_CONFIG.MIN_ELEVATION_DEG * Math.PI / 180;
-  const maxElevation = SUN_CYCLE_CONFIG.MAX_ELEVATION_DEG * Math.PI / 180;
+  // Model the sun/moon on a celestial sphere with axial tilt.
+  // Coordinate system (world): +X = East, +Z = North, +Y = Up.
+  // We rotate a base vector around a tilted axis to produce an arc that rises in the East and sets in the West.
+  const tiltRad = (AXIAL_TILT_DEG * Math.PI) / 180;
 
-  // Sun travels from east (+X) to west (-X) over the course of the day
-  const sunAzimuth = (cycleProgress + 0.25) * Math.PI; // π/4 to 5π/4 (east to west)
+  // Choose a rotation axis that is Earth's-like: mostly +Z (north) but slightly tilted towards +X
+  // so the sun's daily path is inclined and never directly overhead.
+  // Axis must be normalized.
+  let axis = [Math.sin(tiltRad), 0, Math.cos(tiltRad)]; // tilt towards +X from +Z
+  const axisLen = Math.hypot(axis[0], axis[1], axis[2]);
+  axis = [axis[0] / axisLen, axis[1] / axisLen, axis[2] / axisLen];
 
-  // Sun elevation follows a sine curve, highest at noon (cycleProgress = 0.25)
-  const elevationProgress = Math.sin(cycleProgress * Math.PI * 2);
-  const sunElevation = minElevation + (Math.max(0, elevationProgress) * (maxElevation - minElevation));
+  // Daily rotation angle. We want:
+  // - sunrise (east horizon) at cycleProgress ~ 0.0
+  // - noon (highest point) at cycleProgress ~ 0.25
+  // - sunset (west horizon) at cycleProgress ~ 0.5
+  // - midnight at cycleProgress ~ 0.75
+  // Rotating a vector with angle theta around 'axis' gives that phasing with an offset of -pi/2.
+  const theta = cycleProgress * 2 * Math.PI - Math.PI / 2;
 
-  // Update light direction (sun position)
-  lightDirection[0] = Math.sin(sunAzimuth) * Math.cos(sunElevation);
-  lightDirection[1] = -Math.sin(sunElevation);
-  lightDirection[2] = Math.cos(sunAzimuth) * Math.cos(sunElevation);
+  // Base vector before rotation: point to the East horizon with slight downward so that after tilt it behaves correctly.
+  // Start with a unit vector roughly pointing along +X with small upward component so arc is above horizon when expected.
+  const base = [1, 0, 0]; // along +X (east)
 
-  // Calculate moon position (exactly opposite to sun)
-  const moonAzimuth = sunAzimuth + Math.PI; // Opposite azimuth
-  const moonElevationProgress = Math.sin((cycleProgress + 0.5) * Math.PI * 2); // Offset by half cycle
-  const moonElevation = minElevation + (Math.max(0, moonElevationProgress) * (maxElevation - minElevation));
+  // Rotate 'base' around 'axis' by theta using Rodrigues' rotation formula
+  const ux = axis[0], uy = axis[1], uz = axis[2];
+  const cosT = Math.cos(theta), sinT = Math.sin(theta);
+  const bx = base[0], by = base[1], bz = base[2];
 
-  const moonDirection = [
-    Math.sin(moonAzimuth) * Math.cos(moonElevation),
-    -Math.sin(moonElevation),
-    Math.cos(moonAzimuth) * Math.cos(moonElevation)
-  ];
+  const dot = ux * bx + uy * by + uz * bz;
+  const rx =
+    bx * cosT +
+    (uy * bz - uz * by) * sinT +
+    ux * dot * (1 - cosT);
+  const ry =
+    by * cosT +
+    (uz * bx - ux * bz) * sinT +
+    uy * dot * (1 - cosT);
+  const rz =
+    bz * cosT +
+    (ux * by - uy * bx) * sinT +
+    uz * dot * (1 - cosT);
 
-  // Update sky data
-  skyData.sunDirection = [...lightDirection];
-  skyData.moonDirection = moonDirection;
+  // Sun direction is opposite of light direction in shading (shaders use -lightDirection),
+  // so store the vector from world origin toward the sun.
+  const sunDir = [rx, ry, rz];
+
+  // Compute simple "elevation progress" from Y component clamped to [0,1] for intensity and visibility
+  const elevationProgress = Math.max(0, ry); // positive when above horizon
+
+  // Update single directional light to follow the sun
+  lightDirection[0] = sunDir[0];
+  lightDirection[1] = sunDir[1];
+  lightDirection[2] = sunDir[2];
+
+  // Moon is at opposition (opposite on the celestial sphere)
+  const moonDir = [-sunDir[0], -sunDir[1], -sunDir[2]];
+  const moonElevationProgress = Math.max(0, -ry); // moon "above horizon" when sun is below
+
+  // Update sky data for skybox shader
+  skyData.sunDirection = [sunDir[0], sunDir[1], sunDir[2]];
+  skyData.moonDirection = [moonDir[0], moonDir[1], moonDir[2]];
   skyData.cycleProgress = cycleProgress;
-  skyData.sunElevation = Math.max(0, elevationProgress);
-  skyData.moonElevation = Math.max(0, moonElevationProgress);
 
-  // Update light intensity based on sun elevation
-  const elevationNormalized = Math.max(0, elevationProgress);
-  const lightIntensity = Math.max(0.2, elevationNormalized * 1.2);
+  // Keep sun visible whenever it's above the horizon; avoid over-fading with very shallow elevation
+  // Use a smoothstep from a small threshold to 1 to keep it bright through low angles.
+  const sunVis = Math.max(0, ry);
+  const moonVis = Math.max(0, -ry);
+  // Slight boost so it doesn't vanish at low altitudes
+  skyData.sunElevation = Math.min(1, Math.max(0.2, sunVis));
+  skyData.moonElevation = Math.min(1, Math.max(0.2, moonVis));
 
+  // Lighting response: brighter when sun is higher
+  const lightIntensity = Math.max(0.15, elevationProgress * 1.2);
   lightColor[0] = lightIntensity;
   lightColor[1] = lightIntensity;
   lightColor[2] = lightIntensity;
 
-  // Update ambient light
-  const ambientIntensity = Math.max(0.25, elevationNormalized * 0.4 + 0.2);
+  // Ambient light: small baseline plus a boost during day
+  const ambientIntensity = Math.max(0.2, elevationProgress * 0.45 + 0.2);
   ambientColor[0] = ambientIntensity * 0.4;
   ambientColor[1] = ambientIntensity * 0.4;
   ambientColor[2] = ambientIntensity * 0.6;
 
-  // Update time display
-  const dayTime = (cycleProgress < 0.5) ? cycleProgress * 2 : (cycleProgress - 0.5) * 2;
-  const hours = Math.floor(dayTime * 24);
-  const minutes = Math.floor((dayTime * 24 - hours) * 60);
+  // Remap cycle so:
+  //  - 06:00 = sunrise at eastern horizon
+  //  - 12:00 = highest point (noon)
+  //  - 18:00 = sunset at western horizon
+  //  - 00:00 = midnight (below horizon)
+  //
+  // Our theta = cycle*2π - π/2 puts sunrise at cycle≈0.
+  // So we offset clock by +6h (0.25 of a day) to align sunrise with 06:00.
+  const hoursFloat = ((cycleProgress + 0.25) % 1) * 24;
+  const hours = Math.floor(hoursFloat);
+  const minutes = Math.floor((hoursFloat - hours) * 60);
   const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  const dayNight = (cycleProgress < 0.5) ? 'Day' : 'Night';
-  document.getElementById('time-display').textContent = `${dayNight}: ${timeString}`;
+
+  // Day/Night label based on sun altitude
+  const dayNight = elevationProgress > 0 ? 'Day' : 'Night';
+  const el = document.getElementById('time-display');
+  if (el) el.textContent = `${dayNight}: ${timeString}`;
 }
 
 let biomeUpdateTimer = 0;

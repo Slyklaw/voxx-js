@@ -15,19 +15,19 @@ export class SkyRenderer {
 
   async init(device) {
     this.device = device;
-    
+
     // Create sky geometry (full-screen quad)
     this.createSkyGeometry();
-    
+
     // Create textures for sun and moon
     await this.createCelestialTextures();
-    
+
     // Create uniform buffer
     this.createUniformBuffer();
-    
+
     // Create render pipeline
     await this.createRenderPipeline();
-    
+
     console.log('Sky renderer initialized');
   }
 
@@ -51,16 +51,16 @@ export class SkyRenderer {
     // Create simple procedural sun texture
     const sunSize = 64;
     const sunData = new Uint8Array(sunSize * sunSize * 4);
-    
+
     for (let y = 0; y < sunSize; y++) {
       for (let x = 0; x < sunSize; x++) {
         const dx = x - sunSize / 2;
         const dy = y - sunSize / 2;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const radius = sunSize / 2;
-        
+
         const i = (y * sunSize + x) * 4;
-        
+
         if (distance < radius * 0.8) {
           // Sun core - bright yellow
           sunData[i] = 255;     // R
@@ -97,35 +97,59 @@ export class SkyRenderer {
       [sunSize, sunSize]
     );
 
-    // Create simple procedural moon texture
-    const moonSize = 64;
+    // Create simple procedural moon texture (soft radial with subtle noise to avoid banding/checker)
+    const moonSize = 128;
     const moonData = new Uint8Array(moonSize * moonSize * 4);
-    
+
+    // Simple hash-based value noise for subtle variation (deterministic, cheap)
+    const hash = (n) => {
+      n = (n << 13) ^ n;
+      return 1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
+    };
+    const valueNoise = (x, y) => {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const xf = x - xi, yf = y - yi;
+      const i00 = hash(xi * 374761393 + yi * 668265263);
+      const i10 = hash((xi + 1) * 374761393 + yi * 668265263);
+      const i01 = hash(xi * 374761393 + (yi + 1) * 668265263);
+      const i11 = hash((xi + 1) * 374761393 + (yi + 1) * 668265263);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const nx0 = lerp(i00, i10, xf);
+      const nx1 = lerp(i01, i11, xf);
+      return lerp(nx0, nx1, yf) * 0.5 + 0.5; // normalize to [0,1]
+    };
+
     for (let y = 0; y < moonSize; y++) {
       for (let x = 0; x < moonSize; x++) {
-        const dx = x - moonSize / 2;
-        const dy = y - moonSize / 2;
+        const dx = x + 0.5 - moonSize / 2;
+        const dy = y + 0.5 - moonSize / 2;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const radius = moonSize / 2;
-        
+
         const i = (y * moonSize + x) * 4;
-        
-        if (distance < radius * 0.9) {
-          // Moon surface - pale gray with some variation
-          const noise = Math.sin(x * 0.3) * Math.cos(y * 0.3) * 0.2 + 0.8;
-          moonData[i] = Math.floor(200 * noise);     // R
-          moonData[i + 1] = Math.floor(200 * noise); // G
-          moonData[i + 2] = Math.floor(220 * noise); // B
-          moonData[i + 3] = 255; // A
-        } else if (distance < radius) {
-          // Moon edge - fade out
-          const alpha = (radius - distance) / (radius * 0.1);
-          moonData[i] = 180;
-          moonData[i + 1] = 180;
-          moonData[i + 2] = 200;
-          moonData[i + 3] = Math.floor(alpha * 255);
+
+        if (distance < radius) {
+          // Soft limb darkening: brighter center, gentle falloff toward edge
+          const r = distance / radius;
+          const limb = Math.pow(1.0 - r, 0.6); // softer edge
+
+          // Subtle crater-like variation using low-frequency value noise
+          const n = valueNoise(x * 0.15, y * 0.15) * 0.15 + valueNoise(x * 0.05 + 100, y * 0.05 + 100) * 0.1;
+          const base = 0.82 + n; // ~0.82..1.07
+
+          const R = Math.max(0, Math.min(1, base)) * 0.82 + 0.18 * limb;
+          const G = Math.max(0, Math.min(1, base)) * 0.82 + 0.18 * limb;
+          const B = Math.max(0, Math.min(1, base)) * 0.88 + 0.12 * limb;
+
+          moonData[i] = Math.floor(R * 255);
+          moonData[i + 1] = Math.floor(G * 255);
+          moonData[i + 2] = Math.floor(B * 255);
+
+          // Alpha: crisp disc with slight soft edge
+          const edge = Math.min(1, Math.max(0, (radius - distance) / (radius * 0.06)));
+          moonData[i + 3] = Math.floor(edge * 255);
         } else {
-          // Transparent
+          // Transparent outside the disc
           moonData[i] = 0;
           moonData[i + 1] = 0;
           moonData[i + 2] = 0;
@@ -169,12 +193,12 @@ export class SkyRenderer {
     const vertexShader = this.device.createShaderModule({
       code: `
         struct VertexInput {
-          @location(0) position: vec3<f32>,
+          @location(0) position: vec3<f32>
         }
 
         struct VertexOutput {
           @builtin(position) position: vec4<f32>,
-          @location(0) worldDir: vec3<f32>,
+          @location(0) worldDir: vec3<f32>
         }
 
         struct SkyUniforms {
@@ -182,8 +206,8 @@ export class SkyRenderer {
           projMatrix: mat4x4<f32>,
           sunDirection: vec4<f32>,
           moonDirection: vec4<f32>,
-          timeOfDay: vec4<f32>, // x: cycle progress, y: sun elevation, z: moon elevation, w: unused
-          skyColors: mat4x4<f32>, // day, sunset, night, sunrise colors
+          timeOfDay: vec4<f32>,
+          skyColors: mat4x4<f32>
         }
 
         @group(0) @binding(0) var<uniform> skyUniforms: SkyUniforms;
@@ -193,22 +217,23 @@ export class SkyRenderer {
           var output: VertexOutput;
           output.position = vec4<f32>(input.position.xy, input.position.z, 1.0);
           
-          // Convert screen position to world direction
-          // Remove translation from view matrix for sky rendering
-          var viewNoTranslation = skyUniforms.viewMatrix;
-          viewNoTranslation[3][0] = 0.0;
-          viewNoTranslation[3][1] = 0.0;
-          viewNoTranslation[3][2] = 0.0;
+          // Extract camera basis vectors from view matrix
+          // For a right-handed coordinate system with Y-up
+          let right = vec3<f32>(skyUniforms.viewMatrix[0][0], skyUniforms.viewMatrix[1][0], skyUniforms.viewMatrix[2][0]);
+          let up = vec3<f32>(skyUniforms.viewMatrix[0][1], skyUniforms.viewMatrix[1][1], skyUniforms.viewMatrix[2][1]);
+          let forward = vec3<f32>(-skyUniforms.viewMatrix[0][2], -skyUniforms.viewMatrix[1][2], -skyUniforms.viewMatrix[2][2]);
           
-          let invProj = mat4x4<f32>(
-            1.0 / skyUniforms.projMatrix[0][0], 0.0, 0.0, 0.0,
-            0.0, 1.0 / skyUniforms.projMatrix[1][1], 0.0, 0.0,
-            0.0, 0.0, 0.0, -1.0,
-            0.0, 0.0, 1.0 / skyUniforms.projMatrix[2][3], skyUniforms.projMatrix[2][2] / skyUniforms.projMatrix[2][3]
+          // More precise FOV calculation
+          let tanHalfFovY = 1.0 / skyUniforms.projMatrix[1][1];
+          let tanHalfFovX = 1.0 / skyUniforms.projMatrix[0][0];
+          
+          // Calculate ray direction in world space
+          // Screen coordinates are in [-1, 1] range
+          output.worldDir = normalize(
+            forward + 
+            right * input.position.x * tanHalfFovX + 
+            up * input.position.y * tanHalfFovY
           );
-          
-          let viewDir = invProj * vec4<f32>(input.position.xy, 1.0, 1.0);
-          output.worldDir = normalize((transpose(viewNoTranslation) * vec4<f32>(viewDir.xyz, 0.0)).xyz);
           
           return output;
         }
@@ -223,7 +248,7 @@ export class SkyRenderer {
           sunDirection: vec4<f32>,
           moonDirection: vec4<f32>,
           timeOfDay: vec4<f32>,
-          skyColors: mat4x4<f32>,
+          skyColors: mat4x4<f32>
         }
 
         @group(0) @binding(0) var<uniform> skyUniforms: SkyUniforms;
@@ -235,71 +260,72 @@ export class SkyRenderer {
         fn fs_main(@location(0) worldDir: vec3<f32>) -> @location(0) vec4<f32> {
           let dir = normalize(worldDir);
           
-          // Sky gradient based on Y coordinate
           let skyHeight = max(0.0, dir.y);
           let horizonBlend = 1.0 - skyHeight;
           
-          // Time-based sky color interpolation
           let cycleProgress = skyUniforms.timeOfDay.x;
           var skyColor: vec3<f32>;
           
+          let dayColor = vec3<f32>(0.53, 0.81, 0.92);
+          let sunsetColor = vec3<f32>(1.0, 0.4, 0.2);
+          let nightColor = vec3<f32>(0.1, 0.1, 0.4);
+          let sunriseColor = vec3<f32>(1.0, 0.6, 0.3);
+          
           if (cycleProgress < 0.25) {
-            // Night to sunrise
             let t = cycleProgress * 4.0;
-            skyColor = mix(skyUniforms.skyColors[2].xyz, skyUniforms.skyColors[3].xyz, t);
+            skyColor = mix(nightColor, sunriseColor, t);
           } else if (cycleProgress < 0.5) {
-            // Sunrise to day
             let t = (cycleProgress - 0.25) * 4.0;
-            skyColor = mix(skyUniforms.skyColors[3].xyz, skyUniforms.skyColors[0].xyz, t);
+            skyColor = mix(sunriseColor, dayColor, t);
           } else if (cycleProgress < 0.75) {
-            // Day to sunset
             let t = (cycleProgress - 0.5) * 4.0;
-            skyColor = mix(skyUniforms.skyColors[0].xyz, skyUniforms.skyColors[1].xyz, t);
+            skyColor = mix(dayColor, sunsetColor, t);
           } else {
-            // Sunset to night
             let t = (cycleProgress - 0.75) * 4.0;
-            skyColor = mix(skyUniforms.skyColors[1].xyz, skyUniforms.skyColors[2].xyz, t);
+            skyColor = mix(sunsetColor, nightColor, t);
           }
           
-          // Apply horizon gradient
-          let horizonColor = skyColor * 0.8;
-          let finalSkyColor = mix(skyColor, horizonColor, horizonBlend * horizonBlend);
+          let horizonColor = skyColor * 0.65;
+          var finalColor = mix(skyColor, horizonColor, horizonBlend * horizonBlend) * 0.5;
           
-          var finalColor = finalSkyColor;
-          
-          // Add sun
+          // Add sun - much more visible
           let sunDir = normalize(skyUniforms.sunDirection.xyz);
           let sunDot = dot(dir, -sunDir);
-          if (sunDot > 0.999 && skyUniforms.timeOfDay.y > 0.0) {
-            // Calculate UV coordinates for sun texture
+          
+          // Debug: make sun always visible for testing
+          if (sunDot > 0.85 && skyUniforms.timeOfDay.y > 0.1) {
             let sunRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), -sunDir));
             let sunUp = cross(-sunDir, sunRight);
             let sunLocal = vec3<f32>(dot(dir, sunRight), dot(dir, sunUp), sunDot);
             
-            let sunSize = 0.02;
+            let sunSize = 0.3; // Larger size
             let sunUV = vec2<f32>(sunLocal.x, sunLocal.y) / sunSize + 0.5;
             
             if (sunUV.x >= 0.0 && sunUV.x <= 1.0 && sunUV.y >= 0.0 && sunUV.y <= 1.0) {
               let sunSample = textureSample(sunTexture, celestialSampler, sunUV);
-              finalColor = mix(finalColor, sunSample.xyz, sunSample.w * skyUniforms.timeOfDay.y);
+              let sunColor = sunSample.xyz * 2.0 + pow(sunDot, 16.0) * 0.5 * vec3<f32>(1.0, 0.9, 0.4);
+              let sunAlpha = clamp(skyUniforms.timeOfDay.y * sunSample.w, 0.0, 1.0);
+              finalColor = mix(finalColor, sunColor, sunAlpha);
             }
           }
           
-          // Add moon
+          // Add moon - much more visible  
           let moonDir = normalize(skyUniforms.moonDirection.xyz);
           let moonDot = dot(dir, -moonDir);
-          if (moonDot > 0.999 && skyUniforms.timeOfDay.z > 0.0) {
-            // Calculate UV coordinates for moon texture
+          
+          // Debug: make moon always visible for testing  
+          if (moonDot > 0.85 && skyUniforms.timeOfDay.z > 0.1) {
             let moonRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), -moonDir));
             let moonUp = cross(-moonDir, moonRight);
             let moonLocal = vec3<f32>(dot(dir, moonRight), dot(dir, moonUp), moonDot);
             
-            let moonSize = 0.015;
+            let moonSize = 0.25; // Larger size
             let moonUV = vec2<f32>(moonLocal.x, moonLocal.y) / moonSize + 0.5;
             
             if (moonUV.x >= 0.0 && moonUV.x <= 1.0 && moonUV.y >= 0.0 && moonUV.y <= 1.0) {
               let moonSample = textureSample(moonTexture, celestialSampler, moonUV);
-              finalColor = mix(finalColor, moonSample.xyz, moonSample.w * skyUniforms.timeOfDay.z);
+              let moonAlpha = clamp(moonSample.w * skyUniforms.timeOfDay.z, 0.0, 1.0);
+              finalColor = mix(finalColor, moonSample.xyz, moonAlpha);
             }
           }
           
@@ -339,31 +365,31 @@ export class SkyRenderer {
 
   updateUniforms(viewMatrix, projMatrix, sunDirection, moonDirection, cycleProgress, sunElevation, moonElevation) {
     const uniformData = new Float32Array(60);
-    
+
     // View matrix (0-15)
     uniformData.set(viewMatrix, 0);
-    
+
     // Projection matrix (16-31)
     uniformData.set(projMatrix, 16);
-    
+
     // Sun direction (32-35)
     uniformData[32] = sunDirection[0];
     uniformData[33] = sunDirection[1];
     uniformData[34] = sunDirection[2];
     uniformData[35] = 0;
-    
+
     // Moon direction (36-39)
     uniformData[36] = moonDirection[0];
     uniformData[37] = moonDirection[1];
     uniformData[38] = moonDirection[2];
     uniformData[39] = 0;
-    
+
     // Time of day (40-43)
     uniformData[40] = cycleProgress;
     uniformData[41] = sunElevation;
     uniformData[42] = moonElevation;
     uniformData[43] = 0;
-    
+
     // Sky colors (44-59) - day, sunset, night, sunrise
     const skyColors = [
       [0.53, 0.81, 0.92], // Day - sky blue
@@ -371,20 +397,20 @@ export class SkyRenderer {
       [0.1, 0.1, 0.4],    // Night - dark blue
       [1.0, 0.6, 0.3]     // Sunrise - warm orange
     ];
-    
+
     for (let i = 0; i < 4; i++) {
       uniformData[44 + i * 4] = skyColors[i][0];
       uniformData[44 + i * 4 + 1] = skyColors[i][1];
       uniformData[44 + i * 4 + 2] = skyColors[i][2];
       uniformData[44 + i * 4 + 3] = 1.0;
     }
-    
+
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
   }
 
   render(renderPass) {
     renderPass.setPipeline(this.renderPipeline);
-    
+
     const bindGroup = this.device.createBindGroup({
       layout: this.renderPipeline.getBindGroupLayout(0),
       entries: [
@@ -406,7 +432,7 @@ export class SkyRenderer {
         }
       ]
     });
-    
+
     renderPass.setBindGroup(0, bindGroup);
     renderPass.setVertexBuffer(0, this.vertexBuffer);
     renderPass.draw(4); // Draw full-screen quad as triangle strip
