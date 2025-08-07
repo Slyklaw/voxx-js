@@ -262,39 +262,44 @@ function updateSunCycle(deltaTime) {
 
   const cycleProgress = sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE;
 
-  // Calculate sun position
+  // Calculate sun position - rises in east (+X), sets in west (-X)
+  // At cycleProgress 0: sun at eastern horizon
+  // At cycleProgress 0.5: sun at western horizon
   const minElevation = SUN_CYCLE_CONFIG.MIN_ELEVATION_DEG * Math.PI / 180;
   const maxElevation = SUN_CYCLE_CONFIG.MAX_ELEVATION_DEG * Math.PI / 180;
 
-  const sunAngle = cycleProgress * Math.PI * 2;
-  const elevation = minElevation + (Math.sin(sunAngle) * 0.5 + 0.5) * (maxElevation - minElevation);
-  const azimuth = sunAngle * 0.5;
+  // Sun travels from east (+X) to west (-X) over the course of the day
+  const sunAzimuth = (cycleProgress + 0.25) * Math.PI; // π/4 to 5π/4 (east to west)
 
-  // Update light direction
-  lightDirection[0] = Math.cos(azimuth) * Math.cos(elevation);
-  lightDirection[1] = -Math.sin(elevation);
-  lightDirection[2] = Math.sin(azimuth) * Math.cos(elevation);
+  // Sun elevation follows a sine curve, highest at noon (cycleProgress = 0.25)
+  const elevationProgress = Math.sin(cycleProgress * Math.PI * 2);
+  const sunElevation = minElevation + (Math.max(0, elevationProgress) * (maxElevation - minElevation));
 
-  // Calculate moon position (opposite to sun, with some offset)
-  const moonAngle = sunAngle + Math.PI; // Opposite side of sky
-  const moonElevation = minElevation + (Math.sin(moonAngle) * 0.5 + 0.5) * (maxElevation - minElevation);
-  const moonAzimuth = moonAngle * 0.5;
+  // Update light direction (sun position)
+  lightDirection[0] = Math.sin(sunAzimuth) * Math.cos(sunElevation);
+  lightDirection[1] = -Math.sin(sunElevation);
+  lightDirection[2] = Math.cos(sunAzimuth) * Math.cos(sunElevation);
+
+  // Calculate moon position (exactly opposite to sun)
+  const moonAzimuth = sunAzimuth + Math.PI; // Opposite azimuth
+  const moonElevationProgress = Math.sin((cycleProgress + 0.5) * Math.PI * 2); // Offset by half cycle
+  const moonElevation = minElevation + (Math.max(0, moonElevationProgress) * (maxElevation - minElevation));
 
   const moonDirection = [
-    Math.cos(moonAzimuth) * Math.cos(moonElevation),
+    Math.sin(moonAzimuth) * Math.cos(moonElevation),
     -Math.sin(moonElevation),
-    Math.sin(moonAzimuth) * Math.cos(moonElevation)
+    Math.cos(moonAzimuth) * Math.cos(moonElevation)
   ];
 
   // Update sky data
   skyData.sunDirection = [...lightDirection];
   skyData.moonDirection = moonDirection;
   skyData.cycleProgress = cycleProgress;
-  skyData.sunElevation = Math.max(0, (elevation - minElevation) / (maxElevation - minElevation));
-  skyData.moonElevation = Math.max(0, (moonElevation - minElevation) / (maxElevation - minElevation));
+  skyData.sunElevation = Math.max(0, elevationProgress);
+  skyData.moonElevation = Math.max(0, moonElevationProgress);
 
-  // Update light intensity
-  const elevationNormalized = (elevation - minElevation) / (maxElevation - minElevation);
+  // Update light intensity based on sun elevation
+  const elevationNormalized = Math.max(0, elevationProgress);
   const lightIntensity = Math.max(0.2, elevationNormalized * 1.2);
 
   lightColor[0] = lightIntensity;
@@ -341,6 +346,48 @@ function updateBiomeDisplay(deltaTime) {
   });
 }
 
+function updateCompass() {
+  // Get camera's Y rotation (yaw) in radians
+  const yaw = camera.rotation.y;
+
+  // Convert to degrees and normalize to 0-360
+  // Flip the sign to match coordinate system where -X is west, +X is east
+  let degrees = (-yaw * 180 / Math.PI) % 360;
+  if (degrees < 0) degrees += 360;
+
+  // Determine cardinal direction
+  let direction;
+  if (degrees >= 337.5 || degrees < 22.5) {
+    direction = 'N';
+  } else if (degrees >= 22.5 && degrees < 67.5) {
+    direction = 'NE';
+  } else if (degrees >= 67.5 && degrees < 112.5) {
+    direction = 'E';
+  } else if (degrees >= 112.5 && degrees < 157.5) {
+    direction = 'SE';
+  } else if (degrees >= 157.5 && degrees < 202.5) {
+    direction = 'S';
+  } else if (degrees >= 202.5 && degrees < 247.5) {
+    direction = 'SW';
+  } else if (degrees >= 247.5 && degrees < 292.5) {
+    direction = 'W';
+  } else {
+    direction = 'NW';
+  }
+
+  // Update compass needle rotation (pointing in the direction the camera is facing)
+  const needle = document.querySelector('.compass-needle');
+  if (needle) {
+    needle.style.transform = `translate(-50%, -100%) rotate(${degrees}deg)`;
+  }
+
+  // Update compass text
+  const compassText = document.querySelector('.compass-text');
+  if (compassText) {
+    compassText.textContent = direction;
+  }
+}
+
 function updateTargetedBlock() {
   if (!isPointerLocked) {
     targetedBlock = null;
@@ -354,7 +401,7 @@ function updateTargetedBlock() {
 function raycastBlock(maxDistance = 10) {
   const start = camera.position;
   const direction = camera.getWorldDirection();
-  
+
 
 
   // Step along the ray
@@ -382,7 +429,7 @@ function raycastBlock(maxDistance = 10) {
     if (!chunk) continue;
 
     const blockType = chunk.getVoxel(localX, localY, localZ);
-    
+
     if (blockType !== 0) { // Found a solid block
       return {
         hit: true,
@@ -476,9 +523,12 @@ function animate(currentTime) {
   // Update targeted block for outline rendering
   updateTargetedBlock();
 
+  // Update compass
+  updateCompass();
+
   // Update camera position display
-  const targetInfo = targetedBlock && targetedBlock.hit ? 
-    ` | Target: (${targetedBlock.worldX}, ${targetedBlock.worldY}, ${targetedBlock.worldZ})` : 
+  const targetInfo = targetedBlock && targetedBlock.hit ?
+    ` | Target: (${targetedBlock.worldX}, ${targetedBlock.worldY}, ${targetedBlock.worldZ})` :
     ' | No target';
   document.getElementById('camera-position').textContent =
     `X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)}${targetInfo}`;
