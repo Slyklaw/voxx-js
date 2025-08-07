@@ -34,9 +34,9 @@ export const PLAYER_CONFIG = {
 
 // Sun cycle configuration
 export const SUN_CYCLE_CONFIG = {
-  DAY_DURATION: 60, // 1 minute in seconds
-  NIGHT_DURATION: 60, // 1 minute in seconds
-  TOTAL_CYCLE: 120, // 2 minutes total
+  DAY_DURATION: 360, // 6 minutes in seconds (06:00 to 18:00)
+  NIGHT_DURATION: 360, // 6 minutes in seconds (18:00 to 06:00)
+  TOTAL_CYCLE: 720, // 12 minutes total (24 hour cycle)
   SUN_RADIUS: 100, // Distance from center
   SUN_HEIGHT: 50, // Base height above ground
   MIN_ELEVATION_DEG: 15, // Minimum sun elevation in degrees

@@ -271,61 +271,90 @@ export class SkyRenderer {
           let nightColor = vec3<f32>(0.1, 0.1, 0.4);
           let sunriseColor = vec3<f32>(1.0, 0.6, 0.3);
           
+          // Map cycle progress to 24-hour time for better transitions
+          // 0.0 = 00:00, 0.25 = 06:00 (sunrise), 0.5 = 12:00, 0.75 = 18:00 (sunset)
           if (cycleProgress < 0.25) {
-            let t = cycleProgress * 4.0;
+            // Night to sunrise (00:00 to 06:00)
+            let t = smoothstep(0.2, 0.25, cycleProgress); // Smooth transition near sunrise
             skyColor = mix(nightColor, sunriseColor, t);
           } else if (cycleProgress < 0.5) {
+            // Sunrise to day (06:00 to 12:00)
             let t = (cycleProgress - 0.25) * 4.0;
-            skyColor = mix(sunriseColor, dayColor, t);
+            skyColor = mix(sunriseColor, dayColor, smoothstep(0.0, 1.0, t));
           } else if (cycleProgress < 0.75) {
-            let t = (cycleProgress - 0.5) * 4.0;
+            // Day to sunset (12:00 to 18:00)
+            let t = smoothstep(0.7, 0.75, cycleProgress); // Smooth transition near sunset
             skyColor = mix(dayColor, sunsetColor, t);
           } else {
+            // Sunset to night (18:00 to 00:00)
             let t = (cycleProgress - 0.75) * 4.0;
-            skyColor = mix(sunsetColor, nightColor, t);
+            skyColor = mix(sunsetColor, nightColor, smoothstep(0.0, 1.0, t));
           }
           
           let horizonColor = skyColor * 0.65;
-          var finalColor = mix(skyColor, horizonColor, horizonBlend * horizonBlend) * 0.5;
+          var finalColor = mix(skyColor, horizonColor, horizonBlend * horizonBlend) * 0.8;
           
-          // Add sun - much more visible
+          // Add sun - using angular distance and texture
           let sunDir = normalize(skyUniforms.sunDirection.xyz);
-          let sunDot = dot(dir, -sunDir);
+          let sunElevation = skyUniforms.timeOfDay.y;
+          let viewDir = normalize(dir);
           
-          // Debug: make sun always visible for testing
-          if (sunDot > 0.85 && skyUniforms.timeOfDay.y > 0.1) {
-            let sunRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), -sunDir));
-            let sunUp = cross(-sunDir, sunRight);
-            let sunLocal = vec3<f32>(dot(dir, sunRight), dot(dir, sunUp), sunDot);
+          if (sunElevation > 0.01) {
+            let angularDistance = acos(clamp(dot(viewDir, sunDir), -1.0, 1.0));
+            let sunRadius = 0.08; // Sun disc size
             
-            let sunSize = 0.3; // Larger size
-            let sunUV = vec2<f32>(sunLocal.x, sunLocal.y) / sunSize + 0.5;
+            if (angularDistance < sunRadius) {
+              // Calculate UV coordinates for sun texture
+              let sunRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), sunDir));
+              let sunUp = cross(sunDir, sunRight);
+              let localX = dot(viewDir, sunRight);
+              let localY = dot(viewDir, sunUp);
+              
+              let sunUV = vec2<f32>(localX, localY) / (sunRadius * 2.0) + 0.5;
+              
+              if (sunUV.x >= 0.0 && sunUV.x <= 1.0 && sunUV.y >= 0.0 && sunUV.y <= 1.0) {
+                let sunSample = textureSample(sunTexture, celestialSampler, sunUV);
+                let sunColor = sunSample.xyz * 2.0 * sunElevation;
+                finalColor = mix(finalColor, sunColor, sunSample.w * sunElevation);
+              }
+            }
             
-            if (sunUV.x >= 0.0 && sunUV.x <= 1.0 && sunUV.y >= 0.0 && sunUV.y <= 1.0) {
-              let sunSample = textureSample(sunTexture, celestialSampler, sunUV);
-              let sunColor = sunSample.xyz * 2.0 + pow(sunDot, 16.0) * 0.5 * vec3<f32>(1.0, 0.9, 0.4);
-              let sunAlpha = clamp(skyUniforms.timeOfDay.y * sunSample.w, 0.0, 1.0);
-              finalColor = mix(finalColor, sunColor, sunAlpha);
+            // Sun glow
+            if (angularDistance < sunRadius * 2.0) {
+              let glowIntensity = (1.0 - (angularDistance / (sunRadius * 2.0))) * 0.2;
+              let glowColor = vec3<f32>(1.0, 0.9, 0.4) * glowIntensity * sunElevation;
+              finalColor = mix(finalColor, glowColor, 0.3);
             }
           }
           
-          // Add moon - much more visible  
-          let moonDir = normalize(skyUniforms.moonDirection.xyz);
-          let moonDot = dot(dir, -moonDir);
+          // Show cycle progress as blue in lower sky
+          if (dir.y < -0.5) {
+            let cycleProgress = skyUniforms.timeOfDay.x;
+            finalColor = mix(finalColor, vec3<f32>(0.0, 0.0, cycleProgress), 0.3);
+          }
           
-          // Debug: make moon always visible for testing  
-          if (moonDot > 0.85 && skyUniforms.timeOfDay.z > 0.1) {
-            let moonRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), -moonDir));
-            let moonUp = cross(-moonDir, moonRight);
-            let moonLocal = vec3<f32>(dot(dir, moonRight), dot(dir, moonUp), moonDot);
+          // Add moon - using angular distance and texture
+          let moonDir = normalize(skyUniforms.moonDirection.xyz);
+          let moonElevation = skyUniforms.timeOfDay.z;
+          
+          if (moonElevation > 0.01) {
+            let moonAngularDistance = acos(clamp(dot(viewDir, moonDir), -1.0, 1.0));
+            let moonRadius = 0.06; // Moon disc size
             
-            let moonSize = 0.25; // Larger size
-            let moonUV = vec2<f32>(moonLocal.x, moonLocal.y) / moonSize + 0.5;
-            
-            if (moonUV.x >= 0.0 && moonUV.x <= 1.0 && moonUV.y >= 0.0 && moonUV.y <= 1.0) {
-              let moonSample = textureSample(moonTexture, celestialSampler, moonUV);
-              let moonAlpha = clamp(moonSample.w * skyUniforms.timeOfDay.z, 0.0, 1.0);
-              finalColor = mix(finalColor, moonSample.xyz, moonAlpha);
+            if (moonAngularDistance < moonRadius) {
+              // Calculate UV coordinates for moon texture
+              let moonRight = normalize(cross(vec3<f32>(0.0, 1.0, 0.0), moonDir));
+              let moonUp = cross(moonDir, moonRight);
+              let moonLocalX = dot(viewDir, moonRight);
+              let moonLocalY = dot(viewDir, moonUp);
+              
+              let moonUV = vec2<f32>(moonLocalX, moonLocalY) / (moonRadius * 2.0) + 0.5;
+              
+              if (moonUV.x >= 0.0 && moonUV.x <= 1.0 && moonUV.y >= 0.0 && moonUV.y <= 1.0) {
+                let moonSample = textureSample(moonTexture, celestialSampler, moonUV);
+                let moonColor = moonSample.xyz * 1.5 * moonElevation;
+                finalColor = mix(finalColor, moonColor, moonSample.w * moonElevation);
+              }
             }
           }
           
@@ -423,7 +452,7 @@ export class SkyRenderer {
           resource: this.sunTexture.createView()
         },
         {
-          binding: 2,
+          binding:2,
           resource: this.moonTexture.createView()
         },
         {

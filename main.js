@@ -23,9 +23,9 @@ let canvas, stats;
 let isPointerLocked = false;
 let keys = {};
 let selectedBlockType = BLOCK_TYPES.STONE;
-let sunCycleTime = 0;
-// Axial tilt in degrees for the world's rotation (affects max altitude; 0 = straight over equator)
-const AXIAL_TILT_DEG = 23.5;
+let sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8/24); // Start at 08:00 (morning)
+ // Axial tilt not used anymore; equatorial (no tilt) straight-overhead path
+ const AXIAL_TILT_DEG = 0.0;
 let targetedBlock = null;
 
 // Lighting state
@@ -264,105 +264,99 @@ function updateSunCycle(deltaTime) {
 
   const cycleProgress = sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE;
 
-  // Model the sun/moon on a celestial sphere with axial tilt.
-  // Coordinate system (world): +X = East, +Z = North, +Y = Up.
-  // We rotate a base vector around a tilted axis to produce an arc that rises in the East and sets in the West.
-  const tiltRad = (AXIAL_TILT_DEG * Math.PI) / 180;
-
-  // Choose a rotation axis that is Earth's-like: mostly +Z (north) but slightly tilted towards +X
-  // so the sun's daily path is inclined and never directly overhead.
-  // Axis must be normalized.
-  let axis = [Math.sin(tiltRad), 0, Math.cos(tiltRad)]; // tilt towards +X from +Z
-  const axisLen = Math.hypot(axis[0], axis[1], axis[2]);
-  axis = [axis[0] / axisLen, axis[1] / axisLen, axis[2] / axisLen];
-
-  // Daily rotation angle. We want:
-  // - sunrise (east horizon) at cycleProgress ~ 0.0
-  // - noon (highest point) at cycleProgress ~ 0.25
-  // - sunset (west horizon) at cycleProgress ~ 0.5
-  // - midnight at cycleProgress ~ 0.75
-  // Rotating a vector with angle theta around 'axis' gives that phasing with an offset of -pi/2.
-  const theta = cycleProgress * 2 * Math.PI - Math.PI / 2;
-
-  // Base vector before rotation: point to the East horizon with slight downward so that after tilt it behaves correctly.
-  // Start with a unit vector roughly pointing along +X with small upward component so arc is above horizon when expected.
-  const base = [1, 0, 0]; // along +X (east)
-
-  // Rotate 'base' around 'axis' by theta using Rodrigues' rotation formula
-  const ux = axis[0], uy = axis[1], uz = axis[2];
-  const cosT = Math.cos(theta), sinT = Math.sin(theta);
-  const bx = base[0], by = base[1], bz = base[2];
-
-  const dot = ux * bx + uy * by + uz * bz;
-  const rx =
-    bx * cosT +
-    (uy * bz - uz * by) * sinT +
-    ux * dot * (1 - cosT);
-  const ry =
-    by * cosT +
-    (uz * bx - ux * bz) * sinT +
-    uy * dot * (1 - cosT);
-  const rz =
-    bz * cosT +
-    (ux * by - uy * bx) * sinT +
-    uz * dot * (1 - cosT);
-
-  // Sun direction is opposite of light direction in shading (shaders use -lightDirection),
-  // so store the vector from world origin toward the sun.
-  const sunDir = [rx, ry, rz];
-
-  // Compute simple "elevation progress" from Y component clamped to [0,1] for intensity and visibility
-  const elevationProgress = Math.max(0, ry); // positive when above horizon
-
-  // Update single directional light to follow the sun
-  lightDirection[0] = sunDir[0];
-  lightDirection[1] = sunDir[1];
-  lightDirection[2] = sunDir[2];
-
-  // Moon is at opposition (opposite on the celestial sphere)
-  const moonDir = [-sunDir[0], -sunDir[1], -sunDir[2]];
-  const moonElevationProgress = Math.max(0, -ry); // moon "above horizon" when sun is below
-
-  // Update sky data for skybox shader
-  skyData.sunDirection = [sunDir[0], sunDir[1], sunDir[2]];
-  skyData.moonDirection = [moonDir[0], moonDir[1], moonDir[2]];
-  skyData.cycleProgress = cycleProgress;
-
-  // Keep sun visible whenever it's above the horizon; avoid over-fading with very shallow elevation
-  // Use a smoothstep from a small threshold to 1 to keep it bright through low angles.
-  const sunVis = Math.max(0, ry);
-  const moonVis = Math.max(0, -ry);
-  // Slight boost so it doesn't vanish at low altitudes
-  skyData.sunElevation = Math.min(1, Math.max(0.2, sunVis));
-  skyData.moonElevation = Math.min(1, Math.max(0.2, moonVis));
-
-  // Lighting response: brighter when sun is higher
-  const lightIntensity = Math.max(0.15, elevationProgress * 1.2);
-  lightColor[0] = lightIntensity;
-  lightColor[1] = lightIntensity;
-  lightColor[2] = lightIntensity;
-
-  // Ambient light: small baseline plus a boost during day
-  const ambientIntensity = Math.max(0.2, elevationProgress * 0.45 + 0.2);
-  ambientColor[0] = ambientIntensity * 0.4;
-  ambientColor[1] = ambientIntensity * 0.4;
-  ambientColor[2] = ambientIntensity * 0.6;
-
-  // Remap cycle so:
-  //  - 06:00 = sunrise at eastern horizon
-  //  - 12:00 = highest point (noon)
-  //  - 18:00 = sunset at western horizon
-  //  - 00:00 = midnight (below horizon)
-  //
-  // Our theta = cycle*2π - π/2 puts sunrise at cycle≈0.
-  // So we offset clock by +6h (0.25 of a day) to align sunrise with 06:00.
-  const hoursFloat = ((cycleProgress + 0.25) % 1) * 24;
+  // Convert cycle progress to 24-hour time
+  // 0.00 = 00:00, 0.25 = 06:00, 0.50 = 12:00, 0.75 = 18:00
+  const hoursFloat = cycleProgress * 24;
   const hours = Math.floor(hoursFloat);
   const minutes = Math.floor((hoursFloat - hours) * 60);
   const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
-  // Day/Night label based on sun altitude
-  const dayNight = elevationProgress > 0 ? 'Day' : 'Night';
+  // Equatorial, no-tilt model:
+  // Sun and moon travel along the due-east -> zenith -> due-west great circle in the X-Y plane,
+  // with Z kept at 0 (no north/south component). Sun is up from 06:00 to 18:00, moon from 18:00 to 06:00.
+  // Parameterize with an angle θ such that:
+  //  - Sun: θ_sun goes 0..π from 06:00..18:00, giving dir = (cos(θ), sin(θ), 0).
+  //  - Moon: θ_moon goes 0..π from 18:00..06:00, opposite to sun when below horizon.
+  const isDaytime = hours >= 6 && hours < 18;
+
+  let sunDir, moonDir;
+
+  if (isDaytime) {
+    const dayProgress = (hoursFloat - 6) / 12; // 0 at 06:00, 1 at 18:00
+    const theta = dayProgress * Math.PI;       // 0..π
+
+    // East (1,0,0) at sunrise, zenith (0,1,0) at noon, West (-1,0,0) at sunset
+    sunDir = [Math.cos(theta), Math.sin(theta), 0];
+
+    // Moon is below the horizon on the exact opposite half of the great circle
+    moonDir = [-sunDir[0], -sunDir[1], 0];
+  } else {
+    // Night: 18:00..06:00 mapped to 0..1
+    let nightProgress;
+    if (hours >= 18) {
+      nightProgress = (hoursFloat - 18) / 12; // 0..0.5 (18:00..24:00)
+    } else {
+      nightProgress = (hoursFloat + 6) / 12;  // 0.5..1.0 (00:00..06:00)
+    }
+    const theta = nightProgress * Math.PI; // 0..π
+
+    // Moon rises due east at 18:00, reaches zenith at 00:00, sets due west at 06:00
+    moonDir = [Math.cos(theta), Math.sin(theta), 0];
+
+    // Sun is opposite and below horizon
+    sunDir = [-moonDir[0], -moonDir[1], 0];
+  }
+
+  // Update lighting based on whichever body is above the horizon (positive Y)
+  if (isDaytime) {
+    // Invert for shader which uses -uniforms.lightDirection.xyz
+    lightDirection[0] = -sunDir[0];
+    lightDirection[1] = -sunDir[1];
+    lightDirection[2] = -sunDir[2];
+
+    const sunElev = Math.max(0, sunDir[1]);
+    const lightIntensity = Math.max(0.3, sunElev * 1.2);
+    lightColor[0] = lightIntensity;
+    lightColor[1] = lightIntensity;
+    lightColor[2] = lightIntensity;
+
+    const ambientIntensity = Math.max(0.3, sunElev * 0.5 + 0.3);
+    ambientColor[0] = ambientIntensity * 0.4;
+    ambientColor[1] = ambientIntensity * 0.4;
+    ambientColor[2] = ambientIntensity * 0.6;
+  } else {
+    // Invert for shader which uses -uniforms.lightDirection.xyz
+    lightDirection[0] = -moonDir[0];
+    lightDirection[1] = -moonDir[1];
+    lightDirection[2] = -moonDir[2];
+
+    const moonElev = Math.max(0, moonDir[1]);
+    const lightIntensity = Math.max(0.1, moonElev * 0.4);
+    lightColor[0] = lightIntensity * 0.8;
+    lightColor[1] = lightIntensity * 0.9;
+    lightColor[2] = lightIntensity * 1.0;
+
+    const ambientIntensity = Math.max(0.15, moonElev * 0.2 + 0.15);
+    ambientColor[0] = ambientIntensity * 0.3;
+    ambientColor[1] = ambientIntensity * 0.3;
+    ambientColor[2] = ambientIntensity * 0.5;
+  }
+
+  // Update sky shader inputs
+  skyData.sunDirection = [sunDir[0], sunDir[1], sunDir[2]];
+  skyData.moonDirection = [moonDir[0], moonDir[1], moonDir[2]];
+  skyData.cycleProgress = cycleProgress;
+  skyData.sunElevation = Math.max(0, sunDir[1]);
+  skyData.moonElevation = Math.max(0, moonDir[1]);
+
+  // Occasional debug
+  if (Math.random() < 0.01) {
+    console.log(`Time: ${timeString}, isDaytime: ${isDaytime}`);
+    console.log(`Sun dir: [${sunDir.map(v => v.toFixed(3)).join(', ')}], Moon dir: [${moonDir.map(v => v.toFixed(3)).join(', ')}]`);
+  }
+
+  // Update time display
+  const dayNight = isDaytime ? 'Day' : 'Night';
   const el = document.getElementById('time-display');
   if (el) el.textContent = `${dayNight}: ${timeString}`;
 }
