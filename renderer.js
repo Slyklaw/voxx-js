@@ -8,15 +8,19 @@ export class WebGPURenderer {
     this.context = null;
     this.canvas = null;
     this.renderPipeline = null;
+    this.outlinePipeline = null;
     this.computePipeline = null;
     this.uniformBuffer = null;
+    this.outlineUniformBuffer = null;
     this.depthTexture = null;
     this.format = 'bgra8unorm';
+    this.outlineVertexBuffer = null;
+    this.outlineIndexBuffer = null;
   }
 
   async init(canvas) {
     this.canvas = canvas;
-    
+
     // Check WebGPU support
     if (!navigator.gpu) {
       throw new Error('WebGPU not supported in this browser');
@@ -29,7 +33,7 @@ export class WebGPURenderer {
     }
 
     this.device = await adapter.requestDevice();
-    
+
     // Configure canvas context
     this.context = canvas.getContext('webgpu');
     this.context.configure({
@@ -40,13 +44,19 @@ export class WebGPURenderer {
 
     // Create depth texture
     this.createDepthTexture();
-    
+
     // Create uniform buffer
     this.createUniformBuffer();
-    
+
     // Create render pipeline
     await this.createRenderPipeline();
-    
+
+    // Create outline pipeline
+    await this.createOutlinePipeline();
+
+    // Create outline geometry
+    this.createOutlineGeometry();
+
     // Create compute pipeline for chunk generation
     await this.createComputePipeline();
 
@@ -69,6 +79,12 @@ export class WebGPURenderer {
     // ambientColor(4) = 60
     const uniformData = new Float32Array(60);
     this.uniformBuffer = this.device.createBuffer({
+      size: uniformData.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+
+    // Create separate uniform buffer for outline
+    this.outlineUniformBuffer = this.device.createBuffer({
       size: uniformData.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
@@ -173,6 +189,110 @@ export class WebGPURenderer {
     });
   }
 
+  async createOutlinePipeline() {
+    const vertexShader = this.device.createShaderModule({
+      code: `
+        struct Uniforms {
+          viewMatrix: mat4x4<f32>,
+          projectionMatrix: mat4x4<f32>,
+          modelMatrix: mat4x4<f32>,
+          lightDirection: vec4<f32>,
+          lightColor: vec4<f32>,
+          ambientColor: vec4<f32>,
+        }
+
+        @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+
+        struct VertexInput {
+          @location(0) position: vec3<f32>,
+        }
+
+        struct VertexOutput {
+          @builtin(position) position: vec4<f32>,
+        }
+
+        @vertex
+        fn vs_main(input: VertexInput) -> VertexOutput {
+          var output: VertexOutput;
+          let worldPos = uniforms.modelMatrix * vec4<f32>(input.position, 1.0);
+          let vp = uniforms.projectionMatrix * uniforms.viewMatrix;
+          output.position = vp * worldPos;
+          return output;
+        }
+      `
+    });
+
+    const fragmentShader = this.device.createShaderModule({
+      code: `
+        @fragment
+        fn fs_main() -> @location(0) vec4<f32> {
+          return vec4<f32>(1.0, 0.0, 1.0, 1.0); // Bright magenta - contrasts well with all block colors
+        }
+      `
+    });
+
+    this.outlinePipeline = this.device.createRenderPipeline({
+      layout: 'auto',
+      vertex: {
+        module: vertexShader,
+        entryPoint: 'vs_main',
+        buffers: [{
+          arrayStride: 3 * 4, // 3 floats position
+          attributes: [
+            { format: 'float32x3', offset: 0, shaderLocation: 0 }, // position
+          ]
+        }]
+      },
+      fragment: {
+        module: fragmentShader,
+        entryPoint: 'fs_main',
+        targets: [{
+          format: this.format
+        }]
+      },
+      primitive: {
+        topology: 'line-list',
+        cullMode: 'none'
+      },
+      depthStencil: {
+        depthWriteEnabled: false,
+        depthCompare: 'less-equal',
+        format: 'depth24plus'
+      }
+    });
+  }
+
+  createOutlineGeometry() {
+    // Create wireframe cube outline (12 edges, 24 vertices)
+    // Make it slightly larger than 1x1x1 to avoid z-fighting and be more visible
+    const offset = 0.02; // Larger offset for better visibility
+    const vertices = new Float32Array([
+      // Bottom face edges
+      -offset, -offset, -offset, 1 + offset, -offset, -offset,  // Bottom front edge
+      1 + offset, -offset, -offset, 1 + offset, -offset, 1 + offset,  // Bottom right edge
+      1 + offset, -offset, 1 + offset, -offset, -offset, 1 + offset,  // Bottom back edge
+      -offset, -offset, 1 + offset, -offset, -offset, -offset,  // Bottom left edge
+
+      // Top face edges
+      -offset, 1 + offset, -offset, 1 + offset, 1 + offset, -offset,  // Top front edge
+      1 + offset, 1 + offset, -offset, 1 + offset, 1 + offset, 1 + offset,  // Top right edge
+      1 + offset, 1 + offset, 1 + offset, -offset, 1 + offset, 1 + offset,  // Top back edge
+      -offset, 1 + offset, 1 + offset, -offset, 1 + offset, -offset,  // Top left edge
+
+      // Vertical edges
+      -offset, -offset, -offset, -offset, 1 + offset, -offset,  // Front left vertical
+      1 + offset, -offset, -offset, 1 + offset, 1 + offset, -offset,  // Front right vertical
+      1 + offset, -offset, 1 + offset, 1 + offset, 1 + offset, 1 + offset,  // Back right vertical
+      -offset, -offset, 1 + offset, -offset, 1 + offset, 1 + offset,  // Back left vertical
+    ]);
+
+    this.outlineVertexBuffer = this.device.createBuffer({
+      size: vertices.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    });
+    this.device.queue.writeBuffer(this.outlineVertexBuffer, 0, vertices);
+  }
+
   async createComputePipeline() {
     const computeShader = this.device.createShaderModule({
       code: `
@@ -214,8 +334,15 @@ export class WebGPURenderer {
   }
 
   updateUniforms(viewMatrix, projectionMatrix, modelMatrix, lightDirection, lightColor, ambientColor) {
+    // Store matrices for outline rendering
+    this.lastViewMatrix = new Float32Array(viewMatrix);
+    this.lastProjectionMatrix = new Float32Array(projectionMatrix);
+    this.lastLightDirection = new Float32Array([lightDirection[0], lightDirection[1], lightDirection[2], 0]);
+    this.lastLightColor = new Float32Array([lightColor[0], lightColor[1], lightColor[2], 0]);
+    this.lastAmbientColor = new Float32Array([ambientColor[0], ambientColor[1], ambientColor[2], 0]);
+
     const uniformData = new Float32Array(60);
-    
+
     // View matrix (0..15)
     uniformData.set(viewMatrix, 0);
     // Projection matrix (16..31)
@@ -244,9 +371,23 @@ export class WebGPURenderer {
     this.device.queue.writeBuffer(this.uniformBuffer, 0, uniformData);
   }
 
-  render(chunks, camera) {
+  renderOutline(targetedBlock) {
+    if (!targetedBlock || !targetedBlock.hit) return null;
+
+    // Create a model matrix for the targeted block position
+    const modelMatrix = new Float32Array([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      targetedBlock.worldX, targetedBlock.worldY, targetedBlock.worldZ, 1
+    ]);
+
+    return modelMatrix;
+  }
+
+  render(chunks, camera, targetedBlock = null) {
     const commandEncoder = this.device.createCommandEncoder();
-    
+
     const renderPass = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: this.context.getCurrentTexture().createView(),
@@ -259,11 +400,11 @@ export class WebGPURenderer {
         depthClearValue: 1.0,
         depthLoadOp: 'clear',
         depthStoreOp: 'store'
-  }
+      }
     });
 
     renderPass.setPipeline(this.renderPipeline);
-    
+
     // Create bind group for uniforms
     const bindGroup = this.device.createBindGroup({
       layout: this.renderPipeline.getBindGroupLayout(0),
@@ -274,9 +415,9 @@ export class WebGPURenderer {
         }
       }]
     });
-    
+
     renderPass.setBindGroup(0, bindGroup);
-    
+
     // Render each chunk
     let renderedChunks = 0;
     for (const chunk of chunks) {
@@ -288,9 +429,53 @@ export class WebGPURenderer {
       }
     }
 
+    // Render block outline if there's a targeted block
+    if (targetedBlock && targetedBlock.hit) {
+      const outlineModelMatrix = this.renderOutline(targetedBlock);
+      if (outlineModelMatrix) {
+        // Update outline uniform buffer
+        const outlineUniformData = new Float32Array(60);
+        outlineUniformData.set(this.lastViewMatrix || new Float32Array(16), 0);
+        outlineUniformData.set(this.lastProjectionMatrix || new Float32Array(16), 16);
+        outlineUniformData.set(outlineModelMatrix, 32);
+        // Keep the same lighting data
+        if (this.lastLightDirection) outlineUniformData.set(this.lastLightDirection, 48);
+        if (this.lastLightColor) outlineUniformData.set(this.lastLightColor, 52);
+        if (this.lastAmbientColor) outlineUniformData.set(this.lastAmbientColor, 56);
+
+        this.device.queue.writeBuffer(this.outlineUniformBuffer, 0, outlineUniformData);
+
+        // Switch to outline pipeline
+        renderPass.setPipeline(this.outlinePipeline);
+
+        // Create bind group for outline uniforms
+        const outlineBindGroup = this.device.createBindGroup({
+          layout: this.outlinePipeline.getBindGroupLayout(0),
+          entries: [{
+            binding: 0,
+            resource: {
+              buffer: this.outlineUniformBuffer
+            }
+          }]
+        });
+
+        renderPass.setBindGroup(0, outlineBindGroup);
+        renderPass.setVertexBuffer(0, this.outlineVertexBuffer);
+
+        // Draw the outline multiple times with slight pixel offsets for thickness
+        renderPass.draw(24); // Main outline
+
+        // Draw additional passes with slight screen-space offsets for thickness
+        // This creates a thicker appearance without expensive geometry changes
+        for (let i = 0; i < 3; i++) {
+          renderPass.draw(24);
+        }
+      }
+    }
+
     renderPass.end();
     this.device.queue.submit([commandEncoder.finish()]);
-    
+
     // Debug output (only occasionally to avoid spam)
     if (Math.random() < 0.01 && renderedChunks > 0) {
       console.log(`Rendered ${renderedChunks} chunks out of ${chunks.length} total chunks`);
@@ -307,7 +492,7 @@ export class WebGPURenderer {
       format: this.format,
       alphaMode: 'premultiplied'
     });
-    
+
     // Recreate depth texture with new size
     if (this.depthTexture) {
       this.depthTexture.destroy();
@@ -321,6 +506,12 @@ export class WebGPURenderer {
     }
     if (this.uniformBuffer) {
       this.uniformBuffer.destroy();
+    }
+    if (this.outlineUniformBuffer) {
+      this.outlineUniformBuffer.destroy();
+    }
+    if (this.outlineVertexBuffer) {
+      this.outlineVertexBuffer.destroy();
     }
   }
 }

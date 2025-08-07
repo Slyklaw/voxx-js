@@ -7,13 +7,14 @@ import { WebGPUCamera } from './camera.js';
 import { WebGPUWorld } from './world.js';
 import { BiomeCalculator } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
-import { 
-  RENDER_CONFIG, 
-  LIGHTING_CONFIG, 
-  PLAYER_CONFIG, 
-  SUN_CYCLE_CONFIG, 
-  SKY_COLORS, 
-  UI_CONFIG 
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
+import {
+  RENDER_CONFIG,
+  LIGHTING_CONFIG,
+  PLAYER_CONFIG,
+  SUN_CYCLE_CONFIG,
+  SKY_COLORS,
+  UI_CONFIG
 } from './config.js';
 
 // Global variables
@@ -23,6 +24,7 @@ let isPointerLocked = false;
 let keys = {};
 let selectedBlockType = BLOCK_TYPES.STONE;
 let sunCycleTime = 0;
+let targetedBlock = null;
 
 // Lighting state
 let lightDirection = [0.5, -1.0, 0.5];
@@ -85,7 +87,7 @@ function setupControls() {
     isPointerLocked = document.pointerLockElement === canvas;
     const instructions = document.getElementById('instructions');
     const crosshair = document.getElementById('crosshair');
-    
+
     if (isPointerLocked) {
       instructions.style.display = 'none';
       crosshair.style.display = 'block';
@@ -102,7 +104,7 @@ function setupControls() {
     const sensitivity = 0.002;
     camera.rotation.y -= event.movementX * sensitivity;
     camera.rotation.x -= event.movementY * sensitivity;
-    
+
     // Clamp vertical rotation
     camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
   });
@@ -120,10 +122,10 @@ function setupControls() {
   document.addEventListener('wheel', (event) => {
     if (!isPointerLocked) return;
     event.preventDefault();
-    
+
     const blockItems = document.querySelectorAll('.block-item');
     let currentIndex = -1;
-    
+
     blockItems.forEach((item, index) => {
       if (item.classList.contains('selected')) {
         currentIndex = index;
@@ -140,6 +142,18 @@ function setupControls() {
     blockItems.forEach(i => i.classList.remove('selected'));
     blockItems[newIndex].classList.add('selected');
     selectedBlockType = parseInt(blockItems[newIndex].dataset.block);
+  });
+
+  // Mouse click handlers for block placement/removal
+  document.addEventListener('mousedown', (event) => {
+    if (!isPointerLocked) return;
+    event.preventDefault();
+
+    if (event.button === 0) { // Left click - destroy block
+      destroyBlock();
+    } else if (event.button === 2) { // Right click - place block
+      placeBlock();
+    }
   });
 
   // Prevent context menu
@@ -166,7 +180,7 @@ function setupStats() {
   // Simple FPS counter
   let frameCount = 0;
   let lastTime = performance.now();
-  
+
   const fpsDisplay = document.createElement('div');
   fpsDisplay.style.position = 'absolute';
   fpsDisplay.style.top = '10px';
@@ -187,7 +201,7 @@ function setupStats() {
     lastTime = now;
   }, 1000);
 
-  stats = { begin: () => frameCount++, end: () => {} };
+  stats = { begin: () => frameCount++, end: () => { } };
 }
 
 function updateMovement(deltaTime) {
@@ -238,11 +252,11 @@ function updateSunCycle(deltaTime) {
   }
 
   const cycleProgress = sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE;
-  
+
   // Calculate sun position
   const minElevation = SUN_CYCLE_CONFIG.MIN_ELEVATION_DEG * Math.PI / 180;
   const maxElevation = SUN_CYCLE_CONFIG.MAX_ELEVATION_DEG * Math.PI / 180;
-  
+
   const sunAngle = cycleProgress * Math.PI * 2;
   const elevation = minElevation + (Math.sin(sunAngle) * 0.5 + 0.5) * (maxElevation - minElevation);
   const azimuth = sunAngle * 0.5;
@@ -255,7 +269,7 @@ function updateSunCycle(deltaTime) {
   // Update light intensity
   const elevationNormalized = (elevation - minElevation) / (maxElevation - minElevation);
   const lightIntensity = Math.max(0.2, elevationNormalized * 1.2);
-  
+
   lightColor[0] = lightIntensity;
   lightColor[1] = lightIntensity;
   lightColor[2] = lightIntensity;
@@ -282,22 +296,133 @@ function updateBiomeDisplay(deltaTime) {
 
   biomeUpdateTimer += deltaTime;
   if (biomeUpdateTimer < UI_CONFIG.BIOME_UPDATE_INTERVAL) return;
-  
+
   biomeUpdateTimer = 0;
 
   const contributions = biomeCalculator.getBiomeContributions(camera.position.x, camera.position.z);
   const biomeItems = document.querySelectorAll('.biome-item');
-  
+
   contributions.forEach((contrib, index) => {
     if (index < biomeItems.length) {
       const item = biomeItems[index];
       const fill = item.querySelector('.biome-fill');
       const percent = item.querySelector('.biome-percent');
-      
+
       fill.style.width = `${contrib.contribution}%`;
       percent.textContent = `${contrib.contribution}%`;
     }
   });
+}
+
+function updateTargetedBlock() {
+  if (!isPointerLocked) {
+    targetedBlock = null;
+    return;
+  }
+
+  targetedBlock = raycastBlock();
+}
+
+// Raycasting for block selection
+function raycastBlock(maxDistance = 10) {
+  const start = camera.position;
+  const direction = camera.getWorldDirection();
+  
+
+
+  // Step along the ray
+  const step = 0.1;
+  const steps = Math.floor(maxDistance / step);
+
+  for (let i = 0; i < steps; i++) {
+    const distance = i * step;
+    const x = start.x + direction.x * distance;
+    const y = start.y + direction.y * distance;
+    const z = start.z + direction.z * distance;
+
+    // Convert world coordinates to chunk and local coordinates
+    const chunkX = Math.floor(x / CHUNK_WIDTH);
+    const chunkZ = Math.floor(z / CHUNK_DEPTH);
+    const localX = Math.floor(x - chunkX * CHUNK_WIDTH);
+    const localY = Math.floor(y);
+    const localZ = Math.floor(z - chunkZ * CHUNK_DEPTH);
+
+    // Check if we're within valid bounds
+    if (localY < 0 || localY >= CHUNK_HEIGHT) continue;
+    if (localX < 0 || localX >= CHUNK_WIDTH || localZ < 0 || localZ >= CHUNK_DEPTH) continue;
+
+    const chunk = world.chunks[`${chunkX},${chunkZ}`];
+    if (!chunk) continue;
+
+    const blockType = chunk.getVoxel(localX, localY, localZ);
+    
+    if (blockType !== 0) { // Found a solid block
+      return {
+        hit: true,
+        chunkX,
+        chunkZ,
+        localX,
+        localY,
+        localZ,
+        worldX: chunkX * CHUNK_WIDTH + localX,
+        worldY: localY,
+        worldZ: chunkZ * CHUNK_DEPTH + localZ,
+        blockType,
+        distance
+      };
+    }
+  }
+
+  return { hit: false };
+}
+
+function destroyBlock() {
+  const hit = raycastBlock();
+  if (!hit.hit) return;
+
+  const chunk = world.chunks[`${hit.chunkX},${hit.chunkZ}`];
+  if (!chunk) return;
+
+  // Remove the block (set to air)
+  chunk.setVoxel(hit.localX, hit.localY, hit.localZ, 0);
+
+  // Update the mesh
+  chunk.updateMesh();
+}
+
+function placeBlock() {
+  const hit = raycastBlock();
+  if (!hit.hit) return;
+
+  // Find the position to place the block (step back along the ray)
+  const start = camera.position;
+  const direction = camera.getWorldDirection();
+
+  // Step back a bit from the hit point to find the air block adjacent to the hit
+  const placeDistance = hit.distance - 0.2;
+  const x = start.x + direction.x * placeDistance;
+  const y = start.y + direction.y * placeDistance;
+  const z = start.z + direction.z * placeDistance;
+
+  // Convert to chunk coordinates
+  const chunkX = Math.floor(x / CHUNK_WIDTH);
+  const chunkZ = Math.floor(z / CHUNK_DEPTH);
+  const localX = Math.floor(x - chunkX * CHUNK_WIDTH);
+  const localY = Math.floor(y);
+  const localZ = Math.floor(z - chunkZ * CHUNK_DEPTH);
+
+  // Check bounds
+  if (localY < 0 || localY >= CHUNK_HEIGHT) return;
+  if (localX < 0 || localX >= CHUNK_WIDTH || localZ < 0 || localZ >= CHUNK_DEPTH) return;
+
+  const chunk = world.chunks[`${chunkX},${chunkZ}`];
+  if (!chunk) return;
+
+  // Only place if the position is empty (air)
+  if (chunk.getVoxel(localX, localY, localZ) === 0) {
+    chunk.setVoxel(localX, localY, localZ, selectedBlockType);
+    chunk.updateMesh();
+  }
 }
 
 let lastTime = 0;
@@ -321,9 +446,15 @@ function animate(currentTime) {
   // Update biome display
   updateBiomeDisplay(deltaTime);
 
+  // Update targeted block for outline rendering
+  updateTargetedBlock();
+
   // Update camera position display
+  const targetInfo = targetedBlock && targetedBlock.hit ? 
+    ` | Target: (${targetedBlock.worldX}, ${targetedBlock.worldY}, ${targetedBlock.worldZ})` : 
+    ' | No target';
   document.getElementById('camera-position').textContent =
-    `X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)}`;
+    `X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)}${targetInfo}`;
 
   // Update camera matrices
   camera.updateViewProjectionMatrix();
@@ -333,7 +464,7 @@ function animate(currentTime) {
     console.log(`Camera: ${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`);
     console.log(`Camera rotation: ${camera.rotation.x.toFixed(2)}, ${camera.rotation.y.toFixed(2)}, ${camera.rotation.z.toFixed(2)}`);
     console.log(`Visible chunks: ${world.getVisibleChunks().length}`);
-    
+
     // Show which chunks are around the camera
     const visibleChunks = world.getVisibleChunks();
     if (visibleChunks.length > 0) {
@@ -361,7 +492,7 @@ function animate(currentTime) {
 
   // Render
   const visibleChunks = world.getVisibleChunks();
-  renderer.render(visibleChunks, camera);
+  renderer.render(visibleChunks, camera, targetedBlock);
 
   stats.end();
 }

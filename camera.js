@@ -10,7 +10,7 @@ export class WebGPUCamera {
     this.far = far;
     
     // Position camera for better terrain viewing
-    this.position = { x: 16, y: 280, z: 16 }; // Above chunk 0,0
+    this.position = { x: 16, y: 180, z: 16 }; // Above chunk 0,0
     this.rotation = { x: -0.5, y: 0, z: 0 }; // Look down slightly
     
     // Matrices
@@ -97,7 +97,7 @@ export class WebGPUCamera {
     // Forward direction (FPS-style, Y up)
     return {
       x: -sinY * cosX,
-      y: -sinX,
+      y: sinX,
       z: -cosY * cosX
     };
   }

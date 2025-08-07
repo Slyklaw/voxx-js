@@ -40,6 +40,10 @@ export class WebGPUWorld {
             this.pendingChunks.delete(key);
             return;
           }
+          // Set voxel data from worker
+          if (chunkData && chunkData.voxels) {
+            this.chunks[key].voxels = new Uint8Array(chunkData.voxels);
+          }
           // Build GPU buffers from worker mesh
           if (chunkData && chunkData.meshData) {
             this.chunks[key].fromWorkerMesh(chunkData.meshData);
