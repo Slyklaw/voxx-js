@@ -2,6 +2,8 @@
  * WebGPU Renderer for Voxel Engine
  */
 
+import { SkyRenderer } from './sky.js';
+
 export class WebGPURenderer {
   constructor() {
     this.device = null;
@@ -16,6 +18,7 @@ export class WebGPURenderer {
     this.format = 'bgra8unorm';
     this.outlineVertexBuffer = null;
     this.outlineIndexBuffer = null;
+    this.skyRenderer = null;
   }
 
   async init(canvas) {
@@ -59,6 +62,10 @@ export class WebGPURenderer {
 
     // Create compute pipeline for chunk generation
     await this.createComputePipeline();
+
+    // Initialize sky renderer
+    this.skyRenderer = new SkyRenderer();
+    await this.skyRenderer.init(this.device);
 
     console.log('WebGPU renderer initialized successfully');
   }
@@ -385,13 +392,13 @@ export class WebGPURenderer {
     return modelMatrix;
   }
 
-  render(chunks, camera, targetedBlock = null) {
+  render(chunks, camera, targetedBlock = null, skyData = null) {
     const commandEncoder = this.device.createCommandEncoder();
 
     const renderPass = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: this.context.getCurrentTexture().createView(),
-        clearValue: { r: 0.53, g: 0.81, b: 0.92, a: 1.0 },
+        clearValue: { r: 0.1, g: 0.1, b: 0.2, a: 1.0 }, // Dark fallback color
         loadOp: 'clear',
         storeOp: 'store'
       }],
@@ -402,6 +409,20 @@ export class WebGPURenderer {
         depthStoreOp: 'store'
       }
     });
+
+    // Render sky first (as background)
+    if (this.skyRenderer && skyData) {
+      this.skyRenderer.updateUniforms(
+        camera.viewMatrix,
+        camera.projectionMatrix,
+        skyData.sunDirection,
+        skyData.moonDirection,
+        skyData.cycleProgress,
+        skyData.sunElevation,
+        skyData.moonElevation
+      );
+      this.skyRenderer.render(renderPass);
+    }
 
     renderPass.setPipeline(this.renderPipeline);
 
@@ -512,6 +533,9 @@ export class WebGPURenderer {
     }
     if (this.outlineVertexBuffer) {
       this.outlineVertexBuffer.destroy();
+    }
+    if (this.skyRenderer) {
+      this.skyRenderer.destroy();
     }
   }
 }

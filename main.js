@@ -245,6 +245,15 @@ function updateMovement(deltaTime) {
   }
 }
 
+// Sky data for rendering
+let skyData = {
+  sunDirection: [0.5, -1.0, 0.5],
+  moonDirection: [-0.5, -0.5, -0.5],
+  cycleProgress: 0,
+  sunElevation: 0,
+  moonElevation: 0
+};
+
 function updateSunCycle(deltaTime) {
   sunCycleTime += deltaTime;
   if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
@@ -265,6 +274,24 @@ function updateSunCycle(deltaTime) {
   lightDirection[0] = Math.cos(azimuth) * Math.cos(elevation);
   lightDirection[1] = -Math.sin(elevation);
   lightDirection[2] = Math.sin(azimuth) * Math.cos(elevation);
+
+  // Calculate moon position (opposite to sun, with some offset)
+  const moonAngle = sunAngle + Math.PI; // Opposite side of sky
+  const moonElevation = minElevation + (Math.sin(moonAngle) * 0.5 + 0.5) * (maxElevation - minElevation);
+  const moonAzimuth = moonAngle * 0.5;
+
+  const moonDirection = [
+    Math.cos(moonAzimuth) * Math.cos(moonElevation),
+    -Math.sin(moonElevation),
+    Math.sin(moonAzimuth) * Math.cos(moonElevation)
+  ];
+
+  // Update sky data
+  skyData.sunDirection = [...lightDirection];
+  skyData.moonDirection = moonDirection;
+  skyData.cycleProgress = cycleProgress;
+  skyData.sunElevation = Math.max(0, (elevation - minElevation) / (maxElevation - minElevation));
+  skyData.moonElevation = Math.max(0, (moonElevation - minElevation) / (maxElevation - minElevation));
 
   // Update light intensity
   const elevationNormalized = (elevation - minElevation) / (maxElevation - minElevation);
@@ -492,7 +519,7 @@ function animate(currentTime) {
 
   // Render
   const visibleChunks = world.getVisibleChunks();
-  renderer.render(visibleChunks, camera, targetedBlock);
+  renderer.render(visibleChunks, camera, targetedBlock, skyData);
 
   stats.end();
 }
