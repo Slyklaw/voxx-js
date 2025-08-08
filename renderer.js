@@ -63,7 +63,7 @@ export class Renderer {
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     this.directionalLight.position.set(0.5, 1, 0.5);
     this.directionalLight.castShadow = true;
-    
+
     // Configure shadow properties
     this.directionalLight.shadow.mapSize.width = 2048;
     this.directionalLight.shadow.mapSize.height = 2048;
@@ -73,7 +73,7 @@ export class Renderer {
     this.directionalLight.shadow.camera.right = 100;
     this.directionalLight.shadow.camera.top = 100;
     this.directionalLight.shadow.camera.bottom = -100;
-    
+
     this.scene.add(this.directionalLight);
   }
 
@@ -84,7 +84,7 @@ export class Renderer {
       -lightDirection[1],
       -lightDirection[2]
     );
-    
+
     this.directionalLight.color.setRGB(lightColor[0], lightColor[1], lightColor[2]);
     this.ambientLight.color.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
   }
@@ -92,7 +92,7 @@ export class Renderer {
   render(chunks, camera, targetedBlock = null, skyData = null) {
     // Update camera position and rotation
     this.camera.position.set(camera.position.x, camera.position.y, camera.position.z);
-    
+
     // Convert camera rotation to Three.js format
     const euler = new THREE.Euler(camera.rotation.x, camera.rotation.y, camera.rotation.z, 'YXZ');
     this.camera.quaternion.setFromEuler(euler);
@@ -130,21 +130,21 @@ export class Renderer {
     // Add/update meshes for visible chunks
     chunks.forEach(chunk => {
       const key = `${chunk.chunkX},${chunk.chunkZ}`;
-      
+
       if (chunk.mesh) {
         const existingMesh = this.chunkMeshes.get(key);
-        
+
         // If mesh doesn't exist or has changed, update it
         if (!existingMesh || existingMesh !== chunk.mesh) {
           // Remove old mesh if it exists
           if (existingMesh) {
             this.scene.remove(existingMesh);
           }
-          
+
           // Add new mesh
           chunk.mesh.castShadow = true;
           chunk.mesh.receiveShadow = true;
-          
+
           this.scene.add(chunk.mesh);
           this.chunkMeshes.set(key, chunk.mesh);
         }
