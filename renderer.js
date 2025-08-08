@@ -41,8 +41,6 @@ export class Renderer {
     });
     this.renderer.setSize(canvas.width, canvas.height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     // Create lighting
     this.setupLighting();
@@ -62,17 +60,6 @@ export class Renderer {
     // Directional light (sun/moon)
     this.directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
     this.directionalLight.position.set(0.5, 1, 0.5);
-    this.directionalLight.castShadow = true;
-
-    // Configure shadow properties
-    this.directionalLight.shadow.mapSize.width = 2048;
-    this.directionalLight.shadow.mapSize.height = 2048;
-    this.directionalLight.shadow.camera.near = 0.5;
-    this.directionalLight.shadow.camera.far = 500;
-    this.directionalLight.shadow.camera.left = -100;
-    this.directionalLight.shadow.camera.right = 100;
-    this.directionalLight.shadow.camera.top = 100;
-    this.directionalLight.shadow.camera.bottom = -100;
 
     this.scene.add(this.directionalLight);
   }
@@ -142,9 +129,6 @@ export class Renderer {
           }
 
           // Add new mesh
-          chunk.mesh.castShadow = true;
-          chunk.mesh.receiveShadow = true;
-
           this.scene.add(chunk.mesh);
           this.chunkMeshes.set(key, chunk.mesh);
         }
