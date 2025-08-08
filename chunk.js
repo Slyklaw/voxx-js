@@ -27,6 +27,7 @@ export class Chunk {
     // Mesh generation state
     this.needsUpdate = true;
     this.hasVoxelData = false;
+    this.meshReady = false; // Track when mesh is ready for rendering
     this.neighborChunks = {
       north: null,  // z - 1
       south: null,  // z + 1
@@ -280,7 +281,20 @@ export class Chunk {
     }
 
     const meshData = this.generateMeshData();
-    this._createMeshFromData(meshData);
+    
+    // For forced updates (block placement/destruction), update in place to avoid flash
+    if (forceUpdate && this.mesh && this.meshReady) {
+      this._updateMeshInPlace(meshData);
+    } else {
+      this._createMeshFromData(meshData);
+      
+      // Make mesh visible after a brief delay to ensure proper initialization
+      setTimeout(() => {
+        if (this.mesh) {
+          this.mesh.visible = true;
+        }
+      }, 0);
+    }
   }
 
   /**
@@ -290,6 +304,59 @@ export class Chunk {
   fromWorkerMesh(meshData) {
     this.hasVoxelData = true;
     this._createMeshFromData(meshData);
+    // Mesh is ready for rendering after a brief delay to ensure proper initialization
+    setTimeout(() => {
+      if (this.mesh) {
+        this.mesh.visible = true;
+      }
+    }, 0);
+  }
+
+  _updateMeshInPlace(meshData) {
+    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] _updateMeshInPlace called`);
+
+    if (!meshData || meshData.positions.length === 0) {
+      // Empty chunk - hide the mesh but don't dispose it to avoid flash
+      console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Empty chunk - hiding mesh`);
+      if (this.mesh) {
+        this.mesh.visible = false;
+      }
+      this.needsUpdate = false;
+      return;
+    }
+
+    if (!this.mesh) {
+      // Fallback to creating new mesh if none exists
+      this._createMeshFromData(meshData);
+      return;
+    }
+
+    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Updating mesh in place with ${meshData.positions.length / 3} vertices`);
+
+    // Store current visibility state
+    const wasVisible = this.mesh.visible;
+
+    // Create new geometry
+    const newGeometry = new THREE.BufferGeometry();
+    newGeometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
+    newGeometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
+    newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+
+    // Replace geometry while keeping the mesh and material
+    const oldGeometry = this.mesh.geometry;
+    this.mesh.geometry = newGeometry;
+    
+    // Dispose old geometry
+    if (oldGeometry) {
+      oldGeometry.dispose();
+    }
+
+    // Restore visibility state
+    this.mesh.visible = wasVisible;
+    this.needsUpdate = false;
+    
+    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Mesh updated in place successfully`);
   }
 
   _createMeshFromData(meshData) {
@@ -318,23 +385,29 @@ export class Chunk {
     geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
     geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
-    // Create material
+    // Create material - use a basic material initially to avoid shader compilation delays
     const material = new THREE.MeshLambertMaterial({
       vertexColors: true,
       transparent: false,
       side: THREE.FrontSide
     });
 
-    // Create mesh
+    // Dispose of old mesh if it exists
     if (this.mesh) {
       console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Disposing old mesh`);
       this.mesh.geometry.dispose();
       this.mesh.material.dispose();
     }
 
+    // Create mesh but don't make it visible until it's properly initialized
     this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.visible = false; // Hide initially to prevent flash
     this.needsUpdate = false;
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] New mesh created successfully`);
+    
+    // Mark that mesh is ready for rendering (but keep it hidden initially)
+    this.meshReady = true;
+    
+    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] New mesh created successfully, vertices: ${meshData.positions.length / 3}`);
   }
 
   dispose() {

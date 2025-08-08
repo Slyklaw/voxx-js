@@ -132,7 +132,8 @@ export class Renderer {
     chunks.forEach(chunk => {
       const key = `${chunk.chunkX},${chunk.chunkZ}`;
 
-      if (chunk.mesh) {
+      // Only process chunks that have a mesh, are ready for rendering, and have valid geometry
+      if (chunk.mesh && chunk.meshReady && chunk.mesh.geometry && chunk.mesh.geometry.attributes.position) {
         const existingMesh = this.chunkMeshes.get(key);
 
         // If mesh doesn't exist or has changed, update it
@@ -142,23 +143,42 @@ export class Renderer {
             this.scene.remove(existingMesh);
           }
 
-          // Create custom material with shaders
-          const material = new THREE.ShaderMaterial({
-            vertexShader: vertexShader,
-            fragmentShader: fragmentShader,
-            uniforms: {
-              lightDirection: { value: new THREE.Vector3() },
-              lightColor: { value: new THREE.Color(0xffffff) },
-              ambientColor: { value: new THREE.Color(0x404040) }
+          // Only replace material if it's not already a shader material or if it's the wrong type
+          const needsNewMaterial = !chunk.mesh.material || 
+                                   !chunk.mesh.material.uniforms ||
+                                   chunk.mesh.material.type !== 'ShaderMaterial';
+
+          if (needsNewMaterial) {
+            // Create custom material with shaders
+            const material = new THREE.ShaderMaterial({
+              vertexShader: vertexShader,
+              fragmentShader: fragmentShader,
+              uniforms: {
+                lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+                lightColor: { value: new THREE.Color(0xffffff) },
+                ambientColor: { value: new THREE.Color(0x404040) }
+              }
+            });
+
+            // Apply material to the mesh
+            if (chunk.mesh.material) {
+              chunk.mesh.material.dispose(); // Dispose old material
             }
-          });
+            chunk.mesh.material = material;
+          }
 
-          // Apply material to the mesh
-          chunk.mesh.material = material;
-
-          // Add new mesh
+          // Add new mesh to scene first
           this.scene.add(chunk.mesh);
           this.chunkMeshes.set(key, chunk.mesh);
+
+          // Make mesh visible after ensuring it's properly added to scene
+          // Use requestAnimationFrame to ensure the material is compiled
+          requestAnimationFrame(() => {
+            if (chunk.mesh && this.chunkMeshes.has(key)) {
+              console.log(`[Renderer] Making chunk ${chunk.chunkX},${chunk.chunkZ} visible`);
+              chunk.mesh.visible = true;
+            }
+          });
         }
       }
     });

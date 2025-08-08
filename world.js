@@ -42,17 +42,23 @@ export class World {
             this.pendingChunks.delete(key);
             return;
           }
+          
           // Set voxel data and mark as having data
           if (chunkData && chunkData.voxels) {
             this.chunks[key].voxels = new Uint8Array(chunkData.voxels);
             this.chunks[key].hasVoxelData = true;
+            
+            // If mesh data is available from worker, use it directly
+            if (chunkData.meshData) {
+              this.chunks[key].fromWorkerMesh(chunkData.meshData);
+            }
           }
           
           // Set up neighbors after chunk is loaded
           this.setupChunkNeighbors(chunkX, chunkZ);
           
-          // Now generate mesh with proper neighbor access
-          if (this.chunks[key].canGenerateMesh()) {
+          // Generate mesh if we don't have it from worker and can generate it
+          if (!this.chunks[key].meshReady && this.chunks[key].canGenerateMesh()) {
             this.chunks[key].updateMesh();
           }
           
@@ -175,7 +181,7 @@ export class World {
   }
 
   getVisibleChunks() {
-    return Object.values(this.chunks).filter(chunk => chunk.mesh);
+    return Object.values(this.chunks).filter(chunk => chunk.mesh && chunk.meshReady);
   }
 
   dispose() {
