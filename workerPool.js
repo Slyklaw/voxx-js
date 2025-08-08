@@ -1,5 +1,5 @@
 export class WorkerPool {
-  constructor(workerScript, poolSize = 8) {
+  constructor(workerScript, poolSize = navigator.hardwareConcurrency || 4) {
     this.poolSize = poolSize;
     this.workerScript = workerScript;
     this.workers = [];
