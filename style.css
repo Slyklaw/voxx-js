@@ -47,6 +47,84 @@ body {
   border-radius: 6px;
 }
 
+#compass-display {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.compass-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.compass-face {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+.compass-needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, red 0%, red 50%, white 50%, white 100%);
+  transform-origin: bottom center;
+  transform: translate(-50%, -100%);
+}
+
+.compass-direction {
+  position: absolute;
+  color: white;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.compass-direction.n {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-direction.e {
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-direction.s {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-direction.w {
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-text {
+  color: white;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
 #biome-display {
   position: absolute;
   top: 10px;

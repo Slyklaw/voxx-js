@@ -9,10 +9,22 @@
   <body>
     <div id="instructions">
       Click to play<br />(W, A, S, D = Move, SPACE = Up, SHIFT = Down, MOUSE = Look)<br />
-      Debug: H = Shadow Camera, T = Test Cube
+      Voxel Engine
     </div>
     <div id="camera-position">X: 0.00 Y: 0.00 Z: 0.00</div>
     <div id="time-display">Day: 00:00</div>
+    <div id="compass-display">
+      <div class="compass-container">
+        <div class="compass-face">
+          <div class="compass-needle"></div>
+          <div class="compass-direction n">N</div>
+          <div class="compass-direction e">E</div>
+          <div class="compass-direction s">S</div>
+          <div class="compass-direction w">W</div>
+        </div>
+        <div class="compass-text">N</div>
+      </div>
+    </div>
     <div id="biome-display">
       <div class="biome-title">Biomes</div>
       <div class="biome-info">
@@ -58,14 +70,6 @@
         <span>Snow</span>
       </div>
     </div>
-    <script type="importmap">
-      {
-          "imports": {
-              "three": "https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js",
-              "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/"
-          }
-      }
-  </script>
-  <script type="module" src="./main.js" type="text/javascript"></script>
+    <script type="module" src="./main.js" type="text/javascript"></script>
   </body>
 </html>

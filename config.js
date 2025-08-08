@@ -5,11 +5,7 @@ export const RENDER_CONFIG = {
   FAR_PLANE: 1000,
   FOG_NEAR: 100,
   FOG_FAR: 400,
-  SHADOW_MAP_SIZE: 1024,
-  TONE_MAPPING_EXPOSURE: 1.0,
-  SHADOW_CAMERA_BOUNDS: 100,
-  SHADOW_CAMERA_NEAR: 1,
-  SHADOW_CAMERA_FAR: 400
+  TONE_MAPPING_EXPOSURE: 1.0
 };
 
 // Lighting configuration
@@ -18,25 +14,22 @@ export const LIGHTING_CONFIG = {
   AMBIENT_INTENSITY: 0.4,
   DIRECTIONAL_INTENSITY: 1.0,
   FILL_INTENSITY: 0.5,
-  SHADOW_BIAS: -0.0005,
-  SHADOW_NORMAL_BIAS: 0.05,
-  SHADOW_RADIUS: 2,
   DIRECTIONAL_LIGHT_POSITION: { x: 50, y: 100, z: 50 },
   FILL_LIGHT_POSITION: { x: -50, y: 50, z: -50 }
 };
 
 // Player configuration
 export const PLAYER_CONFIG = {
-  MOVE_SPEED: 15,
+  MOVE_SPEED: 200,
   MAX_REACH: 10,
   SPAWN_POSITION: { x: 16, y: 225, z: 16 }
 };
 
 // Sun cycle configuration
 export const SUN_CYCLE_CONFIG = {
-  DAY_DURATION: 60, // 1 minute in seconds
-  NIGHT_DURATION: 60, // 1 minute in seconds
-  TOTAL_CYCLE: 120, // 2 minutes total
+  DAY_DURATION: 360, // 6 minutes in seconds (06:00 to 18:00)
+  NIGHT_DURATION: 360, // 6 minutes in seconds (18:00 to 06:00)
+  TOTAL_CYCLE: 720, // 12 minutes total (24 hour cycle)
   SUN_RADIUS: 100, // Distance from center
   SUN_HEIGHT: 50, // Base height above ground
   MIN_ELEVATION_DEG: 15, // Minimum sun elevation in degrees
