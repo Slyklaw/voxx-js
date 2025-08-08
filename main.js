@@ -209,17 +209,20 @@ function setupStats() {
 function updateMovement(deltaTime) {
   if (!isPointerLocked) return;
 
-  const forward = camera.getWorldDirection();
+  // Get horizontal-only forward direction (ignore pitch for movement)
+  const yaw = camera.rotation.y;
+  const forward = {
+    x: -Math.sin(yaw),
+    y: 0,
+    z: -Math.cos(yaw)
+  };
+
   const right = {
     x: forward.z,
     y: 0,
     z: -forward.x
   };
 
-  // Normalize right vector
-  const rightLength = Math.sqrt(right.x * right.x + right.z * right.z);
-  right.x /= rightLength;
-  right.z /= rightLength;
 
   const speed = PLAYER_CONFIG.MOVE_SPEED * deltaTime;
 
