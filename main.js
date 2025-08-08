@@ -1,10 +1,10 @@
 /**
- * WebGPU Voxel Engine Main File
+ * Three.js Voxel Engine Main File
  */
 
-import { WebGPURenderer } from './renderer.js';
-import { WebGPUCamera } from './camera.js';
-import { WebGPUWorld } from './world.js';
+import { Renderer } from './renderer.js';
+import { Camera } from './camera.js';
+import { World } from './world.js';
 import { BiomeCalculator } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
@@ -42,12 +42,12 @@ async function init() {
     canvas.height = window.innerHeight;
     document.body.appendChild(canvas);
 
-    // Initialize WebGPU renderer
-    renderer = new WebGPURenderer();
+    // Initialize renderer
+    renderer = new Renderer();
     await renderer.init(canvas);
 
     // Create camera
-    camera = new WebGPUCamera(
+    camera = new Camera(
       RENDER_CONFIG.FOV,
       window.innerWidth / window.innerHeight,
       RENDER_CONFIG.NEAR_PLANE,
@@ -56,7 +56,7 @@ async function init() {
 
     // Create world
     const noiseSeed = Math.random();
-    world = new WebGPUWorld(noiseSeed, renderer.device);
+    world = new World(noiseSeed);
     biomeCalculator = new BiomeCalculator(noiseSeed);
 
     // Initial world generation
@@ -72,10 +72,10 @@ async function init() {
     // Start render loop
     requestAnimationFrame(animate);
 
-    console.log('WebGPU Voxel Engine initialized successfully');
+    console.log('Voxel Engine initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize WebGPU:', error);
-    showWebGPUError(error.message);
+    console.error('Failed to initialize renderer:', error);
+    showRendererError(error.message);
   }
 }
 
@@ -442,8 +442,6 @@ function raycastBlock(maxDistance = 10) {
   const start = camera.position;
   const direction = camera.getWorldDirection();
 
-
-
   // Step along the ray
   const step = 0.1;
   const steps = Math.floor(maxDistance / step);
@@ -597,7 +595,7 @@ function animate(currentTime) {
     0, 0, 0, 1
   ]);
 
-  // Send separate view and projection matrices (renderer composes VP in the shader)
+  // Send separate view and projection matrices
   renderer.updateUniforms(
     camera.viewMatrix,
     camera.projectionMatrix,
@@ -614,7 +612,7 @@ function animate(currentTime) {
   stats.end();
 }
 
-function showWebGPUError(message) {
+function showRendererError(message) {
   const errorDiv = document.createElement('div');
   errorDiv.style.position = 'fixed';
   errorDiv.style.top = '50%';
@@ -627,10 +625,9 @@ function showWebGPUError(message) {
   errorDiv.style.textAlign = 'center';
   errorDiv.style.zIndex = '10000';
   errorDiv.innerHTML = `
-    <h2>WebGPU Not Available</h2>
+    <h2>Renderer Error</h2>
     <p>${message}</p>
-    <p>Please use a browser that supports WebGPU (Chrome 113+, Edge 113+)</p>
-    <p>Make sure WebGPU is enabled in your browser flags.</p>
+    <p>Please check your browser supports WebGL.</p>
   `;
   document.body.appendChild(errorDiv);
 }

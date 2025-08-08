@@ -1,35 +1,31 @@
 /**
- * WebGPU Chunk implementation
+ * Chunk implementation
  */
 
 import { getBlockColor, BLOCK_TYPES } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 // Chunk constants
 export const CHUNK_WIDTH = 32;
 export const CHUNK_HEIGHT = 256;
 export const CHUNK_DEPTH = 32;
 
-export class WebGPUChunk {
-  constructor(chunkX, chunkZ, device) {
+export class Chunk {
+  constructor(chunkX, chunkZ) {
     this.chunkX = chunkX;
     this.chunkZ = chunkZ;
-    this.device = device;
     
     // Voxel data
     this.voxels = new Uint8Array(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH);
     
-    // WebGPU buffers
-    this.vertexBuffer = null;
-    this.indexBuffer = null;
-    this.indexCount = 0;
-    this.voxelBuffer = null;
+    // Three.js objects
+    this.mesh = null;
+    this.geometry = null;
+    this.material = null;
     
     // Mesh generation state
     this.needsUpdate = true;
-
-    // Flag to indicate worker-driven mesh path
-    this.workerBacked = false;
   }
 
   getVoxel(x, y, z) {
@@ -104,16 +100,6 @@ export class WebGPUChunk {
     }
   }
 
-  createVoxelBuffer() {
-    // Create storage buffer for voxel data (for compute shader)
-    this.voxelBuffer = this.device.createBuffer({
-      size: this.voxels.byteLength,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
-    });
-    
-    this.device.queue.writeBuffer(this.voxelBuffer, 0, this.voxels);
-  }
-
   generateMeshData() {
     const positions = [];
     const normals = [];
@@ -122,7 +108,7 @@ export class WebGPUChunk {
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
-    // Greedy meshing algorithm (same as original but optimized for WebGPU)
+    // Greedy meshing algorithm
     for (let d = 0; d < 3; d++) {
       const u = (d + 1) % 3;
       const v = (d + 2) % 3;
@@ -237,78 +223,60 @@ export class WebGPUChunk {
     if (!this.needsUpdate) return;
 
     const meshData = this.generateMeshData();
-    this._uploadMesh(meshData);
+    this._createMeshFromData(meshData);
   }
 
   /**
-   * Build GPU buffers from worker-provided mesh payload
+   * Build Three.js mesh from worker-provided mesh payload
    * meshData: { positions: Float32Array, normals: Float32Array, colors: Float32Array, indices: Uint32Array }
    */
   fromWorkerMesh(meshData) {
-    this.workerBacked = true;
-    this._uploadMesh(meshData);
+    this._createMeshFromData(meshData);
   }
 
-  _uploadMesh(meshData) {
+  _createMeshFromData(meshData) {
     if (!meshData || meshData.positions.length === 0) {
       // Empty chunk
-      this.indexCount = 0;
+      if (this.mesh) {
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+        this.mesh = null;
+      }
       this.needsUpdate = false;
       return;
     }
 
-    // Create interleaved vertex data (position + normal + color)
-    const vertCount = meshData.positions.length / 3;
-    const vertexData = new Float32Array(vertCount * 9);
-    for (let i = 0; i < vertCount; i++) {
-      const off = i * 9;
-      const p = i * 3;
-      // Position
-      vertexData[off + 0] = meshData.positions[p + 0];
-      vertexData[off + 1] = meshData.positions[p + 1];
-      vertexData[off + 2] = meshData.positions[p + 2];
-      // Normal
-      vertexData[off + 3] = meshData.normals[p + 0];
-      vertexData[off + 4] = meshData.normals[p + 1];
-      vertexData[off + 5] = meshData.normals[p + 2];
-      // Color
-      vertexData[off + 6] = meshData.colors[p + 0];
-      vertexData[off + 7] = meshData.colors[p + 1];
-      vertexData[off + 8] = meshData.colors[p + 2];
+    // Create geometry
+    const geometry = new THREE.BufferGeometry();
+    
+    // Set attributes
+    geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+
+    // Create material
+    const material = new THREE.MeshLambertMaterial({
+      vertexColors: true,
+      transparent: false,
+      side: THREE.DoubleSide
+    });
+
+    // Create mesh
+    if (this.mesh) {
+      this.mesh.geometry.dispose();
+      this.mesh.material.dispose();
     }
 
-    // Create or update vertex buffer
-    if (this.vertexBuffer) this.vertexBuffer.destroy();
-    this.vertexBuffer = this.device.createBuffer({
-      size: vertexData.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-    });
-    this.device.queue.writeBuffer(this.vertexBuffer, 0, vertexData);
-
-    // Create or update index buffer
-    if (this.indexBuffer) this.indexBuffer.destroy();
-    this.indexBuffer = this.device.createBuffer({
-      size: meshData.indices.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
-    });
-    this.device.queue.writeBuffer(this.indexBuffer, 0, meshData.indices);
-
-    this.indexCount = meshData.indices.length;
+    this.mesh = new THREE.Mesh(geometry, material);
     this.needsUpdate = false;
   }
 
   dispose() {
-    if (this.vertexBuffer) {
-      this.vertexBuffer.destroy();
-      this.vertexBuffer = null;
-    }
-    if (this.indexBuffer) {
-      this.indexBuffer.destroy();
-      this.indexBuffer = null;
-    }
-    if (this.voxelBuffer) {
-      this.voxelBuffer.destroy();
-      this.voxelBuffer = null;
+    if (this.mesh) {
+      this.mesh.geometry.dispose();
+      this.mesh.material.dispose();
+      this.mesh = null;
     }
   }
 }

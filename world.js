@@ -1,17 +1,16 @@
 /**
- * WebGPU World implementation
+ * World implementation
  */
 
-import { WebGPUChunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
+import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { BiomeCalculator } from './biomes.js';
 import { WorkerPool } from './workerPool.js';
 
-export class WebGPUWorld {
-  constructor(noiseSeed, device) {
+export class World {
+  constructor(noiseSeed) {
     this.chunks = {};
     this.noiseSeed = noiseSeed;
-    this.device = device;
 
     // Track pending worker jobs keyed by "x,z"
     this.pendingChunks = new Map();
@@ -28,7 +27,7 @@ export class WebGPUWorld {
   getChunk(chunkX, chunkZ) {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
-      const chunk = new WebGPUChunk(chunkX, chunkZ, this.device);
+      const chunk = new Chunk(chunkX, chunkZ);
       this.chunks[key] = chunk;
 
       // Enqueue async generation via worker if not already pending
@@ -44,7 +43,7 @@ export class WebGPUWorld {
           if (chunkData && chunkData.voxels) {
             this.chunks[key].voxels = new Uint8Array(chunkData.voxels);
           }
-          // Build GPU buffers from worker mesh
+          // Build mesh from worker data
           if (chunkData && chunkData.meshData) {
             this.chunks[key].fromWorkerMesh(chunkData.meshData);
           }
@@ -102,7 +101,7 @@ export class WebGPUWorld {
   }
 
   getVisibleChunks() {
-    return Object.values(this.chunks).filter(chunk => chunk.indexCount > 0);
+    return Object.values(this.chunks).filter(chunk => chunk.mesh);
   }
 
   dispose() {

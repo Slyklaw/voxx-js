@@ -1,14 +1,14 @@
 # voxx-js
 
-A voxel-based world generation engine with WebGPU implementation.
+A voxel-based world generation engine with Three.js implementation.
 
-## Versions
+## Implementation
 
-### WebGPU
+### Three.js Version
 - File: `index.html`
-- Native WebGPU implementation for improved performance
-- Requires WebGPU-compatible browser (Chrome 113+, Edge 113+)
-- See `WEBGPU_CONVERSION.md` for detailed information
+- Three.js implementation for broad browser compatibility
+- Works with any WebGL-compatible browser
+- Converted from WebGPU for better compatibility
 
 ## Features
 
@@ -35,4 +35,4 @@ A voxel-based world generation engine with WebGPU implementation.
 2. Serve the files using a local web server
 3. Open `index.html`
 
-For WebGPU version, ensure your browser supports WebGPU and it's enabled in browser flags if necessary.
+The Three.js version works with any modern browser that supports WebGL.

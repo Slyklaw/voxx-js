@@ -1,8 +1,8 @@
 /**
- * WebGPU Camera implementation
+ * Camera implementation
  */
 
-export class WebGPUCamera {
+export class Camera {
   constructor(fov = 75, aspect = 1, near = 0.1, far = 1000) {
     this.fov = fov;
     this.aspect = aspect;
