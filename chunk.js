@@ -322,7 +322,7 @@ export class Chunk {
     const material = new THREE.MeshLambertMaterial({
       vertexColors: true,
       transparent: false,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
 
     // Create mesh
