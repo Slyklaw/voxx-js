@@ -29,6 +29,9 @@ export class World {
     if (!this.chunks[key]) {
       const chunk = new Chunk(chunkX, chunkZ);
       this.chunks[key] = chunk;
+      
+      // Set up neighbors immediately for existing chunks
+      this.setupChunkNeighbors(chunkX, chunkZ);
 
       // Enqueue async generation via worker if not already pending
       if (!this.pendingChunks.has(key)) {
@@ -39,14 +42,23 @@ export class World {
             this.pendingChunks.delete(key);
             return;
           }
-          // Set voxel data from worker
+          // Set voxel data and mark as having data
           if (chunkData && chunkData.voxels) {
             this.chunks[key].voxels = new Uint8Array(chunkData.voxels);
+            this.chunks[key].hasVoxelData = true;
           }
-          // Build mesh from worker data
-          if (chunkData && chunkData.meshData) {
-            this.chunks[key].fromWorkerMesh(chunkData.meshData);
+          
+          // Set up neighbors after chunk is loaded
+          this.setupChunkNeighbors(chunkX, chunkZ);
+          
+          // Now generate mesh with proper neighbor access
+          if (this.chunks[key].canGenerateMesh()) {
+            this.chunks[key].updateMesh();
           }
+          
+          // Also update neighboring chunks that might now be able to generate meshes
+          this.updateNeighborMeshes(chunkX, chunkZ);
+          
           this.pendingChunks.delete(key);
         };
         this.pendingChunks.set(key, true);
@@ -55,6 +67,68 @@ export class World {
       return chunk;
     }
     return this.chunks[key];
+  }
+
+  // Set up neighbor relationships for a chunk and its neighbors
+  setupChunkNeighbors(chunkX, chunkZ) {
+    const chunk = this.chunks[`${chunkX},${chunkZ}`];
+    if (!chunk) return;
+
+    // Get neighbor chunks
+    const north = this.chunks[`${chunkX},${chunkZ - 1}`];
+    const south = this.chunks[`${chunkX},${chunkZ + 1}`];
+    const east = this.chunks[`${chunkX + 1},${chunkZ}`];
+    const west = this.chunks[`${chunkX - 1},${chunkZ}`];
+
+    // Set up neighbor relationships
+
+    // Set neighbors for the current chunk
+    chunk.setNeighbors(north, south, east, west);
+
+    // Also update the neighbors to point back to this chunk
+    if (north) {
+      const northNeighbors = this.getChunkNeighbors(chunkX, chunkZ - 1);
+      north.setNeighbors(northNeighbors.north, chunk, northNeighbors.east, northNeighbors.west);
+    }
+    if (south) {
+      const southNeighbors = this.getChunkNeighbors(chunkX, chunkZ + 1);
+      south.setNeighbors(chunk, southNeighbors.south, southNeighbors.east, southNeighbors.west);
+    }
+    if (east) {
+      const eastNeighbors = this.getChunkNeighbors(chunkX + 1, chunkZ);
+      east.setNeighbors(eastNeighbors.north, eastNeighbors.south, eastNeighbors.east, chunk);
+    }
+    if (west) {
+      const westNeighbors = this.getChunkNeighbors(chunkX - 1, chunkZ);
+      west.setNeighbors(westNeighbors.north, westNeighbors.south, chunk, westNeighbors.west);
+    }
+  }
+
+  // Helper method to get neighbors for a chunk
+  getChunkNeighbors(chunkX, chunkZ) {
+    return {
+      north: this.chunks[`${chunkX},${chunkZ - 1}`] || null,
+      south: this.chunks[`${chunkX},${chunkZ + 1}`] || null,
+      east: this.chunks[`${chunkX + 1},${chunkZ}`] || null,
+      west: this.chunks[`${chunkX - 1},${chunkZ}`] || null
+    };
+  }
+
+  // Update meshes for neighboring chunks that might now be able to generate
+  updateNeighborMeshes(chunkX, chunkZ) {
+    const neighborCoords = [
+      [chunkX, chunkZ - 1], // north
+      [chunkX, chunkZ + 1], // south
+      [chunkX + 1, chunkZ], // east
+      [chunkX - 1, chunkZ]  // west
+    ];
+
+    neighborCoords.forEach(([nx, nz]) => {
+      const neighborChunk = this.chunks[`${nx},${nz}`];
+      if (neighborChunk && neighborChunk.hasVoxelData && neighborChunk.canGenerateMesh()) {
+        neighborChunk.updateMesh();
+      }
+    });
   }
 
   // Main-thread generation retained for reference or debugging; no longer used in normal flow.

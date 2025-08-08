@@ -498,8 +498,8 @@ function destroyBlock() {
   // Remove the block (set to air)
   chunk.setVoxel(hit.localX, hit.localY, hit.localZ, 0);
 
-  // Update the mesh
-  chunk.updateMesh();
+  // Update the mesh (force update for manual block changes)
+  chunk.updateMesh(true);
 }
 
 function placeBlock() {
@@ -533,7 +533,7 @@ function placeBlock() {
   // Only place if the position is empty (air)
   if (chunk.getVoxel(localX, localY, localZ) === 0) {
     chunk.setVoxel(localX, localY, localZ, selectedBlockType);
-    chunk.updateMesh();
+    chunk.updateMesh(true);
   }
 }
 
