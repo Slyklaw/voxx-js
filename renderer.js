@@ -131,13 +131,23 @@ export class Renderer {
     chunks.forEach(chunk => {
       const key = `${chunk.chunkX},${chunk.chunkZ}`;
       
-      if (!this.chunkMeshes.has(key) && chunk.mesh) {
-        // Mesh already has world positioning built-in, no need to position it again
-        chunk.mesh.castShadow = true;
-        chunk.mesh.receiveShadow = true;
+      if (chunk.mesh) {
+        const existingMesh = this.chunkMeshes.get(key);
         
-        this.scene.add(chunk.mesh);
-        this.chunkMeshes.set(key, chunk.mesh);
+        // If mesh doesn't exist or has changed, update it
+        if (!existingMesh || existingMesh !== chunk.mesh) {
+          // Remove old mesh if it exists
+          if (existingMesh) {
+            this.scene.remove(existingMesh);
+          }
+          
+          // Add new mesh
+          chunk.mesh.castShadow = true;
+          chunk.mesh.receiveShadow = true;
+          
+          this.scene.add(chunk.mesh);
+          this.chunkMeshes.set(key, chunk.mesh);
+        }
       }
     });
   }
