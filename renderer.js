@@ -4,6 +4,7 @@
 
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
+import { vertexShader, fragmentShader } from './shaders.js';
 
 export class Renderer {
   constructor() {
@@ -74,6 +75,19 @@ export class Renderer {
 
     this.directionalLight.color.setRGB(lightColor[0], lightColor[1], lightColor[2]);
     this.ambientLight.color.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
+
+    // Update shader uniforms
+    for (const [key, mesh] of this.chunkMeshes) {
+      if (mesh.material.uniforms) {
+        mesh.material.uniforms.lightDirection.value.set(
+          -lightDirection[0],
+          -lightDirection[1],
+          -lightDirection[2]
+        );
+        mesh.material.uniforms.lightColor.value.setRGB(lightColor[0], lightColor[1], lightColor[2]);
+        mesh.material.uniforms.ambientColor.value.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
+      }
+    }
   }
 
   render(chunks, camera, targetedBlock = null, skyData = null) {
@@ -127,6 +141,20 @@ export class Renderer {
           if (existingMesh) {
             this.scene.remove(existingMesh);
           }
+
+          // Create custom material with shaders
+          const material = new THREE.ShaderMaterial({
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
+            uniforms: {
+              lightDirection: { value: new THREE.Vector3() },
+              lightColor: { value: new THREE.Color(0xffffff) },
+              ambientColor: { value: new THREE.Color(0x404040) }
+            }
+          });
+
+          // Apply material to the mesh
+          chunk.mesh.material = material;
 
           // Add new mesh
           this.scene.add(chunk.mesh);

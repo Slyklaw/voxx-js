@@ -4,7 +4,7 @@
 
 import { getBlockColor, BLOCK_TYPES } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 
 // Chunk constants
 export const CHUNK_WIDTH = 32;
