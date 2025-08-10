@@ -129,8 +129,8 @@ function generateMeshData(chunk, chunkX, chunkZ) {
             const blockIndex = Math.abs(val);
 
             // Add UV coordinates for texture mapping
-            if (blockIndex === BLOCK_TYPES.WATER) {
-              // For water blocks, tile the texture based on quad dimensions
+            if (blockIndex !== BLOCK_TYPES.AIR) {
+              // For all solid blocks, tile the texture based on quad dimensions
               // This ensures the texture repeats for each block in the greedy mesh
               uvs.push(
                 0, 0,    // v1 - bottom-left
@@ -139,7 +139,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
                 w, h     // v4 - top-right (repeat w*h times)
               );
             } else {
-              // Default UVs for non-textured blocks
+              // Default UVs for AIR blocks (shouldn't be rendered anyway)
               uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
             }
             const blockColor = getBlockColor(blockIndex);

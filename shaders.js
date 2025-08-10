@@ -29,38 +29,51 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
-uniform vec2 waterAtlasPos;
+
+// Function to get atlas position for each block type
+vec2 getBlockAtlasPos(float blockType) {
+  if (abs(blockType - 1.0) < 0.5) return vec2(496.0, 208.0); // STONE
+  if (abs(blockType - 2.0) < 0.5) return vec2(240.0, 192.0); // DIRT
+  if (abs(blockType - 3.0) < 0.5) return vec2(160.0, 256.0); // GRASS
+  if (abs(blockType - 4.0) < 0.5) return vec2(128.0, 112.0); // WATER
+  if (abs(blockType - 5.0) < 0.5) return vec2(496.0, 16.0);  // SNOW
+  return vec2(0.0, 0.0); // Default/AIR
+}
 
 void main() {
   vec3 normal = normalize(vNormal);
   float diffuse = max(dot(normal, lightDirection), 0.0);
   vec3 lighting = ambientColor + diffuse * lightColor;
   
-  // Check if this is a water block using block type (4.0 = WATER)
-  bool isWater = abs(vBlockType - 4.0) < 0.5;
+  // Check if this block should use texture (not AIR)
+  bool useTexture = vBlockType > 0.5;
   
   vec3 finalColor;
-  if (isWater) {
-    // Calculate UV coordinates for water texture in atlas
+  if (useTexture) {
+    // Get atlas position for this block type
+    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType);
+    
+    // Calculate UV coordinates for texture in atlas
     vec2 atlasUV = vUv;
     
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
     
-    // Map to the water texture location in the atlas
+    // Map to the block texture location in the atlas
     float tileSize = 16.0;
     
     // Calculate final UV coordinates
     // Flip Y coordinate because texture atlas is upside down in WebGL
     vec2 finalUV = vec2(
-      (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
-      (atlasSize.y - waterAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
+      (blockAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
+      (atlasSize.y - blockAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
     );
     
     vec4 texColor = texture2D(textureAtlas, finalUV);
-    // Apply texture to water blocks with lighting
+    // Apply texture to blocks with lighting
     finalColor = texColor.rgb * lighting;
   } else {
+    // Use vertex color for AIR or fallback
     finalColor = vColor * lighting;
   }
   
@@ -100,38 +113,51 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
-uniform vec2 waterAtlasPos;
+
+// Function to get atlas position for each block type
+vec2 getBlockAtlasPos(float blockType) {
+  if (abs(blockType - 1.0) < 0.5) return vec2(496.0, 208.0); // STONE
+  if (abs(blockType - 2.0) < 0.5) return vec2(240.0, 192.0); // DIRT
+  if (abs(blockType - 3.0) < 0.5) return vec2(160.0, 256.0); // GRASS
+  if (abs(blockType - 4.0) < 0.5) return vec2(128.0, 112.0); // WATER
+  if (abs(blockType - 5.0) < 0.5) return vec2(496.0, 16.0);  // SNOW
+  return vec2(0.0, 0.0); // Default/AIR
+}
 
 void main() {
   vec3 normal = normalize(vNormal);
   float diffuse = max(dot(normal, lightDirection), 0.0);
   vec3 lighting = ambientColor + diffuse * lightColor;
   
-  // Check if this is a water block using block type (4.0 = WATER)
-  bool isWater = abs(vBlockType - 4.0) < 0.5;
+  // Check if this block should use texture (not AIR)
+  bool useTexture = vBlockType > 0.5;
   
   vec3 finalColor;
-  if (isWater) {
-    // Calculate UV coordinates for water texture in atlas
+  if (useTexture) {
+    // Get atlas position for this block type
+    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType);
+    
+    // Calculate UV coordinates for texture in atlas
     vec2 atlasUV = vUv;
     
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
     
-    // Map to the water texture location in the atlas
+    // Map to the block texture location in the atlas
     float tileSize = 16.0;
     
     // Calculate final UV coordinates
     // Flip Y coordinate because texture atlas is upside down in WebGL
     vec2 finalUV = vec2(
-      (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
-      (atlasSize.y - waterAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
+      (blockAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
+      (atlasSize.y - blockAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
     );
     
     vec4 texColor = texture2D(textureAtlas, finalUV);
-    // Apply texture to water blocks with lighting
+    // Apply texture to blocks with lighting
     finalColor = texColor.rgb * lighting;
   } else {
+    // Use vertex color for AIR or fallback
     finalColor = vColor * lighting;
   }
   

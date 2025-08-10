@@ -243,9 +243,9 @@ export class Chunk {
               }
 
               // Add UV coordinates for texture mapping
-              if (blockIndex === BLOCK_TYPES.WATER) {
-                // For water blocks, create proper UV coordinates for texture tiling
-                // Use simple 0-1 mapping for each quad face
+              if (blockIndex !== BLOCK_TYPES.AIR) {
+                // For all solid blocks, create proper UV coordinates for texture tiling
+                // This ensures textures repeat correctly across greedy mesh quads
                 uvs.push(
                   0, 0,    // v1 - bottom-left
                   w, 0,    // v2 - bottom-right (repeat w times)
@@ -255,7 +255,7 @@ export class Chunk {
 
 
               } else {
-                // Default UVs for non-textured blocks
+                // Default UVs for AIR blocks (shouldn't be rendered anyway)
                 uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
               }
 
@@ -409,8 +409,7 @@ export class Chunk {
         lightColor: { value: new THREE.Color(0xffffff) },
         ambientColor: { value: new THREE.Color(0x404040) },
         textureAtlas: { value: null }, // Will be set by renderer
-        atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
-        waterAtlasPos: { value: new THREE.Vector2(128, 112) } // Water position in atlas
+        atlasSize: { value: new THREE.Vector2(256, 256) } // Default, will be updated by renderer
       }
     });
 

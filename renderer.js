@@ -66,7 +66,6 @@ export class Renderer {
           
           // Store atlas dimensions for shader uniforms
           this.atlasSize = { width: texture.image.width, height: texture.image.height };
-          this.waterAtlasPos = { x: 128, y: 112 }; // Water texture position in atlas
           
           console.log('Texture atlas loaded successfully:', texture);
           console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
@@ -124,9 +123,6 @@ export class Renderer {
           mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
           if (this.atlasSize) {
             mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
-          }
-          if (this.waterAtlasPos) {
-            mesh.material.uniforms.waterAtlasPos.value.set(this.waterAtlasPos.x, this.waterAtlasPos.y);
           }
         }
       }
@@ -209,8 +205,7 @@ export class Renderer {
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                waterAtlasPos: { value: new THREE.Vector2(this.waterAtlasPos?.x || 128, this.waterAtlasPos?.y || 112) }
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) }
               }
             });
           } else {
@@ -222,8 +217,7 @@ export class Renderer {
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                waterAtlasPos: { value: new THREE.Vector2(this.waterAtlasPos?.x || 128, this.waterAtlasPos?.y || 112) }
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) }
               }
             });
           }
