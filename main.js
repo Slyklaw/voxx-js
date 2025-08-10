@@ -114,11 +114,34 @@ function setupControls() {
   // Keyboard input
   document.addEventListener('keydown', (event) => {
     keys[event.code] = true;
+
+    // Toggle debug UI with F1
+    if (event.code === 'F1') {
+      event.preventDefault();
+      const debugUI = document.getElementById('debug-ui');
+      debugUI.style.display = debugUI.style.display === 'none' ? 'block' : 'none';
+    }
   });
 
   document.addEventListener('keyup', (event) => {
     keys[event.code] = false;
   });
+
+  // Debug UI controls
+  document.getElementById('render-inc').addEventListener('click', () => {
+    adjustRenderDistance(1);
+  });
+
+  document.getElementById('render-dec').addEventListener('click', () => {
+    adjustRenderDistance(-1);
+  });
+
+  function adjustRenderDistance(delta) {
+    const renderDistanceValue = document.getElementById('render-distance-value');
+    let current = parseInt(renderDistanceValue.textContent);
+    current = Math.max(1, current + delta);
+    renderDistanceValue.textContent = current;
+  }
 
   // Mouse wheel for block selection
   document.addEventListener('wheel', (event) => {
@@ -552,8 +575,9 @@ function animate(currentTime) {
   // Update movement
   updateMovement(deltaTime);
 
-  // Update world
-  world.update(camera.position);
+  // Update world with current render distance
+  const renderDistance = parseInt(document.getElementById('render-distance-value').textContent);
+  world.update(camera.position, renderDistance);
 
   // Update sun cycle
   updateSunCycle(deltaTime);
