@@ -41,6 +41,24 @@ vec2 getBlockAtlasPos(float blockType) {
   return vec2(0.0, 0.0); // Default/fallback
 }
 
+// Function to rotate UV coordinates
+vec2 rotateUV(vec2 uv, float angle) {
+  float cosAngle = cos(angle);
+  float sinAngle = sin(angle);
+  
+  // Center UV around (0.5, 0.5) for rotation
+  vec2 centeredUV = uv - 0.5;
+  
+  // Apply rotation matrix
+  vec2 rotatedUV = vec2(
+    centeredUV.x * cosAngle - centeredUV.y * sinAngle,
+    centeredUV.x * sinAngle + centeredUV.y * cosAngle
+  );
+  
+  // Move back to (0,1) range
+  return rotatedUV + 0.5;
+}
+
 void main() {
   vec3 normal = normalize(vNormal);
   float diffuse = max(dot(normal, lightDirection), 0.0);
@@ -59,6 +77,19 @@ void main() {
     
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
+    
+    // Apply rotation based on face direction
+    // East face (normal.x > 0.5): rotate 180 degrees (π)
+    // West face (normal.x < -0.5): rotate 90 degrees counter-clockwise (π/2)
+    if (abs(normal.x) > 0.5) {
+      if (normal.x > 0.5) {
+        // East face: rotate 180 degrees
+        tileUV = rotateUV(tileUV, 3.1415926); // π
+      } else {
+        // West face: rotate 90 degrees counter-clockwise
+        tileUV = rotateUV(tileUV, 1.5707963); // π/2
+      }
+    }
     
     // Map to the block texture location in the atlas
     float tileSize = 16.0;
@@ -126,6 +157,24 @@ vec2 getBlockAtlasPos(float blockType) {
   return vec2(0.0, 0.0); // Default/fallback
 }
 
+// Function to rotate UV coordinates
+vec2 rotateUV(vec2 uv, float angle) {
+  float cosAngle = cos(angle);
+  float sinAngle = sin(angle);
+  
+  // Center UV around (0.5, 0.5) for rotation
+  vec2 centeredUV = uv - 0.5;
+  
+  // Apply rotation matrix
+  vec2 rotatedUV = vec2(
+    centeredUV.x * cosAngle - centeredUV.y * sinAngle,
+    centeredUV.x * sinAngle + centeredUV.y * cosAngle
+  );
+  
+  // Move back to (0,1) range
+  return rotatedUV + 0.5;
+}
+
 void main() {
   vec3 normal = normalize(vNormal);
   float diffuse = max(dot(normal, lightDirection), 0.0);
@@ -144,6 +193,19 @@ void main() {
     
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
+    
+    // Apply rotation based on face direction
+    // East face (normal.x > 0.5): rotate 180 degrees (π)
+    // West face (normal.x < -0.5): rotate 90 degrees counter-clockwise (π/2)
+    if (abs(normal.x) > 0.5) {
+      if (normal.x > 0.5) {
+        // East face: rotate 180 degrees
+        tileUV = rotateUV(tileUV, 3.1415926); // π
+      } else {
+        // West face: rotate 90 degrees counter-clockwise
+        tileUV = rotateUV(tileUV, 1.5707963); // π/2
+      }
+    }
     
     // Map to the block texture location in the atlas
     float tileSize = 16.0;
