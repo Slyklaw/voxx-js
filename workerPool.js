@@ -34,6 +34,14 @@ export class WorkerPool {
         callback(chunkData);
         this.pendingCallbacks.delete(callbackId);
       }
+    } else if (event.data.type === 'error') {
+      console.error('[WorkerPool] Worker error:', event.data.error);
+      const { callbackId } = event.data;
+      const callback = this.pendingCallbacks.get(callbackId);
+      if (callback) {
+        callback(null); // Call with null to indicate failure
+        this.pendingCallbacks.delete(callbackId);
+      }
     }
   }
 

@@ -37,6 +37,8 @@ export class World {
       if (!this.pendingChunks.has(key)) {
         const payload = { chunkX, chunkZ, noiseSeed: this.noiseSeed };
         const onComplete = (chunkData) => {
+          console.log(`[World] Chunk ${chunkX},${chunkZ} generation completed:`, chunkData ? 'success' : 'failed');
+          
           // Guard if chunk was unloaded while job ran
           if (!this.chunks[key]) {
             this.pendingChunks.delete(key);
@@ -52,6 +54,8 @@ export class World {
             if (chunkData.meshData) {
               this.chunks[key].fromWorkerMesh(chunkData.meshData);
             }
+          } else {
+            console.error(`[World] Failed to generate chunk ${chunkX},${chunkZ} - no data received`);
           }
           
           // Set up neighbors after chunk is loaded

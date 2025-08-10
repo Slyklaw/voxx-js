@@ -18,6 +18,8 @@ export class Renderer {
     this.ambientLight = null;
     this.directionalLight = null;
     this.wireframeMode = false;
+    this.waterTexture = null;
+    this.textureLoader = null;
   }
 
   async init(canvas) {
@@ -50,6 +52,32 @@ export class Renderer {
     // Initialize sky renderer
     this.skyRenderer = new SkyRenderer();
     await this.skyRenderer.init(this.scene, this.camera);
+
+    // Initialize texture loader and load water texture
+    this.textureLoader = new THREE.TextureLoader();
+    this.waterTexture = await new Promise((resolve) => {
+      this.textureLoader.load(
+        'water-16x16.png',
+        (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+          console.log('Water texture loaded successfully:', texture);
+          console.log('Texture size:', texture.image.width, 'x', texture.image.height);
+          console.log('Texture format:', texture.format, 'Type:', texture.type);
+          resolve(texture);
+        },
+        (progress) => {
+          console.log('Loading water texture...', progress);
+        },
+        (error) => {
+          console.error('Error loading water texture:', error);
+          console.warn('Water blocks will render with flat color instead of texture');
+          resolve(null); // Continue without texture if loading fails
+        }
+      );
+    });
 
     console.log('Renderer initialized successfully');
   }
@@ -87,6 +115,10 @@ export class Renderer {
         );
         mesh.material.uniforms.lightColor.value.setRGB(lightColor[0], lightColor[1], lightColor[2]);
         mesh.material.uniforms.ambientColor.value.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
+        // Update water texture uniform
+        if (this.waterTexture) {
+          mesh.material.uniforms.waterTexture.value = this.waterTexture;
+        }
       }
     }
   }
@@ -165,7 +197,8 @@ export class Renderer {
               uniforms: {
                 lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
                 lightColor: { value: new THREE.Color(0xffffff) },
-                ambientColor: { value: new THREE.Color(0x404040) }
+                ambientColor: { value: new THREE.Color(0x404040) },
+                waterTexture: { value: this.waterTexture }
               }
             });
           } else {
@@ -175,13 +208,16 @@ export class Renderer {
               uniforms: {
                 lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
                 lightColor: { value: new THREE.Color(0xffffff) },
-                ambientColor: { value: new THREE.Color(0x404040) }
+                ambientColor: { value: new THREE.Color(0x404040) },
+                waterTexture: { value: this.waterTexture }
               }
             });
           }
 
           // Apply material to the mesh
           chunk.mesh.material = material;
+
+
 
           // Add new mesh to scene first
           this.scene.add(chunk.mesh);
@@ -191,7 +227,6 @@ export class Renderer {
           // Use requestAnimationFrame to ensure the material is compiled
           requestAnimationFrame(() => {
             if (chunk.mesh && this.chunkMeshes.has(key)) {
-              console.log(`[Renderer] Making chunk ${chunk.chunkX},${chunk.chunkZ} visible`);
               chunk.mesh.visible = true;
             }
           });
@@ -199,8 +234,6 @@ export class Renderer {
       }
     });
   }
-
-
 
   updateBlockOutline(targetedBlock) {
     // Remove existing outline

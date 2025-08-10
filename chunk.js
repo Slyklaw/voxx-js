@@ -5,6 +5,7 @@
 import { getBlockColor, BLOCK_TYPES } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
+import { CHUNK_VERTEX_SHADER, CHUNK_FRAGMENT_SHADER } from './shaders.js';
 
 // Chunk constants
 export const CHUNK_WIDTH = 32;
@@ -157,7 +158,9 @@ export class Chunk {
     const positions = [];
     const normals = [];
     const colors = [];
+    const uvs = [];
     const indices = [];
+    const blockTypes = []; // Add block type attribute
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -231,11 +234,29 @@ export class Chunk {
               if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
               normals.push(...normal, ...normal, ...normal, ...normal);
 
-              // Get block color
+              // Get block color and type
               const blockIndex = Math.abs(val);
               const blockColor = getBlockColor(blockIndex);
               for (let i = 0; i < 4; i++) {
                 colors.push(blockColor.r, blockColor.g, blockColor.b);
+                blockTypes.push(blockIndex); // Store block type for each vertex
+              }
+
+              // Add UV coordinates for texture mapping
+              if (blockIndex === BLOCK_TYPES.WATER) {
+                // For water blocks, create proper UV coordinates for texture tiling
+                // Use simple 0-1 mapping for each quad face
+                uvs.push(
+                  0, 0,    // v1 - bottom-left
+                  1, 0,    // v2 - bottom-right
+                  0, 1,    // v3 - top-left
+                  1, 1     // v4 - top-right
+                );
+
+
+              } else {
+                // Default UVs for non-textured blocks
+                uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
               }
 
               // Create indices for two triangles
@@ -268,26 +289,28 @@ export class Chunk {
       positions: new Float32Array(positions),
       normals: new Float32Array(normals),
       colors: new Float32Array(colors),
-      indices: new Uint32Array(indices)
+      uvs: new Float32Array(uvs),
+      indices: new Uint32Array(indices),
+      blockTypes: new Float32Array(blockTypes)
     };
   }
 
   updateMesh(forceUpdate = false) {
     if (!this.needsUpdate && !forceUpdate) return;
-    
+
     // Only generate mesh if we have all required neighbors, unless forced
     if (!forceUpdate && !this.canGenerateMesh()) {
       return;
     }
 
     const meshData = this.generateMeshData();
-    
+
     // For forced updates (block placement/destruction), update in place to avoid flash
     if (forceUpdate && this.mesh && this.meshReady) {
       this._updateMeshInPlace(meshData);
     } else {
       this._createMeshFromData(meshData);
-      
+
       // Make mesh visible after a brief delay to ensure proper initialization
       setTimeout(() => {
         if (this.mesh) {
@@ -313,11 +336,8 @@ export class Chunk {
   }
 
   _updateMeshInPlace(meshData) {
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] _updateMeshInPlace called`);
-
     if (!meshData || meshData.positions.length === 0) {
       // Empty chunk - hide the mesh but don't dispose it to avoid flash
-      console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Empty chunk - hiding mesh`);
       if (this.mesh) {
         this.mesh.visible = false;
       }
@@ -331,8 +351,6 @@ export class Chunk {
       return;
     }
 
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Updating mesh in place with ${meshData.positions.length / 3} vertices`);
-
     // Store current visibility state
     const wasVisible = this.mesh.visible;
 
@@ -341,12 +359,14 @@ export class Chunk {
     newGeometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
     newGeometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
     newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    newGeometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
+    newGeometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
     newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
     // Replace geometry while keeping the mesh and material
     const oldGeometry = this.mesh.geometry;
     this.mesh.geometry = newGeometry;
-    
+
     // Dispose old geometry
     if (oldGeometry) {
       oldGeometry.dispose();
@@ -355,16 +375,11 @@ export class Chunk {
     // Restore visibility state
     this.mesh.visible = wasVisible;
     this.needsUpdate = false;
-    
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Mesh updated in place successfully`);
   }
 
   _createMeshFromData(meshData) {
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] _createMeshFromData called`);
-
     if (!meshData || meshData.positions.length === 0) {
       // Empty chunk
-      console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Empty chunk - removing mesh`);
       if (this.mesh) {
         this.mesh.geometry.dispose();
         this.mesh.material.dispose();
@@ -374,8 +389,6 @@ export class Chunk {
       return;
     }
 
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Creating new mesh with ${meshData.positions.length / 3} vertices`);
-
     // Create geometry
     const geometry = new THREE.BufferGeometry();
 
@@ -383,18 +396,24 @@ export class Chunk {
     geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
     geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
+    geometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
     geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
-    // Create material - use a basic material initially to avoid shader compilation delays
-    const material = new THREE.MeshLambertMaterial({
-      vertexColors: true,
-      transparent: false,
-      side: THREE.FrontSide
+    // Create shader material with texture support
+    const material = new THREE.ShaderMaterial({
+      vertexShader: CHUNK_VERTEX_SHADER,
+      fragmentShader: CHUNK_FRAGMENT_SHADER,
+      uniforms: {
+        lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+        lightColor: { value: new THREE.Color(0xffffff) },
+        ambientColor: { value: new THREE.Color(0x404040) },
+        waterTexture: { value: null } // Will be set by renderer
+      }
     });
 
     // Dispose of old mesh if it exists
     if (this.mesh) {
-      console.log(`[Chunk ${this.chunkX},${this.chunkZ}] Disposing old mesh`);
       this.mesh.geometry.dispose();
       this.mesh.material.dispose();
     }
@@ -403,11 +422,9 @@ export class Chunk {
     this.mesh = new THREE.Mesh(geometry, material);
     this.mesh.visible = false; // Hide initially to prevent flash
     this.needsUpdate = false;
-    
+
     // Mark that mesh is ready for rendering (but keep it hidden initially)
     this.meshReady = true;
-    
-    console.log(`[Chunk ${this.chunkX},${this.chunkZ}] New mesh created successfully, vertices: ${meshData.positions.length / 3}`);
   }
 
   dispose() {

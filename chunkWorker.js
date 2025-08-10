@@ -1,10 +1,11 @@
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { ChunkCore, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
 import { BIOME_CONFIG } from './biomes.js';
-import { getBlockColor } from './blocks.js';
+import { getBlockColor, BLOCK_TYPES } from './blocks.js';
 
 self.onmessage = function (e) {
   const { chunkX, chunkZ, noiseSeed, callbackId } = e.data;
+  console.log(`[ChunkWorker] Starting generation for chunk ${chunkX},${chunkZ}`);
 
   try {
     // Create separate noise functions for height and biome generation
@@ -25,12 +26,15 @@ self.onmessage = function (e) {
       meshData: meshData
     };
 
+    console.log(`[ChunkWorker] Completed generation for chunk ${chunkX},${chunkZ}, vertices: ${meshData.positions.length / 3}`);
+    
     self.postMessage({
       type: 'chunkGenerated',
       chunkData,
       callbackId
     });
   } catch (error) {
+    console.error(`[ChunkWorker] Error generating chunk ${chunkX},${chunkZ}:`, error);
     self.postMessage({
       type: 'error',
       error: error.message,
@@ -49,6 +53,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
   const uvs = [];
   const indices = [];
   const colors = [];
+  const blockTypes = []; // Add block types array
   
   // World-space offsets for this chunk
   const worldOffsetX = chunkX * CHUNK_WIDTH;
@@ -120,14 +125,28 @@ function generateMeshData(chunk, chunkX, chunkZ) {
             if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
             normals.push(...normal, ...normal, ...normal, ...normal);
 
-            uvs.push(0, 0, w, 0, 0, h, w, h);
-
-            // Get the block color
+            // Get the block color and type
             const blockIndex = Math.abs(val);
+
+            // Add UV coordinates for texture mapping
+            if (blockIndex === BLOCK_TYPES.WATER) {
+              // For water blocks, create proper UV coordinates for texture tiling
+              // Use simple 0-1 mapping for each quad face
+              uvs.push(
+                0, 0,    // v1 - bottom-left
+                1, 0,    // v2 - bottom-right
+                0, 1,    // v3 - top-left
+                1, 1     // v4 - top-right
+              );
+            } else {
+              // Default UVs for non-textured blocks
+              uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
+            }
             const blockColor = getBlockColor(blockIndex);
-            // Push color for each vertex (4 times)
+            // Push color and block type for each vertex (4 times)
             for (let i = 0; i < 4; i++) {
               colors.push(blockColor.r, blockColor.g, blockColor.b);
+              blockTypes.push(blockIndex); // Store block type for each vertex
             }
 
             if (val > 0) {
@@ -162,6 +181,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
     normals: new Float32Array(normals),
     uvs: new Float32Array(uvs),
     indices: new Uint32Array(indices),
-    colors: new Float32Array(colors)
+    colors: new Float32Array(colors),
+    blockTypes: new Float32Array(blockTypes)
   };
 }
