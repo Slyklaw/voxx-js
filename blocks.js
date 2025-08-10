@@ -13,7 +13,7 @@ export const BLOCKS = [
   { type: 'AIR', color: [0, 0, 0, 0], atlasPos: [0, 0] },
   { type: 'STONE', color: [128, 128, 128, 255], atlasPos: [496, 208] },
   { type: 'DIRT', color: [139, 69, 19, 255], atlasPos: [240, 192] },
-  { type: 'GRASS', color: [95, 159, 53, 255], atlasPos: [160, 256] },
+  { type: 'GRASS', color: [95, 159, 53, 255], atlasPos: [176, 240] },
   { type: 'WATER', color: [30, 144, 255, 200], atlasPos: [128, 112] },
   { type: 'SNOW', color: [255, 255, 255, 255], atlasPos: [496, 16] },
 ];
