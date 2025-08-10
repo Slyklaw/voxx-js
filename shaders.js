@@ -79,16 +79,9 @@ void main() {
     vec2 tileUV = fract(atlasUV);
     
     // Apply rotation based on face direction
-    // East face (normal.x > 0.5): rotate 180 degrees (π)
-    // West face (normal.x < -0.5): rotate 90 degrees counter-clockwise (π/2)
+      // East/West faces: rotate 90 degrees counter-clockwise (π/2)
     if (abs(normal.x) > 0.5) {
-      if (normal.x > 0.5) {
-        // East face: rotate 180 degrees
-        tileUV = rotateUV(tileUV, 3.1415926); // π
-      } else {
-        // West face: rotate 90 degrees counter-clockwise
-        tileUV = rotateUV(tileUV, 1.5707963); // π/2
-      }
+      tileUV = rotateUV(tileUV, 1.5707963); // π
     }
     
     // Map to the block texture location in the atlas
