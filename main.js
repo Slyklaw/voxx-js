@@ -206,17 +206,7 @@ function setupStats() {
   let frameCount = 0;
   let lastTime = performance.now();
 
-  const fpsDisplay = document.createElement('div');
-  fpsDisplay.style.position = 'absolute';
-  fpsDisplay.style.top = '10px';
-  fpsDisplay.style.left = '10px';
-  fpsDisplay.style.color = 'white';
-  fpsDisplay.style.fontFamily = 'monospace';
-  fpsDisplay.style.background = 'rgba(0,0,0,0.8)';
-  fpsDisplay.style.padding = '8px';
-  fpsDisplay.style.borderRadius = '4px';
-  fpsDisplay.style.zIndex = '1000';
-  document.body.appendChild(fpsDisplay);
+  const fpsDisplay = document.querySelector('.debug-fps');
 
   setInterval(() => {
     const now = performance.now();
