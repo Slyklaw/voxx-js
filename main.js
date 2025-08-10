@@ -145,6 +145,13 @@ function setupControls() {
     adjustMoveSpeed(-10);
   });
 
+  // Wireframe toggle
+  document.getElementById('wireframe-toggle').addEventListener('change', (event) => {
+    if (renderer) {
+      renderer.setWireframeMode(event.target.checked);
+    }
+  });
+
   function adjustMoveSpeed(delta) {
     const moveSpeedValue = document.getElementById('move-speed-value');
     let current = parseInt(moveSpeedValue.textContent);

@@ -17,6 +17,7 @@ export class Renderer {
     this.outlineMesh = null;
     this.ambientLight = null;
     this.directionalLight = null;
+    this.wireframeMode = false;
   }
 
   async init(canvas) {
@@ -143,14 +144,22 @@ export class Renderer {
             this.scene.remove(existingMesh);
           }
 
-          // Only replace material if it's not already a shader material or if it's the wrong type
-          const needsNewMaterial = !chunk.mesh.material || 
-                                   !chunk.mesh.material.uniforms ||
-                                   chunk.mesh.material.type !== 'ShaderMaterial';
+          // Always dispose old material if it exists
+          if (chunk.mesh.material) {
+            chunk.mesh.material.dispose();
+          }
 
-          if (needsNewMaterial) {
-            // Create custom material with shaders
-            const material = new THREE.ShaderMaterial({
+          // Create appropriate material based on wireframe mode
+          let material;
+          if (this.wireframeMode) {
+            material = new THREE.MeshBasicMaterial({
+              color: 0xffffff,
+              wireframe: true,
+              transparent: true,
+              opacity: 0.8
+            });
+            // Store original material reference for later restoration
+            chunk.mesh._originalMaterial = new THREE.ShaderMaterial({
               vertexShader: vertexShader,
               fragmentShader: fragmentShader,
               uniforms: {
@@ -159,13 +168,20 @@ export class Renderer {
                 ambientColor: { value: new THREE.Color(0x404040) }
               }
             });
-
-            // Apply material to the mesh
-            if (chunk.mesh.material) {
-              chunk.mesh.material.dispose(); // Dispose old material
-            }
-            chunk.mesh.material = material;
+          } else {
+            material = new THREE.ShaderMaterial({
+              vertexShader: vertexShader,
+              fragmentShader: fragmentShader,
+              uniforms: {
+                lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+                lightColor: { value: new THREE.Color(0xffffff) },
+                ambientColor: { value: new THREE.Color(0x404040) }
+              }
+            });
           }
+
+          // Apply material to the mesh
+          chunk.mesh.material = material;
 
           // Add new mesh to scene first
           this.scene.add(chunk.mesh);
@@ -222,12 +238,51 @@ export class Renderer {
     this.renderer.setSize(width, height);
   }
 
+  setWireframeMode(enabled) {
+    this.wireframeMode = enabled;
+    
+    // Update all existing chunk meshes
+    for (const [key, mesh] of this.chunkMeshes) {
+      if (mesh.material) {
+        if (this.wireframeMode) {
+          // Create wireframe material
+          if (!mesh._originalMaterial) {
+            mesh._originalMaterial = mesh.material;
+          }
+          
+          const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.8
+          });
+          
+          mesh.material = wireframeMaterial;
+        } else {
+          // Restore original material
+          if (mesh._originalMaterial) {
+            mesh.material.dispose();
+            mesh.material = mesh._originalMaterial;
+            delete mesh._originalMaterial;
+          }
+        }
+      }
+    }
+    
+    console.log(`Wireframe mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
   destroy() {
     // Clean up all resources
     for (const [key, mesh] of this.chunkMeshes) {
       this.scene.remove(mesh);
       mesh.geometry.dispose();
       mesh.material.dispose();
+      
+      // Clean up original material reference if it exists
+      if (mesh._originalMaterial) {
+        mesh._originalMaterial.dispose();
+      }
     }
     this.chunkMeshes.clear();
 
