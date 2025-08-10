@@ -210,8 +210,12 @@ export class Renderer {
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
                 atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                blockAtlasPosX: { value: this.blockAtlasPositions?.xPositions || [0, 496, 240, 160, 128, 496] },
-                blockAtlasPosY: { value: this.blockAtlasPositions?.yPositions || [0, 208, 192, 256, 112, 16] }
+                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
+                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
+                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
+                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
+                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
               }
             });
           } else {
@@ -224,8 +228,12 @@ export class Renderer {
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
                 atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                blockAtlasPosX: { value: this.blockAtlasPositions?.xPositions || [0, 496, 240, 160, 128, 496] },
-                blockAtlasPosY: { value: this.blockAtlasPositions?.yPositions || [0, 208, 192, 256, 112, 16] }
+                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
+                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
+                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
+                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
+                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
               }
             });
           }

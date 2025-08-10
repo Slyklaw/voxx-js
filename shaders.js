@@ -29,14 +29,28 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
-uniform float blockAtlasPosX[6];
-uniform float blockAtlasPosY[6];
+uniform float blockAtlasTopX[6];
+uniform float blockAtlasTopY[6];
+uniform float blockAtlasSidesX[6];
+uniform float blockAtlasSidesY[6];
+uniform float blockAtlasBottomX[6];
+uniform float blockAtlasBottomY[6];
 
-// Function to get atlas position for each block type
-vec2 getBlockAtlasPos(float blockType) {
+// Function to get atlas position for each block type based on face direction
+vec2 getBlockAtlasPos(float blockType, vec3 normal) {
   int blockIndex = int(blockType + 0.5); // Round to nearest integer
   if (blockIndex >= 0 && blockIndex < 6) {
-    return vec2(blockAtlasPosX[blockIndex], blockAtlasPosY[blockIndex]);
+    // Determine face type based on normal
+    if (normal.y > 0.5) {
+      // Top face
+      return vec2(blockAtlasTopX[blockIndex], blockAtlasTopY[blockIndex]);
+    } else if (normal.y < -0.5) {
+      // Bottom face
+      return vec2(blockAtlasBottomX[blockIndex], blockAtlasBottomY[blockIndex]);
+    } else {
+      // Side faces (north, south, east, west)
+      return vec2(blockAtlasSidesX[blockIndex], blockAtlasSidesY[blockIndex]);
+    }
   }
   return vec2(0.0, 0.0); // Default/fallback
 }
@@ -69,8 +83,8 @@ void main() {
   
   vec3 finalColor;
   if (useTexture) {
-    // Get atlas position for this block type
-    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType);
+    // Get atlas position for this block type and face direction
+    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType, normal);
     
     // Calculate UV coordinates for texture in atlas
     vec2 atlasUV = vUv;
@@ -78,10 +92,17 @@ void main() {
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
     
-    // Apply rotation based on face direction
-      // East/West faces: rotate 90 degrees counter-clockwise (π/2)
-    if (abs(normal.x) > 0.5) {
-      tileUV = rotateUV(tileUV, 1.5707963); // π
+    // Apply rotation based on face direction (only for side faces)
+    if (abs(normal.y) < 0.5) { // Side faces only
+      if (abs(normal.x) > 0.5) {
+        if (normal.x > 0.5) {
+          // East face: rotate 180 degrees
+          tileUV = rotateUV(tileUV, 3.1415926); // π
+        } else {
+          // West face: rotate 90 degrees counter-clockwise
+          tileUV = rotateUV(tileUV, 1.5707963); // π/2
+        }
+      }
     }
     
     // Map to the block texture location in the atlas
@@ -138,14 +159,28 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
-uniform float blockAtlasPosX[6];
-uniform float blockAtlasPosY[6];
+uniform float blockAtlasTopX[6];
+uniform float blockAtlasTopY[6];
+uniform float blockAtlasSidesX[6];
+uniform float blockAtlasSidesY[6];
+uniform float blockAtlasBottomX[6];
+uniform float blockAtlasBottomY[6];
 
-// Function to get atlas position for each block type
-vec2 getBlockAtlasPos(float blockType) {
+// Function to get atlas position for each block type based on face direction
+vec2 getBlockAtlasPos(float blockType, vec3 normal) {
   int blockIndex = int(blockType + 0.5); // Round to nearest integer
   if (blockIndex >= 0 && blockIndex < 6) {
-    return vec2(blockAtlasPosX[blockIndex], blockAtlasPosY[blockIndex]);
+    // Determine face type based on normal
+    if (normal.y > 0.5) {
+      // Top face
+      return vec2(blockAtlasTopX[blockIndex], blockAtlasTopY[blockIndex]);
+    } else if (normal.y < -0.5) {
+      // Bottom face
+      return vec2(blockAtlasBottomX[blockIndex], blockAtlasBottomY[blockIndex]);
+    } else {
+      // Side faces (north, south, east, west)
+      return vec2(blockAtlasSidesX[blockIndex], blockAtlasSidesY[blockIndex]);
+    }
   }
   return vec2(0.0, 0.0); // Default/fallback
 }
@@ -178,8 +213,8 @@ void main() {
   
   vec3 finalColor;
   if (useTexture) {
-    // Get atlas position for this block type
-    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType);
+    // Get atlas position for this block type and face direction
+    vec2 blockAtlasPos = getBlockAtlasPos(vBlockType, normal);
     
     // Calculate UV coordinates for texture in atlas
     vec2 atlasUV = vUv;
@@ -187,16 +222,16 @@ void main() {
     // Get the fractional part for tiling
     vec2 tileUV = fract(atlasUV);
     
-    // Apply rotation based on face direction
-    // East face (normal.x > 0.5): rotate 180 degrees (π)
-    // West face (normal.x < -0.5): rotate 90 degrees counter-clockwise (π/2)
-    if (abs(normal.x) > 0.5) {
-      if (normal.x > 0.5) {
-        // East face: rotate 180 degrees
-        tileUV = rotateUV(tileUV, 3.1415926); // π
-      } else {
-        // West face: rotate 90 degrees counter-clockwise
-        tileUV = rotateUV(tileUV, 1.5707963); // π/2
+    // Apply rotation based on face direction (only for side faces)
+    if (abs(normal.y) < 0.5) { // Side faces only
+      if (abs(normal.x) > 0.5) {
+        if (normal.x > 0.5) {
+          // East face: rotate 180 degrees
+          tileUV = rotateUV(tileUV, 3.1415926); // π
+        } else {
+          // West face: rotate 90 degrees counter-clockwise
+          tileUV = rotateUV(tileUV, 1.5707963); // π/2
+        }
       }
     }
     

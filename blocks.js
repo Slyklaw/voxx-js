@@ -10,12 +10,12 @@ export const BLOCK_TYPES = {
 
 // Block definitions with visual properties and atlas positions
 export const BLOCKS = [
-  { type: 'AIR', color: [0, 0, 0, 0], atlasPos: [0, 0] },
-  { type: 'STONE', color: [128, 128, 128, 255], atlasPos: [496, 208] },
-  { type: 'DIRT', color: [139, 69, 19, 255], atlasPos: [240, 192] },
-  { type: 'GRASS', color: [95, 159, 53, 255], atlasPos: [176, 240] },
-  { type: 'WATER', color: [30, 144, 255, 200], atlasPos: [128, 112] },
-  { type: 'SNOW', color: [255, 255, 255, 255], atlasPos: [496, 16] },
+  { type: 'AIR', color: [0, 0, 0, 0], atlasPos: { top: [0, 0], sides: [0, 0], bottom: [0, 0] } },
+  { type: 'STONE', color: [128, 128, 128, 255], atlasPos: { top: [496, 208], sides: [496, 208], bottom: [496, 208] } },
+  { type: 'DIRT', color: [139, 69, 19, 255], atlasPos: { top: [240, 192], sides: [240, 192], bottom: [240, 192] } },
+  { type: 'GRASS', color: [95, 159, 53, 255], atlasPos: { top: [160, 256], sides: [176, 240], bottom: [240, 192] } },
+  { type: 'WATER', color: [30, 144, 255, 200], atlasPos: { top: [128, 112], sides: [128, 112], bottom: [128, 112] } },
+  { type: 'SNOW', color: [255, 255, 255, 255], atlasPos: { top: [496, 16], sides: [496, 16], bottom: [496, 16] } },
 ];
 
 // Block names for UI display
@@ -64,16 +64,29 @@ export function isBlockTransparent(blockType) {
 
 /**
  * Get atlas positions for all blocks as flat arrays for shader uniforms
- * @returns {Object} Object with x and y position arrays
+ * @returns {Object} Object with separate arrays for top, sides, and bottom positions
  */
 export function getBlockAtlasPositions() {
-  const xPositions = [];
-  const yPositions = [];
+  const topXPositions = [];
+  const topYPositions = [];
+  const sidesXPositions = [];
+  const sidesYPositions = [];
+  const bottomXPositions = [];
+  const bottomYPositions = [];
   
   for (let i = 0; i < BLOCKS.length; i++) {
-    xPositions.push(BLOCKS[i].atlasPos[0]);
-    yPositions.push(BLOCKS[i].atlasPos[1]);
+    const block = BLOCKS[i];
+    topXPositions.push(block.atlasPos.top[0]);
+    topYPositions.push(block.atlasPos.top[1]);
+    sidesXPositions.push(block.atlasPos.sides[0]);
+    sidesYPositions.push(block.atlasPos.sides[1]);
+    bottomXPositions.push(block.atlasPos.bottom[0]);
+    bottomYPositions.push(block.atlasPos.bottom[1]);
   }
   
-  return { xPositions, yPositions };
+  return { 
+    topXPositions, topYPositions,
+    sidesXPositions, sidesYPositions,
+    bottomXPositions, bottomYPositions
+  };
 }

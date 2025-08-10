@@ -411,8 +411,12 @@ export class Chunk {
         ambientColor: { value: new THREE.Color(0x404040) },
         textureAtlas: { value: null }, // Will be set by renderer
         atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
-        blockAtlasPosX: { value: blockAtlasPositions.xPositions },
-        blockAtlasPosY: { value: blockAtlasPositions.yPositions }
+        blockAtlasTopX: { value: blockAtlasPositions.topXPositions },
+        blockAtlasTopY: { value: blockAtlasPositions.topYPositions },
+        blockAtlasSidesX: { value: blockAtlasPositions.sidesXPositions },
+        blockAtlasSidesY: { value: blockAtlasPositions.sidesYPositions },
+        blockAtlasBottomX: { value: blockAtlasPositions.bottomXPositions },
+        blockAtlasBottomY: { value: blockAtlasPositions.bottomYPositions }
       }
     });
 
