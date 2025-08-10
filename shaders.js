@@ -51,9 +51,10 @@ void main() {
     float tileSize = 16.0;
     
     // Calculate final UV coordinates
+    // Flip Y coordinate because texture atlas is upside down in WebGL
     vec2 finalUV = vec2(
       (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
-      (waterAtlasPos.y + tileUV.y * tileSize) / atlasSize.y
+      (atlasSize.y - waterAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
     );
     
     vec4 texColor = texture2D(textureAtlas, finalUV);
@@ -121,9 +122,10 @@ void main() {
     float tileSize = 16.0;
     
     // Calculate final UV coordinates
+    // Flip Y coordinate because texture atlas is upside down in WebGL
     vec2 finalUV = vec2(
       (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
-      (waterAtlasPos.y + tileUV.y * tileSize) / atlasSize.y
+      (atlasSize.y - waterAtlasPos.y - tileSize + tileUV.y * tileSize) / atlasSize.y
     );
     
     vec4 texColor = texture2D(textureAtlas, finalUV);
