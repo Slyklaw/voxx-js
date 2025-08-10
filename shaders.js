@@ -95,13 +95,8 @@ void main() {
     // Apply rotation based on face direction (only for side faces)
     if (abs(normal.y) < 0.5) { // Side faces only
       if (abs(normal.x) > 0.5) {
-        if (normal.x > 0.5) {
-          // East face: rotate 180 degrees
-          tileUV = rotateUV(tileUV, 3.1415926); // π
-        } else {
-          // West face: rotate 90 degrees counter-clockwise
-          tileUV = rotateUV(tileUV, 1.5707963); // π/2
-        }
+        // East/West faces: rotate 90 degrees
+        tileUV = rotateUV(tileUV, 1.5707963); // π/2
       }
     }
     
