@@ -136,6 +136,23 @@ function setupControls() {
     adjustRenderDistance(-1);
   });
 
+  // Move speed controls
+  document.getElementById('speed-inc').addEventListener('click', () => {
+    adjustMoveSpeed(10);
+  });
+
+  document.getElementById('speed-dec').addEventListener('click', () => {
+    adjustMoveSpeed(-10);
+  });
+
+  function adjustMoveSpeed(delta) {
+    const moveSpeedValue = document.getElementById('move-speed-value');
+    let current = parseInt(moveSpeedValue.textContent);
+    current = Math.max(1, current + delta);
+    moveSpeedValue.textContent = current;
+    PLAYER_CONFIG.MOVE_SPEED = current;
+  }
+
   function adjustRenderDistance(delta) {
     const renderDistanceValue = document.getElementById('render-distance-value');
     let current = parseInt(renderDistanceValue.textContent);
