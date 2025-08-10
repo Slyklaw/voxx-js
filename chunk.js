@@ -408,7 +408,9 @@ export class Chunk {
         lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
         lightColor: { value: new THREE.Color(0xffffff) },
         ambientColor: { value: new THREE.Color(0x404040) },
-        waterTexture: { value: null } // Will be set by renderer
+        textureAtlas: { value: null }, // Will be set by renderer
+        atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
+        waterAtlasPos: { value: new THREE.Vector2(128, 112) } // Water position in atlas
       }
     });
 

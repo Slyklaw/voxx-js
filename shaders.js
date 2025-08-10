@@ -27,7 +27,9 @@ varying float vBlockType;
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform vec3 ambientColor;
-uniform sampler2D waterTexture;
+uniform sampler2D textureAtlas;
+uniform vec2 atlasSize;
+uniform vec2 waterAtlasPos;
 
 void main() {
   vec3 normal = normalize(vNormal);
@@ -39,7 +41,22 @@ void main() {
   
   vec3 finalColor;
   if (isWater) {
-    vec4 texColor = texture2D(waterTexture, vUv);
+    // Calculate UV coordinates for water texture in atlas
+    vec2 atlasUV = vUv;
+    
+    // Get the fractional part for tiling
+    vec2 tileUV = fract(atlasUV);
+    
+    // Map to the water texture location in the atlas
+    float tileSize = 16.0;
+    
+    // Calculate final UV coordinates
+    vec2 finalUV = vec2(
+      (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
+      (waterAtlasPos.y + tileUV.y * tileSize) / atlasSize.y
+    );
+    
+    vec4 texColor = texture2D(textureAtlas, finalUV);
     // Apply texture to water blocks with lighting
     finalColor = texColor.rgb * lighting;
   } else {
@@ -80,7 +97,9 @@ varying float vBlockType;
 uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform vec3 ambientColor;
-uniform sampler2D waterTexture;
+uniform sampler2D textureAtlas;
+uniform vec2 atlasSize;
+uniform vec2 waterAtlasPos;
 
 void main() {
   vec3 normal = normalize(vNormal);
@@ -92,7 +111,22 @@ void main() {
   
   vec3 finalColor;
   if (isWater) {
-    vec4 texColor = texture2D(waterTexture, vUv);
+    // Calculate UV coordinates for water texture in atlas
+    vec2 atlasUV = vUv;
+    
+    // Get the fractional part for tiling
+    vec2 tileUV = fract(atlasUV);
+    
+    // Map to the water texture location in the atlas
+    float tileSize = 16.0;
+    
+    // Calculate final UV coordinates
+    vec2 finalUV = vec2(
+      (waterAtlasPos.x + tileUV.x * tileSize) / atlasSize.x,
+      (waterAtlasPos.y + tileUV.y * tileSize) / atlasSize.y
+    );
+    
+    vec4 texColor = texture2D(textureAtlas, finalUV);
     // Apply texture to water blocks with lighting
     finalColor = texColor.rgb * lighting;
   } else {

@@ -18,7 +18,7 @@ export class Renderer {
     this.ambientLight = null;
     this.directionalLight = null;
     this.wireframeMode = false;
-    this.waterTexture = null;
+    this.textureAtlas = null;
     this.textureLoader = null;
   }
 
@@ -53,27 +53,31 @@ export class Renderer {
     this.skyRenderer = new SkyRenderer();
     await this.skyRenderer.init(this.scene, this.camera);
 
-    // Initialize texture loader and load water texture
+    // Initialize texture loader and load texture atlas
     this.textureLoader = new THREE.TextureLoader();
-    this.waterTexture = await new Promise((resolve) => {
+    this.textureAtlas = await new Promise((resolve) => {
       this.textureLoader.load(
-        'water-16x16.png',
+        'textures-atlas.png',
         (texture) => {
           texture.wrapS = THREE.RepeatWrapping;
           texture.wrapT = THREE.RepeatWrapping;
           texture.magFilter = THREE.NearestFilter;
           texture.minFilter = THREE.NearestFilter;
-          console.log('Water texture loaded successfully:', texture);
-          console.log('Texture size:', texture.image.width, 'x', texture.image.height);
-          console.log('Texture format:', texture.format, 'Type:', texture.type);
+          
+          // Store atlas dimensions for shader uniforms
+          this.atlasSize = { width: texture.image.width, height: texture.image.height };
+          this.waterAtlasPos = { x: 128, y: 112 }; // Water texture position in atlas
+          
+          console.log('Texture atlas loaded successfully:', texture);
+          console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
           resolve(texture);
         },
         (progress) => {
-          console.log('Loading water texture...', progress);
+          console.log('Loading texture atlas...', progress);
         },
         (error) => {
-          console.error('Error loading water texture:', error);
-          console.warn('Water blocks will render with flat color instead of texture');
+          console.error('Error loading texture atlas:', error);
+          console.warn('Blocks will render with flat color instead of texture');
           resolve(null); // Continue without texture if loading fails
         }
       );
@@ -115,9 +119,15 @@ export class Renderer {
         );
         mesh.material.uniforms.lightColor.value.setRGB(lightColor[0], lightColor[1], lightColor[2]);
         mesh.material.uniforms.ambientColor.value.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
-        // Update water texture uniform
-        if (this.waterTexture) {
-          mesh.material.uniforms.waterTexture.value = this.waterTexture;
+        // Update texture atlas uniforms
+        if (this.textureAtlas) {
+          mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
+          if (this.atlasSize) {
+            mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
+          }
+          if (this.waterAtlasPos) {
+            mesh.material.uniforms.waterAtlasPos.value.set(this.waterAtlasPos.x, this.waterAtlasPos.y);
+          }
         }
       }
     }
@@ -198,7 +208,9 @@ export class Renderer {
                 lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
-                waterTexture: { value: this.waterTexture }
+                textureAtlas: { value: this.textureAtlas },
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                waterAtlasPos: { value: new THREE.Vector2(this.waterAtlasPos?.x || 128, this.waterAtlasPos?.y || 112) }
               }
             });
           } else {
@@ -209,7 +221,9 @@ export class Renderer {
                 lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
-                waterTexture: { value: this.waterTexture }
+                textureAtlas: { value: this.textureAtlas },
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                waterAtlasPos: { value: new THREE.Vector2(this.waterAtlasPos?.x || 128, this.waterAtlasPos?.y || 112) }
               }
             });
           }
