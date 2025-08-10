@@ -29,15 +29,16 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
+uniform float blockAtlasPosX[6];
+uniform float blockAtlasPosY[6];
 
 // Function to get atlas position for each block type
 vec2 getBlockAtlasPos(float blockType) {
-  if (abs(blockType - 1.0) < 0.5) return vec2(496.0, 208.0); // STONE
-  if (abs(blockType - 2.0) < 0.5) return vec2(240.0, 192.0); // DIRT
-  if (abs(blockType - 3.0) < 0.5) return vec2(160.0, 256.0); // GRASS
-  if (abs(blockType - 4.0) < 0.5) return vec2(128.0, 112.0); // WATER
-  if (abs(blockType - 5.0) < 0.5) return vec2(496.0, 16.0);  // SNOW
-  return vec2(0.0, 0.0); // Default/AIR
+  int blockIndex = int(blockType + 0.5); // Round to nearest integer
+  if (blockIndex >= 0 && blockIndex < 6) {
+    return vec2(blockAtlasPosX[blockIndex], blockAtlasPosY[blockIndex]);
+  }
+  return vec2(0.0, 0.0); // Default/fallback
 }
 
 void main() {
@@ -113,15 +114,16 @@ uniform vec3 lightColor;
 uniform vec3 ambientColor;
 uniform sampler2D textureAtlas;
 uniform vec2 atlasSize;
+uniform float blockAtlasPosX[6];
+uniform float blockAtlasPosY[6];
 
 // Function to get atlas position for each block type
 vec2 getBlockAtlasPos(float blockType) {
-  if (abs(blockType - 1.0) < 0.5) return vec2(496.0, 208.0); // STONE
-  if (abs(blockType - 2.0) < 0.5) return vec2(240.0, 192.0); // DIRT
-  if (abs(blockType - 3.0) < 0.5) return vec2(160.0, 256.0); // GRASS
-  if (abs(blockType - 4.0) < 0.5) return vec2(128.0, 112.0); // WATER
-  if (abs(blockType - 5.0) < 0.5) return vec2(496.0, 16.0);  // SNOW
-  return vec2(0.0, 0.0); // Default/AIR
+  int blockIndex = int(blockType + 0.5); // Round to nearest integer
+  if (blockIndex >= 0 && blockIndex < 6) {
+    return vec2(blockAtlasPosX[blockIndex], blockAtlasPosY[blockIndex]);
+  }
+  return vec2(0.0, 0.0); // Default/fallback
 }
 
 void main() {

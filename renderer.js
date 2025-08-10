@@ -5,6 +5,7 @@
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
+import { getBlockAtlasPositions } from './blocks.js';
 
 export class Renderer {
   constructor() {
@@ -66,6 +67,9 @@ export class Renderer {
           
           // Store atlas dimensions for shader uniforms
           this.atlasSize = { width: texture.image.width, height: texture.image.height };
+          
+          // Get block atlas positions
+          this.blockAtlasPositions = getBlockAtlasPositions();
           
           console.log('Texture atlas loaded successfully:', texture);
           console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
@@ -205,7 +209,9 @@ export class Renderer {
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) }
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                blockAtlasPosX: { value: this.blockAtlasPositions?.xPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasPosY: { value: this.blockAtlasPositions?.yPositions || [0, 208, 192, 256, 112, 16] }
               }
             });
           } else {
@@ -217,7 +223,9 @@ export class Renderer {
                 lightColor: { value: new THREE.Color(0xffffff) },
                 ambientColor: { value: new THREE.Color(0x404040) },
                 textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) }
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                blockAtlasPosX: { value: this.blockAtlasPositions?.xPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasPosY: { value: this.blockAtlasPositions?.yPositions || [0, 208, 192, 256, 112, 16] }
               }
             });
           }

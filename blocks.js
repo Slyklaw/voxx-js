@@ -8,14 +8,14 @@ export const BLOCK_TYPES = {
   SNOW: 5
 };
 
-// Block definitions with visual properties
+// Block definitions with visual properties and atlas positions
 export const BLOCKS = [
-  { type: 'AIR', color: [0, 0, 0, 0] },
-  { type: 'STONE', color: [128, 128, 128, 255] },
-  { type: 'DIRT', color: [139, 69, 19, 255] },
-  { type: 'GRASS', color: [95, 159, 53, 255] },
-  { type: 'WATER', color: [30, 144, 255, 200] },
-  { type: 'SNOW', color: [255, 255, 255, 255] },
+  { type: 'AIR', color: [0, 0, 0, 0], atlasPos: [0, 0] },
+  { type: 'STONE', color: [128, 128, 128, 255], atlasPos: [496, 208] },
+  { type: 'DIRT', color: [139, 69, 19, 255], atlasPos: [240, 192] },
+  { type: 'GRASS', color: [95, 159, 53, 255], atlasPos: [160, 256] },
+  { type: 'WATER', color: [30, 144, 255, 200], atlasPos: [128, 112] },
+  { type: 'SNOW', color: [255, 255, 255, 255], atlasPos: [496, 16] },
 ];
 
 // Block names for UI display
@@ -60,4 +60,20 @@ export function isBlockSolid(blockType) {
  */
 export function isBlockTransparent(blockType) {
   return blockType === BLOCK_TYPES.AIR || blockType === BLOCK_TYPES.WATER;
+}
+
+/**
+ * Get atlas positions for all blocks as flat arrays for shader uniforms
+ * @returns {Object} Object with x and y position arrays
+ */
+export function getBlockAtlasPositions() {
+  const xPositions = [];
+  const yPositions = [];
+  
+  for (let i = 0; i < BLOCKS.length; i++) {
+    xPositions.push(BLOCKS[i].atlasPos[0]);
+    yPositions.push(BLOCKS[i].atlasPos[1]);
+  }
+  
+  return { xPositions, yPositions };
 }

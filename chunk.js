@@ -2,7 +2,7 @@
  * Chunk implementation
  */
 
-import { getBlockColor, BLOCK_TYPES } from './blocks.js';
+import { getBlockColor, BLOCK_TYPES, getBlockAtlasPositions } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { CHUNK_VERTEX_SHADER, CHUNK_FRAGMENT_SHADER } from './shaders.js';
@@ -401,6 +401,7 @@ export class Chunk {
     geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
     // Create shader material with texture support
+    const blockAtlasPositions = getBlockAtlasPositions();
     const material = new THREE.ShaderMaterial({
       vertexShader: CHUNK_VERTEX_SHADER,
       fragmentShader: CHUNK_FRAGMENT_SHADER,
@@ -409,7 +410,9 @@ export class Chunk {
         lightColor: { value: new THREE.Color(0xffffff) },
         ambientColor: { value: new THREE.Color(0x404040) },
         textureAtlas: { value: null }, // Will be set by renderer
-        atlasSize: { value: new THREE.Vector2(256, 256) } // Default, will be updated by renderer
+        atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
+        blockAtlasPosX: { value: blockAtlasPositions.xPositions },
+        blockAtlasPosY: { value: blockAtlasPositions.yPositions }
       }
     });
 
