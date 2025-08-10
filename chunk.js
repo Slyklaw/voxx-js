@@ -248,9 +248,9 @@ export class Chunk {
                 // Use simple 0-1 mapping for each quad face
                 uvs.push(
                   0, 0,    // v1 - bottom-left
-                  1, 0,    // v2 - bottom-right
-                  0, 1,    // v3 - top-left
-                  1, 1     // v4 - top-right
+                  w, 0,    // v2 - bottom-right (repeat w times)
+                  0, h,    // v3 - top-left (repeat h times)
+                  w, h     // v4 - top-right (repeat w*h times)
                 );
 
 

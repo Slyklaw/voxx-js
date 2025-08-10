@@ -130,13 +130,13 @@ function generateMeshData(chunk, chunkX, chunkZ) {
 
             // Add UV coordinates for texture mapping
             if (blockIndex === BLOCK_TYPES.WATER) {
-              // For water blocks, create proper UV coordinates for texture tiling
-              // Use simple 0-1 mapping for each quad face
+              // For water blocks, tile the texture based on quad dimensions
+              // This ensures the texture repeats for each block in the greedy mesh
               uvs.push(
                 0, 0,    // v1 - bottom-left
-                1, 0,    // v2 - bottom-right
-                0, 1,    // v3 - top-left
-                1, 1     // v4 - top-right
+                w, 0,    // v2 - bottom-right (repeat w times)
+                0, h,    // v3 - top-left (repeat h times)
+                w, h     // v4 - top-right (repeat w*h times)
               );
             } else {
               // Default UVs for non-textured blocks
