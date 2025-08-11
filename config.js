@@ -20,7 +20,7 @@ export const LIGHTING_CONFIG = {
 
 // Player configuration
 export const PLAYER_CONFIG = {
-  MOVE_SPEED: 200,
+  MOVE_SPEED: 20,
   MAX_REACH: 10,
   SPAWN_POSITION: { x: 16, y: 225, z: 16 }
 };

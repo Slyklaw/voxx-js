@@ -114,11 +114,58 @@ function setupControls() {
   // Keyboard input
   document.addEventListener('keydown', (event) => {
     keys[event.code] = true;
+
+    // Toggle debug UI with F1
+    if (event.code === 'F1') {
+      event.preventDefault();
+      const debugUI = document.getElementById('debug-ui');
+      debugUI.style.display = debugUI.style.display === 'none' ? 'block' : 'none';
+    }
   });
 
   document.addEventListener('keyup', (event) => {
     keys[event.code] = false;
   });
+
+  // Debug UI controls
+  document.getElementById('render-inc').addEventListener('click', () => {
+    adjustRenderDistance(1);
+  });
+
+  document.getElementById('render-dec').addEventListener('click', () => {
+    adjustRenderDistance(-1);
+  });
+
+  // Move speed controls
+  document.getElementById('speed-inc').addEventListener('click', () => {
+    adjustMoveSpeed(10);
+  });
+
+  document.getElementById('speed-dec').addEventListener('click', () => {
+    adjustMoveSpeed(-10);
+  });
+
+  // Wireframe toggle
+  document.getElementById('wireframe-toggle').addEventListener('change', (event) => {
+    if (renderer) {
+      renderer.setWireframeMode(event.target.checked);
+    }
+  });
+
+  function adjustMoveSpeed(delta) {
+    const moveSpeedValue = document.getElementById('move-speed-value');
+    let current = parseInt(moveSpeedValue.textContent);
+    current = Math.max(1, current + delta);
+    moveSpeedValue.textContent = current;
+    PLAYER_CONFIG.MOVE_SPEED = current;
+  }
+
+  function adjustRenderDistance(delta) {
+    const renderDistanceValue = document.getElementById('render-distance-value');
+    let current = parseInt(renderDistanceValue.textContent);
+    current = Math.max(1, current + delta);
+    renderDistanceValue.textContent = current;
+  }
 
   // Mouse wheel for block selection
   document.addEventListener('wheel', (event) => {
@@ -183,17 +230,7 @@ function setupStats() {
   let frameCount = 0;
   let lastTime = performance.now();
 
-  const fpsDisplay = document.createElement('div');
-  fpsDisplay.style.position = 'absolute';
-  fpsDisplay.style.top = '10px';
-  fpsDisplay.style.left = '10px';
-  fpsDisplay.style.color = 'white';
-  fpsDisplay.style.fontFamily = 'monospace';
-  fpsDisplay.style.background = 'rgba(0,0,0,0.8)';
-  fpsDisplay.style.padding = '8px';
-  fpsDisplay.style.borderRadius = '4px';
-  fpsDisplay.style.zIndex = '1000';
-  document.body.appendChild(fpsDisplay);
+  const fpsDisplay = document.querySelector('.debug-fps');
 
   setInterval(() => {
     const now = performance.now();
@@ -552,8 +589,9 @@ function animate(currentTime) {
   // Update movement
   updateMovement(deltaTime);
 
-  // Update world
-  world.update(camera.position);
+  // Update world with current render distance
+  const renderDistance = parseInt(document.getElementById('render-distance-value').textContent);
+  world.update(camera.position, renderDistance);
 
   // Update sun cycle
   updateSunCycle(deltaTime);

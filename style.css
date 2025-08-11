@@ -139,6 +139,56 @@ body {
   min-width: 180px;
 }
 
+#debug-ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  z-index: 100;
+  min-width: 200px;
+}
+
+.debug-fps {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.debug-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.debug-control button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.debug-control button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#render-distance-value {
+  min-width: 20px;
+  text-align: center;
+}
+
 .biome-title {
   font-weight: bold;
   margin-bottom: 8px;
@@ -284,4 +334,50 @@ body {
   color: white;
   font-size: 12px;
   text-align: center;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: rgba(100, 200, 100, 0.5);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
 }

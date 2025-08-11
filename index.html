@@ -44,6 +44,30 @@
         </div>
       </div>
     </div>
+    
+    <div id="debug-ui">
+      <div class="debug-title">Debug Controls</div>
+      <div class="debug-fps"></div>
+      <div class="debug-control">
+        <span>Render Distance:</span>
+        <button id="render-dec">-</button>
+        <span id="render-distance-value">8</span>
+        <button id="render-inc">+</button>
+      </div>
+      <div class="debug-control">
+        <span>Move Speed:</span>
+        <button id="speed-dec">-10</button>
+        <span id="move-speed-value">20</span>
+        <button id="speed-inc">+10</button>
+      </div>
+      <div class="debug-control">
+        <span>Wireframe:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="wireframe-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
     <div id="crosshair">
       <div class="crosshair-line horizontal"></div>
       <div class="crosshair-line vertical"></div>

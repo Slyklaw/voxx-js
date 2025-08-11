@@ -5,6 +5,7 @@
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
+import { getBlockAtlasPositions } from './blocks.js';
 
 export class Renderer {
   constructor() {
@@ -17,6 +18,9 @@ export class Renderer {
     this.outlineMesh = null;
     this.ambientLight = null;
     this.directionalLight = null;
+    this.wireframeMode = false;
+    this.textureAtlas = null;
+    this.textureLoader = null;
   }
 
   async init(canvas) {
@@ -49,6 +53,38 @@ export class Renderer {
     // Initialize sky renderer
     this.skyRenderer = new SkyRenderer();
     await this.skyRenderer.init(this.scene, this.camera);
+
+    // Initialize texture loader and load texture atlas
+    this.textureLoader = new THREE.TextureLoader();
+    this.textureAtlas = await new Promise((resolve) => {
+      this.textureLoader.load(
+        'textures-atlas.png',
+        (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+          
+          // Store atlas dimensions for shader uniforms
+          this.atlasSize = { width: texture.image.width, height: texture.image.height };
+          
+          // Get block atlas positions
+          this.blockAtlasPositions = getBlockAtlasPositions();
+          
+          console.log('Texture atlas loaded successfully:', texture);
+          console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
+          resolve(texture);
+        },
+        (progress) => {
+          console.log('Loading texture atlas...', progress);
+        },
+        (error) => {
+          console.error('Error loading texture atlas:', error);
+          console.warn('Blocks will render with flat color instead of texture');
+          resolve(null); // Continue without texture if loading fails
+        }
+      );
+    });
 
     console.log('Renderer initialized successfully');
   }
@@ -86,6 +122,13 @@ export class Renderer {
         );
         mesh.material.uniforms.lightColor.value.setRGB(lightColor[0], lightColor[1], lightColor[2]);
         mesh.material.uniforms.ambientColor.value.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
+        // Update texture atlas uniforms
+        if (this.textureAtlas) {
+          mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
+          if (this.atlasSize) {
+            mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
+          }
+        }
       }
     }
   }
@@ -143,29 +186,62 @@ export class Renderer {
             this.scene.remove(existingMesh);
           }
 
-          // Only replace material if it's not already a shader material or if it's the wrong type
-          const needsNewMaterial = !chunk.mesh.material || 
-                                   !chunk.mesh.material.uniforms ||
-                                   chunk.mesh.material.type !== 'ShaderMaterial';
+          // Always dispose old material if it exists
+          if (chunk.mesh.material) {
+            chunk.mesh.material.dispose();
+          }
 
-          if (needsNewMaterial) {
-            // Create custom material with shaders
-            const material = new THREE.ShaderMaterial({
+          // Create appropriate material based on wireframe mode
+          let material;
+          if (this.wireframeMode) {
+            material = new THREE.MeshBasicMaterial({
+              color: 0xffffff,
+              wireframe: true,
+              transparent: true,
+              opacity: 0.8
+            });
+            // Store original material reference for later restoration
+            chunk.mesh._originalMaterial = new THREE.ShaderMaterial({
               vertexShader: vertexShader,
               fragmentShader: fragmentShader,
               uniforms: {
                 lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
                 lightColor: { value: new THREE.Color(0xffffff) },
-                ambientColor: { value: new THREE.Color(0x404040) }
+                ambientColor: { value: new THREE.Color(0x404040) },
+                textureAtlas: { value: this.textureAtlas },
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
+                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
+                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
+                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
+                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
               }
             });
-
-            // Apply material to the mesh
-            if (chunk.mesh.material) {
-              chunk.mesh.material.dispose(); // Dispose old material
-            }
-            chunk.mesh.material = material;
+          } else {
+            material = new THREE.ShaderMaterial({
+              vertexShader: vertexShader,
+              fragmentShader: fragmentShader,
+              uniforms: {
+                lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+                lightColor: { value: new THREE.Color(0xffffff) },
+                ambientColor: { value: new THREE.Color(0x404040) },
+                textureAtlas: { value: this.textureAtlas },
+                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
+                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
+                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
+                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
+                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
+                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
+                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
+              }
+            });
           }
+
+          // Apply material to the mesh
+          chunk.mesh.material = material;
+
+
 
           // Add new mesh to scene first
           this.scene.add(chunk.mesh);
@@ -175,7 +251,6 @@ export class Renderer {
           // Use requestAnimationFrame to ensure the material is compiled
           requestAnimationFrame(() => {
             if (chunk.mesh && this.chunkMeshes.has(key)) {
-              console.log(`[Renderer] Making chunk ${chunk.chunkX},${chunk.chunkZ} visible`);
               chunk.mesh.visible = true;
             }
           });
@@ -183,8 +258,6 @@ export class Renderer {
       }
     });
   }
-
-
 
   updateBlockOutline(targetedBlock) {
     // Remove existing outline
@@ -222,12 +295,51 @@ export class Renderer {
     this.renderer.setSize(width, height);
   }
 
+  setWireframeMode(enabled) {
+    this.wireframeMode = enabled;
+    
+    // Update all existing chunk meshes
+    for (const [key, mesh] of this.chunkMeshes) {
+      if (mesh.material) {
+        if (this.wireframeMode) {
+          // Create wireframe material
+          if (!mesh._originalMaterial) {
+            mesh._originalMaterial = mesh.material;
+          }
+          
+          const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.8
+          });
+          
+          mesh.material = wireframeMaterial;
+        } else {
+          // Restore original material
+          if (mesh._originalMaterial) {
+            mesh.material.dispose();
+            mesh.material = mesh._originalMaterial;
+            delete mesh._originalMaterial;
+          }
+        }
+      }
+    }
+    
+    console.log(`Wireframe mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
   destroy() {
     // Clean up all resources
     for (const [key, mesh] of this.chunkMeshes) {
       this.scene.remove(mesh);
       mesh.geometry.dispose();
       mesh.material.dispose();
+      
+      // Clean up original material reference if it exists
+      if (mesh._originalMaterial) {
+        mesh._originalMaterial.dispose();
+      }
     }
     this.chunkMeshes.clear();
 
