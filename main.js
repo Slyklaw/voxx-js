@@ -7,6 +7,7 @@ import { Camera } from './camera.js';
 import { World } from './world.js';
 import { BiomeCalculator } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
+import { pluginManager } from './plugins.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunk.js';
 import {
   RENDER_CONFIG,
@@ -27,6 +28,10 @@ let sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8/24); // Start at 08:00 (mor
  // Axial tilt not used anymore; equatorial (no tilt) straight-overhead path
  const AXIAL_TILT_DEG = 0.0;
 let targetedBlock = null;
+
+// Load example plugin
+import examplePlugin from './example-plugin.js';
+pluginManager.registerPlugin(examplePlugin);
 
 // Lighting state
 let lightDirection = [0.5, -1.0, 0.5];
@@ -212,16 +217,42 @@ function setupControls() {
 }
 
 function setupUI() {
-  // Block selector
-  const blockItems = document.querySelectorAll('.block-item');
-  blockItems[0].classList.add('selected');
-
-  blockItems.forEach((item) => {
-    item.addEventListener('click', () => {
-      blockItems.forEach(i => i.classList.remove('selected'));
-      item.classList.add('selected');
-      selectedBlockType = parseInt(item.dataset.block);
+  // Dynamically generate block selector from registered plugins
+  const blockSelector = document.getElementById('block-selector');
+  blockSelector.innerHTML = ''; // Clear existing items
+  
+  // Get all blocks from plugins (excluding air)
+  const allBlocks = pluginManager.getAllBlocks().filter(block => block.id !== 'air');
+  
+  allBlocks.forEach((block, index) => {
+    const blockItem = document.createElement('div');
+    blockItem.className = 'block-item';
+    blockItem.dataset.block = block.type;
+    
+    const blockIcon = document.createElement('div');
+    blockIcon.className = `block-icon ${block.id}`;
+    blockIcon.style.backgroundColor = `rgba(${block.color[0]}, ${block.color[1]}, ${block.color[2]}, ${block.color[3] / 255})`;
+    
+    const blockName = document.createElement('span');
+    blockName.textContent = block.name;
+    
+    blockItem.appendChild(blockIcon);
+    blockItem.appendChild(blockName);
+    blockSelector.appendChild(blockItem);
+    
+    // Add click event
+    blockItem.addEventListener('click', () => {
+      const items = document.querySelectorAll('.block-item');
+      items.forEach(i => i.classList.remove('selected'));
+      blockItem.classList.add('selected');
+      selectedBlockType = parseInt(blockItem.dataset.block);
     });
+    
+    // Select the first block by default
+    if (index === 0) {
+      blockItem.classList.add('selected');
+      selectedBlockType = block.type;
+    }
   });
 }
 
