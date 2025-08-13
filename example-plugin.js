@@ -44,11 +44,7 @@ export default {
       name: "Wood",
       color: [139, 69, 19, 255],
       atlasPos: { top: [0, 0], sides: [0, 0], bottom: [0, 0] },
-      textures: {
-        top: woodTexture,
-        sides: woodTexture,
-        bottom: woodTexture
-      }
+      useAtlas: true // Flag to indicate this block uses the texture atlas
     }
   ]
 };

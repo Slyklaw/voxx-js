@@ -6,6 +6,7 @@ import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
 import { getBlockAtlasPositions } from './blocks.js';
+import { pluginManager } from './plugins.js';
 
 export class Renderer {
   constructor() {
@@ -85,6 +86,9 @@ export class Renderer {
         }
       );
     });
+
+    // Create custom textures from plugin data
+    this.customTextures = this.createCustomTextures();
 
     console.log('Renderer initialized successfully');
   }
@@ -327,6 +331,45 @@ export class Renderer {
     }
     
     console.log(`Wireframe mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * Create custom textures from plugin data
+   * @returns {Object} Object mapping block types to custom textures
+   */
+  createCustomTextures() {
+    const customTextures = {};
+    const allBlocks = pluginManager.getAllBlocks();
+    
+    for (const block of allBlocks) {
+      // Skip blocks that use the atlas
+      if (block.useAtlas) continue;
+      
+      // Skip blocks without texture data
+      if (!block.textures) continue;
+      
+      // Create texture from texture data
+      const textureData = block.textures.top; // Use top texture for simplicity
+      if (textureData && textureData.data && textureData.width && textureData.height) {
+        // Create Three.js texture from raw data
+        const texture = new THREE.DataTexture(
+          new Uint8Array(textureData.data),
+          textureData.width,
+          textureData.height,
+          THREE.RGBAFormat
+        );
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
+        texture.needsUpdate = true;
+        
+        customTextures[block.type] = texture;
+        console.log(`Created custom texture for block "${block.name}"`);
+      }
+    }
+    
+    return customTextures;
   }
 
   destroy() {
