@@ -5,7 +5,7 @@
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
-import { getBlockAtlasPositions } from './blocks.js';
+
 import { pluginManager } from './plugins.js';
 
 export class Renderer {
@@ -20,7 +20,6 @@ export class Renderer {
     this.ambientLight = null;
     this.directionalLight = null;
     this.wireframeMode = false;
-    this.textureAtlas = null;
     this.textureLoader = null;
   }
 
@@ -55,42 +54,14 @@ export class Renderer {
     this.skyRenderer = new SkyRenderer();
     await this.skyRenderer.init(this.scene, this.camera);
 
-    // Initialize texture loader and load texture atlas
+    // Initialize texture loader
     this.textureLoader = new THREE.TextureLoader();
-    this.textureAtlas = await new Promise((resolve) => {
-      this.textureLoader.load(
-        'textures-atlas.png',
-        (texture) => {
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.magFilter = THREE.NearestFilter;
-          texture.minFilter = THREE.NearestFilter;
-          
-          // Store atlas dimensions for shader uniforms
-          this.atlasSize = { width: texture.image.width, height: texture.image.height };
-          
-          // Get block atlas positions
-          this.blockAtlasPositions = getBlockAtlasPositions();
-          
-          console.log('Texture atlas loaded successfully:', texture);
-          console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
-          resolve(texture);
-        },
-        (progress) => {
-          console.log('Loading texture atlas...', progress);
-        },
-        (error) => {
-          console.error('Error loading texture atlas:', error);
-          console.warn('Blocks will render with flat color instead of texture');
-          resolve(null); // Continue without texture if loading fails
-        }
-      );
-    });
 
     // Create custom textures from plugin data
     this.customTextures = this.createCustomTextures();
 
     console.log('Renderer initialized successfully');
+    console.log('Custom textures created:', Object.keys(this.customTextures));
   }
 
   setupLighting() {
@@ -126,13 +97,6 @@ export class Renderer {
         );
         mesh.material.uniforms.lightColor.value.setRGB(lightColor[0], lightColor[1], lightColor[2]);
         mesh.material.uniforms.ambientColor.value.setRGB(ambientColor[0], ambientColor[1], ambientColor[2]);
-        // Update texture atlas uniforms
-        if (this.textureAtlas) {
-          mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
-          if (this.atlasSize) {
-            mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
-          }
-        }
       }
     }
   }
@@ -205,45 +169,18 @@ export class Renderer {
               opacity: 0.8
             });
             // Store original material reference for later restoration
-            chunk.mesh._originalMaterial = new THREE.ShaderMaterial({
-              vertexShader: vertexShader,
-              fragmentShader: fragmentShader,
-              uniforms: {
-                lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
-                lightColor: { value: new THREE.Color(0xffffff) },
-                ambientColor: { value: new THREE.Color(0x404040) },
-                textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
-                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
-                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
-                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
-                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
-                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
-              }
-            });
+            chunk.mesh._originalMaterial = this.createBlockMaterial();
           } else {
-            material = new THREE.ShaderMaterial({
-              vertexShader: vertexShader,
-              fragmentShader: fragmentShader,
-              uniforms: {
-                lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
-                lightColor: { value: new THREE.Color(0xffffff) },
-                ambientColor: { value: new THREE.Color(0x404040) },
-                textureAtlas: { value: this.textureAtlas },
-                atlasSize: { value: new THREE.Vector2(this.atlasSize?.width || 256, this.atlasSize?.height || 256) },
-                blockAtlasTopX: { value: this.blockAtlasPositions?.topXPositions || [0, 496, 240, 160, 128, 496] },
-                blockAtlasTopY: { value: this.blockAtlasPositions?.topYPositions || [0, 208, 192, 256, 112, 16] },
-                blockAtlasSidesX: { value: this.blockAtlasPositions?.sidesXPositions || [0, 496, 240, 176, 128, 496] },
-                blockAtlasSidesY: { value: this.blockAtlasPositions?.sidesYPositions || [0, 208, 192, 240, 112, 16] },
-                blockAtlasBottomX: { value: this.blockAtlasPositions?.bottomXPositions || [0, 496, 240, 240, 128, 496] },
-                blockAtlasBottomY: { value: this.blockAtlasPositions?.bottomYPositions || [0, 208, 192, 192, 112, 16] }
-              }
-            });
+            material = this.createBlockMaterial();
           }
 
           // Apply material to the mesh
           chunk.mesh.material = material;
+
+          // Update texture uniforms if using shader material
+          if (material.uniforms && this.customTextures) {
+            this.updateMaterialTextures(material);
+          }
 
 
 
@@ -335,41 +272,136 @@ export class Renderer {
 
   /**
    * Create custom textures from plugin data
-   * @returns {Object} Object mapping block types to custom textures
+   * @returns {Object} Object mapping block IDs to texture objects with top/sides/bottom
    */
   createCustomTextures() {
     const customTextures = {};
     const allBlocks = pluginManager.getAllBlocks();
     
     for (const block of allBlocks) {
-      // Skip blocks that use the atlas
-      if (block.useAtlas) continue;
-      
       // Skip blocks without texture data
       if (!block.textures) continue;
       
-      // Create texture from texture data
-      const textureData = block.textures.top; // Use top texture for simplicity
-      if (textureData && textureData.data && textureData.width && textureData.height) {
-        // Create Three.js texture from raw data
-        const texture = new THREE.DataTexture(
-          new Uint8Array(textureData.data),
-          textureData.width,
-          textureData.height,
-          THREE.RGBAFormat
-        );
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
-        texture.needsUpdate = true;
-        
-        customTextures[block.type] = texture;
-        console.log(`Created custom texture for block "${block.name}"`);
+      const blockTextures = {};
+      
+      // Create textures for each face (top, sides, bottom)
+      ['top', 'sides', 'bottom'].forEach(face => {
+        const textureData = block.textures[face];
+        if (textureData && textureData.data && textureData.width && textureData.height) {
+          // Create Three.js texture from raw data
+          const texture = new THREE.DataTexture(
+            new Uint8Array(textureData.data),
+            textureData.width,
+            textureData.height,
+            THREE.RGBAFormat
+          );
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+          texture.needsUpdate = true;
+          
+          blockTextures[face] = texture;
+        }
+      });
+      
+      if (Object.keys(blockTextures).length > 0) {
+        customTextures[block.id] = blockTextures;
+        console.log(`Created custom textures for block "${block.name}"`);
       }
     }
     
     return customTextures;
+  }
+
+  /**
+   * Create shader material with individual block textures
+   * @returns {THREE.ShaderMaterial} Material with block texture uniforms
+   */
+  createBlockMaterial() {
+    // Create default white texture for missing textures
+    const defaultTexture = new THREE.DataTexture(
+      new Uint8Array([255, 255, 255, 255]),
+      1, 1,
+      THREE.RGBAFormat
+    );
+    defaultTexture.needsUpdate = true;
+
+    // Get textures for each block type
+    const getBlockTexture = (blockId, face) => {
+      return this.customTextures[blockId]?.[face] || defaultTexture;
+    };
+
+    return new THREE.ShaderMaterial({
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      uniforms: {
+        lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+        lightColor: { value: new THREE.Color(0xffffff) },
+        ambientColor: { value: new THREE.Color(0x404040) },
+        
+        // Individual block textures
+        airTopTexture: { value: getBlockTexture('air', 'top') },
+        airSidesTexture: { value: getBlockTexture('air', 'sides') },
+        airBottomTexture: { value: getBlockTexture('air', 'bottom') },
+        stoneTopTexture: { value: getBlockTexture('stone', 'top') },
+        stoneSidesTexture: { value: getBlockTexture('stone', 'sides') },
+        stoneBottomTexture: { value: getBlockTexture('stone', 'bottom') },
+        dirtTopTexture: { value: getBlockTexture('dirt', 'top') },
+        dirtSidesTexture: { value: getBlockTexture('dirt', 'sides') },
+        dirtBottomTexture: { value: getBlockTexture('dirt', 'bottom') },
+        grassTopTexture: { value: getBlockTexture('grass', 'top') },
+        grassSidesTexture: { value: getBlockTexture('grass', 'sides') },
+        grassBottomTexture: { value: getBlockTexture('grass', 'bottom') },
+        waterTopTexture: { value: getBlockTexture('water', 'top') },
+        waterSidesTexture: { value: getBlockTexture('water', 'sides') },
+        waterBottomTexture: { value: getBlockTexture('water', 'bottom') },
+        snowTopTexture: { value: getBlockTexture('snow', 'top') },
+        snowSidesTexture: { value: getBlockTexture('snow', 'sides') },
+        snowBottomTexture: { value: getBlockTexture('snow', 'bottom') }
+      }
+    });
+  }
+
+  /**
+   * Update material texture uniforms
+   * @param {THREE.ShaderMaterial} material Material to update
+   */
+  updateMaterialTextures(material) {
+    // Create default white texture for missing textures
+    const defaultTexture = new THREE.DataTexture(
+      new Uint8Array([255, 255, 255, 255]),
+      1, 1,
+      THREE.RGBAFormat
+    );
+    defaultTexture.needsUpdate = true;
+
+    // Get textures for each block type
+    const getBlockTexture = (blockId, face) => {
+      return this.customTextures[blockId]?.[face] || defaultTexture;
+    };
+
+    // Update all texture uniforms
+    if (material.uniforms) {
+      material.uniforms.airTopTexture.value = getBlockTexture('air', 'top');
+      material.uniforms.airSidesTexture.value = getBlockTexture('air', 'sides');
+      material.uniforms.airBottomTexture.value = getBlockTexture('air', 'bottom');
+      material.uniforms.stoneTopTexture.value = getBlockTexture('stone', 'top');
+      material.uniforms.stoneSidesTexture.value = getBlockTexture('stone', 'sides');
+      material.uniforms.stoneBottomTexture.value = getBlockTexture('stone', 'bottom');
+      material.uniforms.dirtTopTexture.value = getBlockTexture('dirt', 'top');
+      material.uniforms.dirtSidesTexture.value = getBlockTexture('dirt', 'sides');
+      material.uniforms.dirtBottomTexture.value = getBlockTexture('dirt', 'bottom');
+      material.uniforms.grassTopTexture.value = getBlockTexture('grass', 'top');
+      material.uniforms.grassSidesTexture.value = getBlockTexture('grass', 'sides');
+      material.uniforms.grassBottomTexture.value = getBlockTexture('grass', 'bottom');
+      material.uniforms.waterTopTexture.value = getBlockTexture('water', 'top');
+      material.uniforms.waterSidesTexture.value = getBlockTexture('water', 'sides');
+      material.uniforms.waterBottomTexture.value = getBlockTexture('water', 'bottom');
+      material.uniforms.snowTopTexture.value = getBlockTexture('snow', 'top');
+      material.uniforms.snowSidesTexture.value = getBlockTexture('snow', 'sides');
+      material.uniforms.snowBottomTexture.value = getBlockTexture('snow', 'bottom');
+    }
   }
 
   destroy() {

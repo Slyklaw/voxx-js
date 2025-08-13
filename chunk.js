@@ -2,7 +2,7 @@
  * Chunk implementation
  */
 
-import { getBlockColor, BLOCK_TYPES, getBlockAtlasPositions } from './blocks.js';
+import { getBlockColor, BLOCK_TYPES } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { CHUNK_VERTEX_SHADER, CHUNK_FRAGMENT_SHADER } from './shaders.js';
@@ -162,6 +162,7 @@ export class Chunk {
     const uvs = [];
     const indices = [];
     const blockTypes = []; // Add block type attribute
+    const faceTypes = []; // Add face type attribute (0=top, 1=sides, 2=bottom)
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -230,9 +231,26 @@ export class Chunk {
 
               positions.push(...v1, ...v2, ...v3, ...v4);
 
-              // Calculate normal
+              // Calculate normal and face type
               const normal = [0, 0, 0];
-              if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
+              let faceType;
+              if (val > 0) { 
+                normal[d] = 1; 
+              } else { 
+                normal[d] = -1; 
+              }
+              
+              // Determine face type based on normal direction
+              if (d === 1) { // Y axis
+                if (normal[1] > 0) {
+                  faceType = 0; // Top face
+                } else {
+                  faceType = 2; // Bottom face
+                }
+              } else {
+                faceType = 1; // Side faces (X or Z axis)
+              }
+              
               normals.push(...normal, ...normal, ...normal, ...normal);
 
               // Get block color and type
@@ -241,6 +259,7 @@ export class Chunk {
               for (let i = 0; i < 4; i++) {
                 colors.push(blockColor.r, blockColor.g, blockColor.b);
                 blockTypes.push(blockIndex); // Store block type for each vertex
+                faceTypes.push(faceType); // Store face type for each vertex
               }
 
               // Add UV coordinates for texture mapping
@@ -292,7 +311,8 @@ export class Chunk {
       colors: new Float32Array(colors),
       uvs: new Float32Array(uvs),
       indices: new Uint32Array(indices),
-      blockTypes: new Float32Array(blockTypes)
+      blockTypes: new Float32Array(blockTypes),
+      faceTypes: new Float32Array(faceTypes)
     };
   }
 
@@ -362,6 +382,7 @@ export class Chunk {
     newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
     newGeometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
     newGeometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
+    newGeometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
     newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
     // Replace geometry while keeping the mesh and material
@@ -399,10 +420,11 @@ export class Chunk {
     geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
     geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
     geometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
+    geometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
     geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
 
-    // Create shader material with texture support
-    const blockAtlasPositions = getBlockAtlasPositions();
+    // Create shader material with individual block textures
+    // Note: The renderer will set the actual texture uniforms
     const material = new THREE.ShaderMaterial({
       vertexShader: CHUNK_VERTEX_SHADER,
       fragmentShader: CHUNK_FRAGMENT_SHADER,
@@ -410,14 +432,26 @@ export class Chunk {
         lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
         lightColor: { value: new THREE.Color(0xffffff) },
         ambientColor: { value: new THREE.Color(0x404040) },
-        textureAtlas: { value: null }, // Will be set by renderer
-        atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
-        blockAtlasTopX: { value: blockAtlasPositions.topXPositions },
-        blockAtlasTopY: { value: blockAtlasPositions.topYPositions },
-        blockAtlasSidesX: { value: blockAtlasPositions.sidesXPositions },
-        blockAtlasSidesY: { value: blockAtlasPositions.sidesYPositions },
-        blockAtlasBottomX: { value: blockAtlasPositions.bottomXPositions },
-        blockAtlasBottomY: { value: blockAtlasPositions.bottomYPositions }
+        
+        // Individual block textures - will be set by renderer
+        airTopTexture: { value: null },
+        airSidesTexture: { value: null },
+        airBottomTexture: { value: null },
+        stoneTopTexture: { value: null },
+        stoneSidesTexture: { value: null },
+        stoneBottomTexture: { value: null },
+        dirtTopTexture: { value: null },
+        dirtSidesTexture: { value: null },
+        dirtBottomTexture: { value: null },
+        grassTopTexture: { value: null },
+        grassSidesTexture: { value: null },
+        grassBottomTexture: { value: null },
+        waterTopTexture: { value: null },
+        waterSidesTexture: { value: null },
+        waterBottomTexture: { value: null },
+        snowTopTexture: { value: null },
+        snowSidesTexture: { value: null },
+        snowBottomTexture: { value: null }
       }
     });
 
