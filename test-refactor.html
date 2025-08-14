@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Texture Refactor Test</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #info { margin-bottom: 20px; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>Texture System Refactor Test</h2>
+        <p>This test verifies that the renderer can load textures as raw byte arrays and pass them to shaders without block type knowledge.</p>
+        <div id="status">Loading...</div>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script type="module">
+        import { Renderer } from './renderer.js';
+        import { pluginManager } from './plugins.js';
+
+        async function test() {
+            const statusDiv = document.getElementById('status');
+            const canvas = document.getElementById('canvas');
+
+            try {
+                // Initialize plugin manager
+                try {
+                    await pluginManager.loadPlugin('./base-blocks-plugin.js');
+                    statusDiv.textContent = 'Plugin loaded...';
+                } catch (pluginError) {
+                    console.warn('Plugin loading failed:', pluginError);
+                    statusDiv.textContent = 'Plugin loading failed, continuing without plugins...';
+                }
+
+                // Initialize renderer
+                const renderer = new Renderer();
+                await renderer.init(canvas);
+                statusDiv.textContent = 'Renderer initialized...';
+
+                // Check texture system
+                if (renderer.textureSystem) {
+                    const mappingEntries = Array.from(renderer.textureSystem.textureMapping.entries());
+                    statusDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Texture atlas size: ${renderer.textureSystem.atlasSize}x${renderer.textureSystem.atlasSize}<br>
+                        Tile size: ${renderer.textureSystem.tileSize}x${renderer.textureSystem.tileSize}<br>
+                        Texture mappings: ${renderer.textureSystem.textureMapping.size}<br>
+                        <br>
+                        Available textures:<br>
+                        ${mappingEntries.map(([key, index]) => `• ${key} → ${index}`).join('<br>')}
+                    `;
+
+                    // Test texture index lookup
+                    const stoneTopIndex = renderer.getTextureIndex('stone', 'top');
+                    const grassSidesIndex = renderer.getTextureIndex('grass', 'sides');
+                    
+                    console.log('Stone top texture index:', stoneTopIndex);
+                    console.log('Grass sides texture index:', grassSidesIndex);
+                    console.log('Texture system:', renderer.textureSystem);
+
+                } else {
+                    statusDiv.innerHTML = '<strong>❌ Failed:</strong> Texture system not created';
+                }
+
+            } catch (error) {
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}<br><pre>${error.stack}</pre>`;
+                console.error('Test failed:', error);
+            }
+        }
+
+        test();
+    </script>
+</body>
+</html>

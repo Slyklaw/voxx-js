@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Texture System Test</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #info { margin-bottom: 20px; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>Minimal Texture System Test</h2>
+        <div id="status">Loading...</div>
+    </div>
+    <canvas id="canvas" width="400" height="300"></canvas>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
+
+        async function testTextureSystem() {
+            const statusDiv = document.getElementById('status');
+            const canvas = document.getElementById('canvas');
+
+            try {
+                statusDiv.textContent = 'Loading block textures...';
+
+                // Test loading block textures directly
+                const module = await import('./block-textures.js');
+                const blockTextures = module.blockTextures;
+                
+                statusDiv.innerHTML = `
+                    <strong>✅ Block textures loaded!</strong><br>
+                    Available blocks: ${Object.keys(blockTextures).join(', ')}<br>
+                    <br>
+                    Testing texture atlas creation...
+                `;
+
+                // Create a simple texture atlas
+                const textureDataList = [];
+                const textureMapping = new Map();
+                let textureIndex = 1;
+
+                for (const [blockId, faces] of Object.entries(blockTextures)) {
+                    ['top', 'sides', 'bottom'].forEach(face => {
+                        const textureData = faces[face];
+                        if (textureData && textureData.data && textureData.width && textureData.height) {
+                            textureDataList.push({
+                                data: textureData.data,
+                                width: textureData.width,
+                                height: textureData.height
+                            });
+                            textureMapping.set(`${blockId}_${face}`, textureIndex);
+                            textureIndex++;
+                        }
+                    });
+                }
+
+                // Create texture atlas
+                const tileSize = 16;
+                const tilesPerRow = Math.ceil(Math.sqrt(textureDataList.length + 1));
+                const atlasSize = tilesPerRow * tileSize;
+                const atlasData = new Uint8Array(atlasSize * atlasSize * 4);
+
+                // Fill with default white texture at position 0
+                for (let i = 0; i < tileSize * tileSize * 4; i += 4) {
+                    atlasData[i] = 255;     // R
+                    atlasData[i + 1] = 255; // G
+                    atlasData[i + 2] = 255; // B
+                    atlasData[i + 3] = 255; // A
+                }
+
+                // Copy texture data into atlas
+                textureDataList.forEach((texture, index) => {
+                    const atlasIndex = index + 1;
+                    const row = Math.floor(atlasIndex / tilesPerRow);
+                    const col = atlasIndex % tilesPerRow;
+                    
+                    for (let y = 0; y < tileSize; y++) {
+                        for (let x = 0; x < tileSize; x++) {
+                            const srcIndex = (y * tileSize + x) * 4;
+                            const dstX = col * tileSize + x;
+                            const dstY = row * tileSize + y;
+                            const dstIndex = (dstY * atlasSize + dstX) * 4;
+                            
+                            atlasData[dstIndex] = texture.data[srcIndex];
+                            atlasData[dstIndex + 1] = texture.data[srcIndex + 1];
+                            atlasData[dstIndex + 2] = texture.data[srcIndex + 2];
+                            atlasData[dstIndex + 3] = texture.data[srcIndex + 3];
+                        }
+                    }
+                });
+
+                // Create Three.js texture atlas
+                const textureAtlas = new THREE.DataTexture(
+                    atlasData,
+                    atlasSize,
+                    atlasSize,
+                    THREE.RGBAFormat
+                );
+                textureAtlas.wrapS = THREE.RepeatWrapping;
+                textureAtlas.wrapT = THREE.RepeatWrapping;
+                textureAtlas.magFilter = THREE.NearestFilter;
+                textureAtlas.minFilter = THREE.NearestFilter;
+                textureAtlas.needsUpdate = true;
+
+                statusDiv.innerHTML = `
+                    <strong>✅ Texture atlas created successfully!</strong><br>
+                    Atlas size: ${atlasSize}x${atlasSize}<br>
+                    Tiles per row: ${tilesPerRow}<br>
+                    Total textures: ${textureIndex}<br>
+                    Texture mappings: ${textureMapping.size}<br>
+                    <br>
+                    Sample mappings:<br>
+                    ${Array.from(textureMapping.entries()).slice(0, 10).map(([key, index]) => `• ${key} → ${index}`).join('<br>')}
+                    ${textureMapping.size > 10 ? '<br>... and more' : ''}
+                `;
+
+                // Test basic Three.js rendering with the atlas
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+                renderer.setSize(canvas.width, canvas.height);
+
+                // Create a simple plane to display the texture atlas
+                const geometry = new THREE.PlaneGeometry(2, 2);
+                const material = new THREE.MeshBasicMaterial({ map: textureAtlas });
+                const plane = new THREE.Mesh(geometry, material);
+                scene.add(plane);
+
+                camera.position.z = 3;
+                renderer.render(scene, camera);
+
+                console.log('Texture system test completed successfully');
+
+            } catch (error) {
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}<br><pre>${error.stack}</pre>`;
+                console.error('Test failed:', error);
+            }
+        }
+
+        testTextureSystem();
+    </script>
+</body>
+</html>

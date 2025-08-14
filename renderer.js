@@ -5,6 +5,7 @@
 import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
 import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
+import { TextureAtlas } from './texture-atlas.js';
 
 import { pluginManager } from './plugins.js';
 
@@ -21,6 +22,7 @@ export class Renderer {
     this.directionalLight = null;
     this.wireframeMode = false;
     this.textureLoader = null;
+    this.textureAtlas = null;
   }
 
   async init(canvas) {
@@ -57,11 +59,17 @@ export class Renderer {
     // Initialize texture loader
     this.textureLoader = new THREE.TextureLoader();
 
-    // Create custom textures from plugin data
-    this.customTextures = this.createCustomTextures();
+    // Create texture atlas
+    console.log('Creating texture atlas...');
+    this.textureAtlas = new TextureAtlas(1024);
+
+    // Create texture system with atlas
+    console.log('Creating texture system...');
+    this.textureSystem = await this.createTextureSystem();
+    console.log('Texture system created:', this.textureSystem ? 'SUCCESS' : 'FAILED');
 
     console.log('Renderer initialized successfully');
-    console.log('Custom textures created:', Object.keys(this.customTextures));
+    console.log('Texture system created with', this.textureSystem.textureCount, 'individual textures');
   }
 
   setupLighting() {
@@ -143,8 +151,20 @@ export class Renderer {
     chunks.forEach(chunk => {
       const key = `${chunk.chunkX},${chunk.chunkZ}`;
 
+      // Set texture system on chunk if available and force regeneration if needed
+      if (this.textureSystem && !chunk.textureSystem) {
+        chunk.textureSystem = this.textureSystem;
+        // Force chunk to regenerate mesh with texture system
+        if (chunk.hasVoxelData) {
+          chunk.needsUpdate = true;
+          chunk.updateMesh(true);
+        }
+      }
+
       // Only process chunks that have a mesh, are ready for rendering, and have valid geometry
-      if (chunk.mesh && chunk.meshReady && chunk.mesh.geometry && chunk.mesh.geometry.attributes.position) {
+      if (chunk.mesh && chunk.meshReady && chunk.mesh.geometry &&
+        chunk.mesh.geometry.attributes.position &&
+        chunk.mesh.geometry.attributes.position.count > 0) {
         const existingMesh = this.chunkMeshes.get(key);
 
         // If mesh doesn't exist or has changed, update it
@@ -178,9 +198,11 @@ export class Renderer {
           chunk.mesh.material = material;
 
           // Update texture uniforms if using shader material
-          if (material.uniforms && this.customTextures) {
+          if (material.uniforms && this.textureSystem) {
             this.updateMaterialTextures(material);
           }
+
+          // No need to update texture indices - block types are set during mesh generation
 
 
 
@@ -238,7 +260,7 @@ export class Renderer {
 
   setWireframeMode(enabled) {
     this.wireframeMode = enabled;
-    
+
     // Update all existing chunk meshes
     for (const [key, mesh] of this.chunkMeshes) {
       if (mesh.material) {
@@ -247,14 +269,14 @@ export class Renderer {
           if (!mesh._originalMaterial) {
             mesh._originalMaterial = mesh.material;
           }
-          
+
           const wireframeMaterial = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             wireframe: true,
             transparent: true,
             opacity: 0.8
           });
-          
+
           mesh.material = wireframeMaterial;
         } else {
           // Restore original material
@@ -266,101 +288,146 @@ export class Renderer {
         }
       }
     }
-    
+
     console.log(`Wireframe mode ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
-   * Create custom textures from plugin data
-   * @returns {Object} Object mapping block IDs to texture objects with top/sides/bottom
+   * Create texture system using texture atlas
+   * @returns {Object} Object with atlas texture and UV mapping
    */
-  createCustomTextures() {
-    const customTextures = {};
+  async createTextureSystem() {
+    const textureUVMapping = new Map(); // Maps "blockId_face" to UV coordinates
+    const blockTypeMapping = new Map(); // Maps blockId -> blockType index
+    let blockTypeIndex = 0;
+
+    // Add default white texture to atlas
+    const defaultTextureData = new Uint8Array([255, 255, 255, 255]);
+    this.textureAtlas.addTexture('default', defaultTextureData, 1, 1);
+
+    // Get all blocks from plugins
     const allBlocks = pluginManager.getAllBlocks();
-    
+
+    // Process plugin blocks first
     for (const block of allBlocks) {
-      // Skip blocks without texture data
+      if (!blockTypeMapping.has(block.id)) {
+        blockTypeMapping.set(block.id, blockTypeIndex++);
+      }
+
       if (!block.textures) continue;
-      
-      const blockTextures = {};
-      
-      // Create textures for each face (top, sides, bottom)
-      ['top', 'sides', 'bottom'].forEach(face => {
+
+      ['top', 'sides', 'bottom'].forEach((face) => {
         const textureData = block.textures[face];
         if (textureData && textureData.data && textureData.width && textureData.height) {
-          // Create Three.js texture from raw data
-          const texture = new THREE.DataTexture(
+          const key = `${block.id}_${face}`;
+          const atlasCoords = this.textureAtlas.addTexture(
+            key,
             new Uint8Array(textureData.data),
             textureData.width,
-            textureData.height,
-            THREE.RGBAFormat
+            textureData.height
           );
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.magFilter = THREE.NearestFilter;
-          texture.minFilter = THREE.NearestFilter;
-          texture.needsUpdate = true;
           
-          blockTextures[face] = texture;
+          if (atlasCoords) {
+            textureUVMapping.set(key, atlasCoords);
+          }
         }
       });
-      
-      if (Object.keys(blockTextures).length > 0) {
-        customTextures[block.id] = blockTextures;
-        console.log(`Created custom textures for block "${block.name}"`);
+    }
+
+    // Import block textures from block-textures.js
+    try {
+      const module = await import('./block-textures.js');
+      const blockTexturesData = module.blockTextures;
+      console.log('Loaded block textures:', Object.keys(blockTexturesData));
+
+      for (const [blockId, faces] of Object.entries(blockTexturesData)) {
+        if (!blockTypeMapping.has(blockId)) {
+          blockTypeMapping.set(blockId, blockTypeIndex++);
+        }
+
+        ['top', 'sides', 'bottom'].forEach((face) => {
+          const textureData = faces[face];
+          if (textureData && textureData.data && textureData.width && textureData.height) {
+            const key = `${blockId}_${face}`;
+            const atlasCoords = this.textureAtlas.addTexture(
+              key,
+              textureData.data,
+              textureData.width,
+              textureData.height
+            );
+            
+            if (atlasCoords) {
+              textureUVMapping.set(key, atlasCoords);
+              
+              // Debug first few textures
+              if (textureUVMapping.size <= 5) {
+                console.log(`Added ${key} to atlas:`, {
+                  width: textureData.width,
+                  height: textureData.height,
+                  uv: `(${atlasCoords.u1.toFixed(3)}, ${atlasCoords.v1.toFixed(3)}) to (${atlasCoords.u2.toFixed(3)}, ${atlasCoords.v2.toFixed(3)})`
+                });
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.warn('Could not load block textures:', error);
+    }
+
+    console.log('Block type mapping:');
+    for (const [blockId, typeIndex] of blockTypeMapping.entries()) {
+      console.log(`  ${blockId} -> type ${typeIndex}`);
+    }
+
+    const atlasStats = this.textureAtlas.getStats();
+    console.log(`✅ Created texture atlas system:`, atlasStats);
+    
+    // Debug: Log first few texture mappings
+    console.log('First few texture UV mappings:');
+    let count = 0;
+    for (const [key, coords] of textureUVMapping.entries()) {
+      if (count < 5) {
+        console.log(`  ${key}: UV(${coords.u1.toFixed(3)}, ${coords.v1.toFixed(3)}) to (${coords.u2.toFixed(3)}, ${coords.v2.toFixed(3)})`);
+        count++;
       }
     }
     
-    return customTextures;
+    // Texture atlas system is working correctly
+
+    // Ensure atlas texture is marked for GPU upload
+    const atlasTexture = this.textureAtlas.getTexture();
+    atlasTexture.needsUpdate = true;
+    
+    return {
+      atlasTexture: atlasTexture,
+      textureUVMapping,
+      blockTypeMapping,
+      textureAtlas: this.textureAtlas
+    };
   }
 
   /**
-   * Create shader material with individual block textures
-   * @returns {THREE.ShaderMaterial} Material with block texture uniforms
+   * Create shader material with texture atlas
+   * @returns {THREE.ShaderMaterial} Material with atlas texture
    */
   createBlockMaterial() {
-    // Create default white texture for missing textures
-    const defaultTexture = new THREE.DataTexture(
-      new Uint8Array([255, 255, 255, 255]),
-      1, 1,
-      THREE.RGBAFormat
-    );
-    defaultTexture.needsUpdate = true;
-
-    // Get textures for each block type
-    const getBlockTexture = (blockId, face) => {
-      return this.customTextures[blockId]?.[face] || defaultTexture;
+    const uniforms = {
+      lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
+      lightColor: { value: new THREE.Color(0xffffff) },
+      ambientColor: { value: new THREE.Color(0x404040) },
+      atlasTexture: { value: this.textureSystem?.atlasTexture || null }
     };
+    
+    // Atlas texture is working correctly
 
-    return new THREE.ShaderMaterial({
+    const material = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
-      uniforms: {
-        lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
-        lightColor: { value: new THREE.Color(0xffffff) },
-        ambientColor: { value: new THREE.Color(0x404040) },
-        
-        // Individual block textures
-        airTopTexture: { value: getBlockTexture('air', 'top') },
-        airSidesTexture: { value: getBlockTexture('air', 'sides') },
-        airBottomTexture: { value: getBlockTexture('air', 'bottom') },
-        stoneTopTexture: { value: getBlockTexture('stone', 'top') },
-        stoneSidesTexture: { value: getBlockTexture('stone', 'sides') },
-        stoneBottomTexture: { value: getBlockTexture('stone', 'bottom') },
-        dirtTopTexture: { value: getBlockTexture('dirt', 'top') },
-        dirtSidesTexture: { value: getBlockTexture('dirt', 'sides') },
-        dirtBottomTexture: { value: getBlockTexture('dirt', 'bottom') },
-        grassTopTexture: { value: getBlockTexture('grass', 'top') },
-        grassSidesTexture: { value: getBlockTexture('grass', 'sides') },
-        grassBottomTexture: { value: getBlockTexture('grass', 'bottom') },
-        waterTopTexture: { value: getBlockTexture('water', 'top') },
-        waterSidesTexture: { value: getBlockTexture('water', 'sides') },
-        waterBottomTexture: { value: getBlockTexture('water', 'bottom') },
-        snowTopTexture: { value: getBlockTexture('snow', 'top') },
-        snowSidesTexture: { value: getBlockTexture('snow', 'sides') },
-        snowBottomTexture: { value: getBlockTexture('snow', 'bottom') }
-      }
+      uniforms: uniforms
     });
+
+    return material;
   }
 
   /**
@@ -368,40 +435,78 @@ export class Renderer {
    * @param {THREE.ShaderMaterial} material Material to update
    */
   updateMaterialTextures(material) {
-    // Create default white texture for missing textures
-    const defaultTexture = new THREE.DataTexture(
-      new Uint8Array([255, 255, 255, 255]),
-      1, 1,
+    if (!material.uniforms || !this.textureSystem) return;
+
+    // Update atlas texture
+    if (material.uniforms.atlasTexture) {
+      material.uniforms.atlasTexture.value = this.textureSystem.atlasTexture;
+    }
+  }
+
+  /**
+   * Get texture UV coordinates for a block and face
+   * @param {string} blockId Block identifier
+   * @param {string} face Face type ('top', 'sides', 'bottom')
+   * @returns {Object} UV coordinates {u1, v1, u2, v2} or null
+   */
+  getTextureUV(blockId, face) {
+    if (!this.textureSystem) return null;
+    return this.textureSystem.textureUVMapping.get(`${blockId}_${face}`) || null;
+  }
+
+  /**
+   * Add a new block texture dynamically (for plugin system)
+   * @param {string} blockId Block identifier
+   * @param {string} face Face type ('top', 'sides', 'bottom')
+   * @param {Uint8Array} textureData Raw texture data
+   * @param {number} width Texture width
+   * @param {number} height Texture height
+   */
+  addBlockTexture(blockId, face, textureData, width, height) {
+    if (!this.textureSystem) return;
+
+    // Create Three.js texture from raw data
+    const texture = new THREE.DataTexture(
+      textureData,
+      width,
+      height,
       THREE.RGBAFormat
     );
-    defaultTexture.needsUpdate = true;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.needsUpdate = true;
 
-    // Get textures for each block type
-    const getBlockTexture = (blockId, face) => {
-      return this.customTextures[blockId]?.[face] || defaultTexture;
-    };
+    // Add to texture system
+    const textureIndex = this.textureSystem.textureCount;
+    this.textureSystem.blockTextures[textureIndex] = texture;
+    this.textureSystem.textureMapping.set(`${blockId}_${face}`, textureIndex);
+    this.textureSystem.textureCount++;
 
-    // Update all texture uniforms
-    if (material.uniforms) {
-      material.uniforms.airTopTexture.value = getBlockTexture('air', 'top');
-      material.uniforms.airSidesTexture.value = getBlockTexture('air', 'sides');
-      material.uniforms.airBottomTexture.value = getBlockTexture('air', 'bottom');
-      material.uniforms.stoneTopTexture.value = getBlockTexture('stone', 'top');
-      material.uniforms.stoneSidesTexture.value = getBlockTexture('stone', 'sides');
-      material.uniforms.stoneBottomTexture.value = getBlockTexture('stone', 'bottom');
-      material.uniforms.dirtTopTexture.value = getBlockTexture('dirt', 'top');
-      material.uniforms.dirtSidesTexture.value = getBlockTexture('dirt', 'sides');
-      material.uniforms.dirtBottomTexture.value = getBlockTexture('dirt', 'bottom');
-      material.uniforms.grassTopTexture.value = getBlockTexture('grass', 'top');
-      material.uniforms.grassSidesTexture.value = getBlockTexture('grass', 'sides');
-      material.uniforms.grassBottomTexture.value = getBlockTexture('grass', 'bottom');
-      material.uniforms.waterTopTexture.value = getBlockTexture('water', 'top');
-      material.uniforms.waterSidesTexture.value = getBlockTexture('water', 'sides');
-      material.uniforms.waterBottomTexture.value = getBlockTexture('water', 'bottom');
-      material.uniforms.snowTopTexture.value = getBlockTexture('snow', 'top');
-      material.uniforms.snowSidesTexture.value = getBlockTexture('snow', 'sides');
-      material.uniforms.snowBottomTexture.value = getBlockTexture('snow', 'bottom');
+    // Update block type mapping if needed
+    if (!this.textureSystem.blockTypeMapping.has(blockId)) {
+      const blockTypeIndex = this.textureSystem.blockTypeMapping.size;
+      this.textureSystem.blockTypeMapping.set(blockId, blockTypeIndex);
     }
+
+    // Update shader texture mapping
+    const blockType = this.textureSystem.blockTypeMapping.get(blockId);
+    const faceType = face === 'top' ? 0 : face === 'sides' ? 1 : 2;
+    const mappingIndex = blockType * 3 + faceType;
+
+    if (mappingIndex < 64) {
+      this.textureSystem.shaderTextureMapping[mappingIndex] = textureIndex;
+    }
+
+    // Update all existing materials
+    for (const [key, mesh] of this.chunkMeshes) {
+      if (mesh.material && mesh.material.uniforms) {
+        this.updateMaterialTextures(mesh.material);
+      }
+    }
+
+    console.log(`Added texture for ${blockId}_${face} at index ${textureIndex}`);
   }
 
   destroy() {
@@ -410,7 +515,7 @@ export class Renderer {
       this.scene.remove(mesh);
       mesh.geometry.dispose();
       mesh.material.dispose();
-      
+
       // Clean up original material reference if it exists
       if (mesh._originalMaterial) {
         mesh._originalMaterial.dispose();
@@ -426,6 +531,10 @@ export class Renderer {
 
     if (this.skyRenderer) {
       this.skyRenderer.destroy();
+    }
+
+    if (this.textureAtlas) {
+      this.textureAtlas.destroy();
     }
 
     this.renderer.dispose();

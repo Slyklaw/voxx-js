@@ -128,10 +128,10 @@ function generateMeshData(chunk, chunkX, chunkZ) {
             // Get the block color and type
             const blockIndex = Math.abs(val);
 
-            // Add UV coordinates for texture mapping
+            // Add UV coordinates for texture atlas mapping
             if (blockIndex !== BLOCK_TYPES.AIR) {
-              // For all solid blocks, tile the texture based on quad dimensions
-              // This ensures the texture repeats for each block in the greedy mesh
+              // For now, use default UV coordinates - atlas coordinates will be set by main thread
+              // TODO: Pass texture system to worker for proper atlas UV calculation
               uvs.push(
                 0, 0,    // v1 - bottom-left
                 w, 0,    // v2 - bottom-right (repeat w times)

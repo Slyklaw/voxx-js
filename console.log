@@ -1,0 +1,2120 @@
+ Block "Air" registered with type ID 0
+ Block "Stone" registered with type ID 1
+ Block "Dirt" registered with type ID 2
+ Block "Grass" registered with type ID 3
+ Block "Water" registered with type ID 4
+ Block "Snow" registered with type ID 5
+ Plugin "Base Blocks" v1.0.0 registered successfully
+ Block "Air" registered with type ID 0
+ Block "Stone" registered with type ID 1
+ Block "Dirt" registered with type ID 2
+ Block "Grass" registered with type ID 3
+ Block "Water" registered with type ID 4
+ Block "Snow" registered with type ID 5
+ Plugin "Base Blocks" v1.0.0 registered successfully
+ Block "Air" registered with type ID 0
+ Block "Stone" registered with type ID 1
+ Block "Dirt" registered with type ID 2
+ Block "Grass" registered with type ID 3
+ Block "Water" registered with type ID 4
+ Block "Snow" registered with type ID 5
+ Plugin "Base Blocks" v1.0.0 registered successfully
+ Block "Air" registered with type ID 0
+ Block "Stone" registered with type ID 1
+ Block "Dirt" registered with type ID 2
+ Block "Grass" registered with type ID 3
+ Block "Water" registered with type ID 4
+ Block "Snow" registered with type ID 5
+ Plugin "Base Blocks" v1.0.0 registered successfully
+ [ChunkWorker] Starting generation for chunk 0,1
+ [ChunkWorker] Starting generation for chunk -1,0
+ [ChunkWorker] Starting generation for chunk 0,-1
+ [ChunkWorker] Starting generation for chunk 0,0
+ [ChunkWorker] Completed generation for chunk 0,0, vertices: 18912
+ [ChunkWorker] Starting generation for chunk 1,0
+ [ChunkWorker] Completed generation for chunk 0,1, vertices: 8780
+ [ChunkWorker] Completed generation for chunk -1,0, vertices: 6176
+ [ChunkWorker] Completed generation for chunk 1,0, vertices: 13728
+ [ChunkWorker] Completed generation for chunk 0,-1, vertices: 9032
+ [ChunkWorker] Starting generation for chunk -1,-1
+ [ChunkWorker] Starting generation for chunk -1,1
+ [ChunkWorker] Starting generation for chunk 1,-1
+ [ChunkWorker] Starting generation for chunk 1,1
+ [ChunkWorker] Completed generation for chunk 1,1, vertices: 9600
+ [ChunkWorker] Completed generation for chunk 1,-1, vertices: 4652
+ [ChunkWorker] Completed generation for chunk -1,-1, vertices: 17912
+ [ChunkWorker] Completed generation for chunk -1,1, vertices: 1188
+ [ChunkWorker] Starting generation for chunk -2,0
+ [ChunkWorker] Starting generation for chunk 0,-2
+ [ChunkWorker] Starting generation for chunk 0,2
+ [ChunkWorker] Starting generation for chunk 2,0
+ [ChunkWorker] Completed generation for chunk -2,0, vertices: 1312
+ [ChunkWorker] Completed generation for chunk 0,2, vertices: 3364
+ [ChunkWorker] Completed generation for chunk 0,-2, vertices: 6408
+ [ChunkWorker] Completed generation for chunk 2,0, vertices: 10568
+ [ChunkWorker] Starting generation for chunk -2,-1
+ [ChunkWorker] Starting generation for chunk -2,1
+ [ChunkWorker] Starting generation for chunk -1,-2
+ [ChunkWorker] Starting generation for chunk -1,2
+ [ChunkWorker] Completed generation for chunk -2,1, vertices: 1160
+ [ChunkWorker] Completed generation for chunk -1,2, vertices: 1060
+ [ChunkWorker] Completed generation for chunk -2,-1, vertices: 10352
+ [ChunkWorker] Completed generation for chunk -1,-2, vertices: 8000
+ [ChunkWorker] Starting generation for chunk 1,-2
+ [ChunkWorker] Starting generation for chunk 1,2
+ [ChunkWorker] Starting generation for chunk 2,-1
+ [ChunkWorker] Starting generation for chunk 2,1
+ [ChunkWorker] Completed generation for chunk 2,-1, vertices: 6096
+ [ChunkWorker] Completed generation for chunk 1,-2, vertices: 6604
+ [ChunkWorker] Completed generation for chunk 1,2, vertices: 6516
+ [ChunkWorker] Completed generation for chunk 2,1, vertices: 10044
+ [ChunkWorker] Starting generation for chunk -2,-2
+ [ChunkWorker] Starting generation for chunk -2,2
+ [ChunkWorker] Starting generation for chunk 2,-2
+ [ChunkWorker] Starting generation for chunk 2,2
+ [ChunkWorker] Completed generation for chunk 2,-2, vertices: 4936
+ [ChunkWorker] Completed generation for chunk -2,-2, vertices: 7812
+ [ChunkWorker] Completed generation for chunk 2,2, vertices: 8800
+ [ChunkWorker] Completed generation for chunk -2,2, vertices: 1000
+ [ChunkWorker] Starting generation for chunk -3,0
+ [ChunkWorker] Starting generation for chunk 0,-3
+ [ChunkWorker] Starting generation for chunk 0,3
+ [ChunkWorker] Starting generation for chunk 3,0
+ [ChunkWorker] Completed generation for chunk -3,0, vertices: 940
+ [ChunkWorker] Completed generation for chunk 0,3, vertices: 1752
+ [ChunkWorker] Completed generation for chunk 3,0, vertices: 9268
+ [ChunkWorker] Completed generation for chunk 0,-3, vertices: 5572
+ [ChunkWorker] Starting generation for chunk -3,-1
+ [ChunkWorker] Starting generation for chunk -3,1
+ [ChunkWorker] Starting generation for chunk -1,-3
+ [ChunkWorker] Starting generation for chunk -1,3
+ [ChunkWorker] Completed generation for chunk -3,1, vertices: 1004
+ [ChunkWorker] Completed generation for chunk -3,-1, vertices: 4760
+ [ChunkWorker] Completed generation for chunk -1,-3, vertices: 5872
+ [ChunkWorker] Completed generation for chunk -1,3, vertices: 988
+ [ChunkWorker] Starting generation for chunk 1,-3
+ [ChunkWorker] Starting generation for chunk 1,3
+ [ChunkWorker] Starting generation for chunk 3,-1
+ [ChunkWorker] Starting generation for chunk 3,1
+ [ChunkWorker] Completed generation for chunk 1,3, vertices: 3004
+ [ChunkWorker] Completed generation for chunk 1,-3, vertices: 5400
+ [ChunkWorker] Completed generation for chunk 3,1, vertices: 11196
+ [ChunkWorker] Completed generation for chunk 3,-1, vertices: 6776
+ [ChunkWorker] Starting generation for chunk -3,-2
+ [ChunkWorker] Starting generation for chunk -3,2
+ [ChunkWorker] Starting generation for chunk -2,-3
+ [ChunkWorker] Starting generation for chunk -2,3
+ [ChunkWorker] Completed generation for chunk -3,2, vertices: 996
+ [ChunkWorker] Completed generation for chunk -2,3, vertices: 1116
+ [ChunkWorker] Completed generation for chunk -3,-2, vertices: 5408
+ [ChunkWorker] Completed generation for chunk -2,-3, vertices: 4040
+ [ChunkWorker] Starting generation for chunk 2,-3
+ [ChunkWorker] Starting generation for chunk 2,3
+ [ChunkWorker] Starting generation for chunk 3,-2
+ [ChunkWorker] Starting generation for chunk 3,2
+ [ChunkWorker] Completed generation for chunk 2,3, vertices: 6372
+ [ChunkWorker] Completed generation for chunk 3,-2, vertices: 5556
+ [ChunkWorker] Completed generation for chunk 2,-3, vertices: 4880
+ [ChunkWorker] Completed generation for chunk 3,2, vertices: 6432
+ [ChunkWorker] Starting generation for chunk -4,0
+ [ChunkWorker] Starting generation for chunk 0,-4
+ [ChunkWorker] Starting generation for chunk 0,4
+ [ChunkWorker] Starting generation for chunk 4,0
+ [ChunkWorker] Completed generation for chunk -4,0, vertices: 944
+ [ChunkWorker] Completed generation for chunk 0,4, vertices: 1148
+ [ChunkWorker] Completed generation for chunk 0,-4, vertices: 5304
+ [ChunkWorker] Completed generation for chunk 4,0, vertices: 5816
+ [ChunkWorker] Starting generation for chunk -4,-1
+ [ChunkWorker] Starting generation for chunk -4,1
+ [ChunkWorker] Starting generation for chunk -1,-4
+ [ChunkWorker] Starting generation for chunk -1,4
+ [ChunkWorker] Completed generation for chunk -4,1, vertices: 896
+ [ChunkWorker] Completed generation for chunk -4,-1, vertices: 2584
+ [ChunkWorker] Completed generation for chunk -1,-4, vertices: 6520
+ [ChunkWorker] Completed generation for chunk -1,4, vertices: 1384
+ [ChunkWorker] Starting generation for chunk 1,-4
+ [ChunkWorker] Starting generation for chunk 1,4
+ [ChunkWorker] Starting generation for chunk 4,-1
+ [ChunkWorker] Starting generation for chunk 4,1
+ [ChunkWorker] Completed generation for chunk 1,4, vertices: 4084
+ [ChunkWorker] Completed generation for chunk 1,-4, vertices: 6260
+ [ChunkWorker] Completed generation for chunk 4,-1, vertices: 6320
+ [ChunkWorker] Completed generation for chunk 4,1, vertices: 7344
+ [ChunkWorker] Starting generation for chunk -3,-3
+ [ChunkWorker] Starting generation for chunk -3,3
+ [ChunkWorker] Starting generation for chunk 3,-3
+ [ChunkWorker] Starting generation for chunk 3,3
+ [ChunkWorker] Completed generation for chunk -3,-3, vertices: 4396
+ [ChunkWorker] Completed generation for chunk -3,3, vertices: 1812
+ [ChunkWorker] Completed generation for chunk 3,-3, vertices: 6204
+ [ChunkWorker] Completed generation for chunk 3,3, vertices: 4672
+ [ChunkWorker] Starting generation for chunk -4,-2
+ [ChunkWorker] Starting generation for chunk -4,2
+ [ChunkWorker] Starting generation for chunk -2,-4
+ [ChunkWorker] Starting generation for chunk -2,4
+ [ChunkWorker] Completed generation for chunk -2,4, vertices: 1132
+ [ChunkWorker] Completed generation for chunk -4,2, vertices: 996
+ [ChunkWorker] Completed generation for chunk -4,-2, vertices: 5524
+ [ChunkWorker] Completed generation for chunk -2,-4, vertices: 5664
+ [ChunkWorker] Starting generation for chunk 2,-4
+ [ChunkWorker] Starting generation for chunk 2,4
+ [ChunkWorker] Starting generation for chunk 4,-2
+ [ChunkWorker] Starting generation for chunk 4,2
+ [ChunkWorker] Completed generation for chunk 4,2, vertices: 7088
+ [ChunkWorker] Completed generation for chunk 4,-2, vertices: 4332
+ [ChunkWorker] Completed generation for chunk 2,-4, vertices: 5872
+ [ChunkWorker] Completed generation for chunk 2,4, vertices: 4660
+ [ChunkWorker] Starting generation for chunk -5,0
+ [ChunkWorker] Starting generation for chunk -4,-3
+ [ChunkWorker] Starting generation for chunk -4,3
+ [ChunkWorker] Starting generation for chunk -3,-4
+ [ChunkWorker] Completed generation for chunk -5,0, vertices: 952
+ [ChunkWorker] Completed generation for chunk -4,3, vertices: 2180
+ [ChunkWorker] Completed generation for chunk -4,-3, vertices: 3480
+ [ChunkWorker] Completed generation for chunk -3,-4, vertices: 3880
+ [ChunkWorker] Starting generation for chunk -3,4
+ [ChunkWorker] Starting generation for chunk 0,-5
+ [ChunkWorker] Starting generation for chunk 0,5
+ [ChunkWorker] Starting generation for chunk 3,-4
+ [ChunkWorker] Completed generation for chunk 0,-5, vertices: 6496
+ [ChunkWorker] Completed generation for chunk -3,4, vertices: 3928
+ [ChunkWorker] Completed generation for chunk 0,5, vertices: 1760
+ [ChunkWorker] Completed generation for chunk 3,-4, vertices: 6112
+(index):1 The file at 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAYAAAB/HSuDAAAQAElEQVR4AezdeZBlaXYQ9u9lVmatXVXdMz090liMUICQ2CRLECyBDJIMxhgU8qKwZSOETYBljEMhrDAIh4H5wxDhkCzAK7vFGhgIHIiQMFgIs1g2BoVkBEKMdjGaaU1Pd3WtWZXL8z1Z/bqzqnJ5y12+5VfRt959d/m+c37nVVfdc997uTXvfqXu1z/4dTfm3/WvXp1/15dcnf+Df+P68RLr/++XvTT/nq96Zf5Pv/Yz5j/6h75w/n1f88H5P/q3bs7j+J/4I79k/sm//mXzj37kc+bdECm25TDGN3/zN8+/+cTye37P75l//dd//fGyWP+ar/ma4+exPbadXCKXk+fHeuyPY2NZrI8xxv/+X//6+f/4237N8fINX/FL57Gctu0rv+hzj/ct9i8eI5fTjj9t29BjfPXv+Oz5b/ydnzf/Db/9C+Zf9XWfP//q3/4L5l/zez97/pX/6efPf9Pv+tz5b/i6L5x/1dd2+7728+e/+Xd/brd8zvw3/65f0J3zOd05n3f8Gvv6v/Zr5v/Ft/3a+X/+rf/6/Lf8uV92vHztX/mV86/+k79w/tv+0pfMf/ff+neO9//W//VXzP/jP/9F8//kL/zy+X/4Lb9o/uV/4LPn/9lf/tLjMU7L/bRt53n88i/+I/Nf92/+lfmX/9t/9fjx1375/zb/NV/2F+df+qv+9PxX/uo/O//iL/1T3fItx9u+5Ff9mfmXdcd9xb//nfN/pTvvS37ltxzHkcsYj46Ouv8LPPtfbIslti4eY32xxLbFEq+xWF/sWzzGtlji+eIx1hdLbFssfY0R41gIECBAgAABAgQIEDhVIG3Nul+xa//uQbp07VK69fPen6584GqaH87T9tWttHVplq5/1qvp6k9/NQ5Ls0tb6fDxYTp8dJg+8de+L33sz/69dOcffex4Xy5j3LlzJ93plo997GPHjw8ePEjXr18/XiLQWH/ttdeOn9+/fz+9/vrrKY6JfYvHOD+Wqcf429/zwxFW+rvf+yPHj/HbD338zfT2h77o3W2/4vM/K33R5/302JViPfb/6CfeSv/LX/9Hx9tyGeOlWyltpYN0eJjSzm4X2qW308HhVrp6cy9du/WkWx6n6y8/Ti+/ltL+40tp7+1r6fKNt9J8/0q6fvtJd0JK8XJ9+PBhem335fSha6+mz7jxWvqp//ZfpKtXr6bY/mM/9mPH2z771c9MN27cSHt7e2lR76OjoxS/+vDY2rqSDg72u1wO04P7D9LDB59Kj+7fS/v7e12MKV29diNduXqti+GD3Z+lw3T/3t1u+al0u0tu3uUcceQyxpXZLMJ5Zllse7szezyfP7Nvr3u+2P/848kDF/vGHOPk/NYJECBAgAABAgQIEDgpkLrrsXeeX+ou9m//y5+eXvnin5ve9yU/J137l250Fy7zdLh/1F3sP734uv9PP5Ye/NjddPDgMKXuWmp+eJQeffxRevL2/vEouYwRwcSF/P13Lu4Xz2Pb4mI/1mOJRkAscZEYxy0eYz32Tz1GXND/xOt30md+8OUUF/WL53e/+1uPt8XzuKCNYyLmuOiPZsFv/NVfeLw/tsUxsX/qMe596kYXzuV09VrXBtjvLioPr6RHb19Jl68dprufupaePE7p0m53sfx2d9h8p2s27ad7d3bTS6/eS/Ojyyl+ffDyK+lTf/Dj6ZVXXkk/cf/19JOP3ojN6cqVbqw/+nZ69dVX0xuHd9PW1lb6Ge/7aWnvj91Nn/zkJ9Pjx4/Tm3/oE8fH9uGxs7uTLl+50Y172P05edLFt9X9kThKr7y/u+DvUnu8/7Cba54ePXorXYpuxzyOO+zy+VSX49NcchmjC/SZ/+IC/7SL9jgoti8u7BePsf35JZcxno/LcwIECBAgQIAAAQLNCnSJb3XL8X+z7Vna+/id9PgnP5UO7j1KO7evpcWve//sjfTm3/nBdO8Huzu29w5SdwMwbe3O0tVPu378roHFcbmMEfHEhfzP+lk/K8US6x/60IfevRMc67HE9jg2lrjYXyzxPJbYH+fHEuuLc6JhEOuxxPY4NpbF+fEYz2OJ/XF+LLG+OGfZMeJu/r3XvuD4zn5cwMfzaATE2HEhG88/47Xb8TTFYxwTF/+x/Xhj91us5zDGwcGT9Phh1znafpCu3ewaR4+30tVbj9PdT15L+492ujvpT9K9t7e7ttR+unLtYZql3TQ7utrdWb+S9g/udZmk9A8/8g/T+z7vS9N3/PbvSA/+8FvHF/6x4/Vv+ol4OL7Y/+e/+/vSR9/4sfR3fsffSeGx9ecO0uM/fu94PQ7qwyOlw/Tw/p20femwa1TspKOjg7S9fSU9fnQ/zWZb6cnDt9LB8TsE9lKape61dyuldCltXdrtzuk6Hd2zfMY4DiaddtF+a2srxRJHxMV/PMZx8XjaEvviuJPvGojzY4njY188xnHxeNoS++K4TcY4bVzbCBAgQIAAAQIECLQsELlvxW+xbF/eTkePD9KDH/h4uvP//FC6988/lY6ezNOlq5fSlQ9e6y5ynh4625qlra5ZsHNjJ738yz4n7bx0KW3tdFc4KaVcxlhcgN+5cyfFW/jjeTx2IaZYj+2xfvv27XT7nSWexwV6LLEex8VjHBvnxvN4jG2xHttjfXF+PMbzOD+WWI/j4jGOjXPjeTzGtliP7bEe5y6WeB7nxxLrsbz0+nenuGiNC/64u794u3/c+Y/9sS0e/2n6rHg4Pnax7XhD91sOY2xvXe4imaeD/ctpb28n3f7AQZof7KZLl3bS9Vv76dLsajrY6xpR9y91TaZL3Z3yvTTfutdt30oHT3ZS/IrcI5d4jEbHJ77xx48//hAX+rE8+RP347D0xh/4yeNGQTyJY+Px5BJjbGJ6eDhLW7NZery3n7bTLF3auZ7iV2yfz2fppduvdc2AB+nB/XtpNttKew/vpUd7d9Ktl1/tznuaSxybwxgRdywnL7gvd7nFEttjiQvyeIxt5935z2WMiNVCgAABAgQIECBAgMC7AscrT6/qu9Xt65fS4aPD9PY/eSM9+LEH6eDhwfFd/u2r22nn5tW0f/dJSt3N2+7QlN45662/98/So9f30tal2fHmXMaIi+e4oI6gYn2xLJ7HY1yIx/IDP/ADx02C+/fvp7goP3neyfWpxoi37i/u+McFa1zkRvyxLZa40F9s+9T3fkfsSnFObIuGQWyI53FsrE85xuHhk7TdvVa2tx+ml1660l0gH6XD/e3uTvlBOjqcp9S9jC5fvnJ8zN6jJ2n/cUrXXjpKjx6m9OTRdopfF+USx0TusQzp0UWUHj/eT7PZURfv7bS7u5UuX76c9g/2u2bFk7T34EF65QM/Lb1042aX59vdsXvp6pUbXWNjP917+06E2S1Puu3TjxF33GPpAjr+77SL/Nh2vPPEbyfPifVYFrvj+OcbBbFtsX/xePKcWI9lsS+OX3WMxbkeCRAgQIAAAQIECBA4KfB0/Z1L+e5y5k53MfLm4+6O7Px4T1zUX371Svf8KB3c30tHB0+3x87ty91pW7O091OPuv3z43cKxPYnmYwRF/J37tyJkN69w3+7u9Mf2+MxluOd3W83btxIcXEfb8mPx8V5cexiPY5fLLF9sd6dfvzfkGPERXxczMaFbyw3v+DXvXuBH3fAY4kg4rjFenwUILbFxX48xr4cxjg4OkqXb+yn+29fTXd+ap7u39lOWzv7qXsppSfdnf/t7ho/Lqpvvm8v3bx1tQt9J6X5bneRvdUd0613W3LJZXt7K926/UraSvN05XqXy7073YX+3vHzq9cvp93LV9PdN19Ps63d9Okf/jnpxs1baWt7N92/+3a6cu2lLpOUchkjgokL7Xibflx0x/O44x/bYj0uymM99sVjbIsl7vbHvliPJfblMEbEYqldYFZ7gvIjQIAAAQIECPQoMEvpndG23nlM8/3u9n7336y7Gotl58ZOuvbh96Wj/Xk6uPc4xTsBuqubtH19O73ySz8z3f5Fn5mu/bSX0pUPXElbu0//MZbLGKn7FRfq8YV/izv88dhtPr7bHxf2cbEfz2OJY+Px+SW2Tz3G4m3+ceEby62P/d3jz/pHrLEvLvLj7n48xhLbo1GwaALE8zguHuP8WKYa49L25fTk4Sxdvd69XraO0pUru+nR3a3UbU7v//Sj7u74LM271+Be1wx4+63DNJ+n9OCta2n3yqV07fZBpJByyWVrtpseP3mQLl+7ne7eeTPt7F5Ph0dP0tb2pWgJpKMu+IOj/fSgawy8/rEfTAcHh2l390q6+fIH0+Xda8e55DJGXLhHQHExH+txYb94Ho+xbbEvnscSDYJ4XBwbx8TzxXGL7fE8tsf+WI/HeB7LEGPEuJYWBLr/ObSQphwJECBAgAABAr0IzNNimHcbAPF5/624kI8t3bLV3eV//FN30+HeYdq/d3D88YDFSY8/8Xa6+uHX0u1f9DPTS5/7Wtq5uXu8K5cx4ov2Yokv3os7+7Eej3HRH+uLO/jxfLEcJ9D9Fhf93UOK42KZeozFhXxc+MYFflzcR3yxxIV/PF98xj3WY3ss8dGAxfNcxnjpfffT7rXDdPnKYRfidoqL/Zvvf9hdNM+7i+f9dP3mg/TSrSvp3huXuov+eZptHaar3baHdw+7RsCl7pz0QvNjkWPsHNMjpVnae/g4zWZb6dqVl9KtV96fti/tpO2tnXSw/yDt7T1I166+muZb+ymlrrFxeJD2Ht1Pb73xk13j4GF6+iuXMZ5GExfncZEez+JO/uL54kI9tseyOCbW47h4XCyLc+J57Fs8H3uMmN9CgAABAgQIECBAgMCxwLu/dZf6766nl3/Bh9KrX/xZ6fLtpxf03W3MdO3Dt9K8u5s5P5gfv93/8MFhevz6/bT3Lz6Z7vyDH0rzw6PjJsFilBzGuHPnTrrTLYuYFutx4
+ [ChunkWorker] Starting generation for chunk 3,4
+ [ChunkWorker] Starting generation for chunk 4,-3
+ [ChunkWorker] Starting generation for chunk 4,3
+ [ChunkWorker] Starting generation for chunk 5,0
+ [ChunkWorker] Completed generation for chunk 4,3, vertices: 6080
+ [ChunkWorker] Completed generation for chunk 3,4, vertices: 6176
+ [ChunkWorker] Completed generation for chunk 4,-3, vertices: 5700
+ [ChunkWorker] Completed generation for chunk 5,0, vertices: 6580
+ [ChunkWorker] Starting generation for chunk -5,-1
+ [ChunkWorker] Starting generation for chunk -5,1
+ [ChunkWorker] Starting generation for chunk -1,-5
+ [ChunkWorker] Starting generation for chunk -1,5
+ [ChunkWorker] Completed generation for chunk -5,-1, vertices: 1188
+ [ChunkWorker] Completed generation for chunk -5,1, vertices: 804
+ [ChunkWorker] Completed generation for chunk -1,5, vertices: 1956
+ [ChunkWorker] Completed generation for chunk -1,-5, vertices: 4296
+ [ChunkWorker] Starting generation for chunk 1,-5
+ [ChunkWorker] Starting generation for chunk 1,5
+ [ChunkWorker] Starting generation for chunk 5,-1
+ [ChunkWorker] Starting generation for chunk 5,1
+ [ChunkWorker] Completed generation for chunk 5,1, vertices: 10812
+ [ChunkWorker] Completed generation for chunk 1,5, vertices: 5424
+ [ChunkWorker] Completed generation for chunk 1,-5, vertices: 6304
+ [ChunkWorker] Completed generation for chunk 5,-1, vertices: 5028
+ [ChunkWorker] Starting generation for chunk -5,-2
+ [ChunkWorker] Starting generation for chunk -5,2
+ [ChunkWorker] Starting generation for chunk -2,-5
+ [ChunkWorker] Starting generation for chunk -2,5
+ [ChunkWorker] Completed generation for chunk -5,2, vertices: 984
+ [ChunkWorker] Completed generation for chunk -5,-2, vertices: 4944
+ [ChunkWorker] Completed generation for chunk -2,5, vertices: 2656
+ [ChunkWorker] Completed generation for chunk -2,-5, vertices: 5420
+ [ChunkWorker] Starting generation for chunk 2,-5
+ [ChunkWorker] Starting generation for chunk 2,5
+ [ChunkWorker] Starting generation for chunk 5,-2
+ [ChunkWorker] Starting generation for chunk 5,2
+ [ChunkWorker] Completed generation for chunk 2,5, vertices: 4608
+ [ChunkWorker] Completed generation for chunk 2,-5, vertices: 7480
+ [ChunkWorker] Completed generation for chunk 5,2, vertices: 9628
+ [ChunkWorker] Completed generation for chunk 5,-2, vertices: 7092
+ [ChunkWorker] Starting generation for chunk -4,-4
+ [ChunkWorker] Starting generation for chunk -4,4
+ [ChunkWorker] Starting generation for chunk 4,-4
+ [ChunkWorker] Starting generation for chunk 4,4
+ [ChunkWorker] Completed generation for chunk -4,-4, vertices: 4264
+ [ChunkWorker] Completed generation for chunk -4,4, vertices: 5080
+ [ChunkWorker] Completed generation for chunk 4,4, vertices: 5860
+ [ChunkWorker] Completed generation for chunk 4,-4, vertices: 5452
+ [ChunkWorker] Starting generation for chunk -5,-3
+ [ChunkWorker] Starting generation for chunk -5,3
+ [ChunkWorker] Starting generation for chunk -3,-5
+ [ChunkWorker] Starting generation for chunk -3,5
+ [ChunkWorker] Completed generation for chunk -5,-3, vertices: 3088
+ [ChunkWorker] Completed generation for chunk -5,3, vertices: 1012
+ [ChunkWorker] Completed generation for chunk -3,-5, vertices: 2896
+ [ChunkWorker] Completed generation for chunk -3,5, vertices: 6976
+ [ChunkWorker] Starting generation for chunk 3,-5
+ [ChunkWorker] Starting generation for chunk 3,5
+ [ChunkWorker] Starting generation for chunk 5,-3
+ [ChunkWorker] Starting generation for chunk 5,3
+ [ChunkWorker] Completed generation for chunk 3,5, vertices: 6172
+ [ChunkWorker] Completed generation for chunk 5,-3, vertices: 6360
+ [ChunkWorker] Completed generation for chunk 5,3, vertices: 7672
+ [ChunkWorker] Completed generation for chunk 3,-5, vertices: 5828
+ [ChunkWorker] Starting generation for chunk -6,0
+ [ChunkWorker] Starting generation for chunk 0,-6
+ [ChunkWorker] Starting generation for chunk 0,6
+ [ChunkWorker] Starting generation for chunk 6,0
+ [ChunkWorker] Completed generation for chunk -6,0, vertices: 936
+ [ChunkWorker] Completed generation for chunk 0,6, vertices: 2508
+ [ChunkWorker] Completed generation for chunk 0,-6, vertices: 3916
+ [ChunkWorker] Completed generation for chunk 6,0, vertices: 10468
+ [ChunkWorker] Starting generation for chunk -6,-1
+ [ChunkWorker] Starting generation for chunk -6,1
+ [ChunkWorker] Starting generation for chunk -1,-6
+ [ChunkWorker] Starting generation for chunk -1,6
+ [ChunkWorker] Completed generation for chunk -6,1, vertices: 1108
+ [ChunkWorker] Completed generation for chunk -1,6, vertices: 1404
+ [ChunkWorker] Completed generation for chunk -6,-1, vertices: 900
+ [ChunkWorker] Completed generation for chunk -1,-6, vertices: 4156
+ [ChunkWorker] Starting generation for chunk 1,-6
+ [ChunkWorker] Starting generation for chunk 1,6
+ [ChunkWorker] Starting generation for chunk 6,-1
+ [ChunkWorker] Starting generation for chunk 6,1
+ [ChunkWorker] Completed generation for chunk 1,-6, vertices: 5180
+ [ChunkWorker] Completed generation for chunk 1,6, vertices: 5340
+ [ChunkWorker] Completed generation for chunk 6,-1, vertices: 5328
+ [ChunkWorker] Completed generation for chunk 6,1, vertices: 8128
+ [ChunkWorker] Starting generation for chunk -6,-2
+ [ChunkWorker] Starting generation for chunk -6,2
+ [ChunkWorker] Starting generation for chunk -2,-6
+ [ChunkWorker] Starting generation for chunk -2,6
+ [ChunkWorker] Completed generation for chunk -6,-2, vertices: 4576
+ [ChunkWorker] Completed generation for chunk -6,2, vertices: 1024
+ [ChunkWorker] Completed generation for chunk -2,-6, vertices: 3672
+ [ChunkWorker] Completed generation for chunk -2,6, vertices: 6364
+ [ChunkWorker] Starting generation for chunk 2,-6
+ [ChunkWorker] Starting generation for chunk 2,6
+ [ChunkWorker] Starting generation for chunk 6,-2
+ [ChunkWorker] Starting generation for chunk 6,2
+ [ChunkWorker] Completed generation for chunk 2,-6, vertices: 4688
+ [ChunkWorker] Completed generation for chunk 6,2, vertices: 7816
+ [ChunkWorker] Completed generation for chunk 6,-2, vertices: 9856
+ [ChunkWorker] Completed generation for chunk 2,6, vertices: 4784
+ [ChunkWorker] Starting generation for chunk -5,-4
+ [ChunkWorker] Starting generation for chunk -5,4
+ [ChunkWorker] Starting generation for chunk -4,-5
+ [ChunkWorker] Starting generation for chunk -4,5
+ [ChunkWorker] Completed generation for chunk -5,4, vertices: 1584
+ [ChunkWorker] Completed generation for chunk -4,-5, vertices: 3992
+ [ChunkWorker] Completed generation for chunk -5,-4, vertices: 4260
+ [ChunkWorker] Completed generation for chunk -4,5, vertices: 7052
+ [ChunkWorker] Starting generation for chunk 4,-5
+ [ChunkWorker] Starting generation for chunk 4,5
+ [ChunkWorker] Starting generation for chunk 5,-4
+ [ChunkWorker] Starting generation for chunk 5,4
+ [ChunkWorker] Completed generation for chunk 5,-4, vertices: 6636
+ [ChunkWorker] Completed generation for chunk 4,-5, vertices: 5920
+ [ChunkWorker] Completed generation for chunk 5,4, vertices: 6976
+ [ChunkWorker] Completed generation for chunk 4,5, vertices: 6616
+ [ChunkWorker] Starting generation for chunk -6,-3
+ [ChunkWorker] Starting generation for chunk -6,3
+ [ChunkWorker] Starting generation for chunk -3,-6
+ [ChunkWorker] Starting generation for chunk -3,6
+ [ChunkWorker] Completed generation for chunk -6,3, vertices: 712
+ [ChunkWorker] Completed generation for chunk -6,-3, vertices: 3800
+ [ChunkWorker] Completed generation for chunk -3,6, vertices: 5132
+ [ChunkWorker] Completed generation for chunk -3,-6, vertices: 3080
+ [ChunkWorker] Starting generation for chunk 3,-6
+ [ChunkWorker] Starting generation for chunk 3,6
+ [ChunkWorker] Starting generation for chunk 6,-3
+ [ChunkWorker] Starting generation for chunk 6,3
+ [ChunkWorker] Completed generation for chunk 3,-6, vertices: 4324
+ [ChunkWorker] Completed generation for chunk 3,6, vertices: 3100
+ [ChunkWorker] Completed generation for chunk 6,3, vertices: 6752
+ [ChunkWorker] Completed generation for chunk 6,-3, vertices: 6136
+ [ChunkWorker] Starting generation for chunk -7,0
+ [ChunkWorker] Starting generation for chunk 0,-7
+ [ChunkWorker] Starting generation for chunk 0,7
+ [ChunkWorker] Starting generation for chunk 7,0
+ [ChunkWorker] Completed generation for chunk -7,0, vertices: 840
+ [ChunkWorker] Completed generation for chunk 0,-7, vertices: 3564
+ [ChunkWorker] Completed generation for chunk 7,0, vertices: 6964
+ [ChunkWorker] Completed generation for chunk 0,7, vertices: 1276
+ [ChunkWorker] Starting generation for chunk -7,-1
+ [ChunkWorker] Starting generation for chunk -7,1
+ [ChunkWorker] Starting generation for chunk -5,-5
+ [ChunkWorker] Starting generation for chunk -5,5
+ [ChunkWorker] Completed generation for chunk -7,-1, vertices: 672
+ [ChunkWorker] Completed generation for chunk -5,-5, vertices: 2340
+ [ChunkWorker] Completed generation for chunk -7,1, vertices: 832
+ [ChunkWorker] Completed generation for chunk -5,5, vertices: 3432
+ [ChunkWorker] Starting generation for chunk -1,-7
+ [ChunkWorker] Starting generation for chunk -1,7
+ [ChunkWorker] Starting generation for chunk 1,-7
+ [ChunkWorker] Starting generation for chunk 1,7
+ [ChunkWorker] Completed generation for chunk -1,-7, vertices: 5300
+ [ChunkWorker] Completed generation for chunk 1,-7, vertices: 5208
+ [ChunkWorker] Completed generation for chunk 1,7, vertices: 1276
+ [ChunkWorker] Completed generation for chunk -1,7, vertices: 5056
+ [ChunkWorker] Starting generation for chunk 5,-5
+ [ChunkWorker] Starting generation for chunk 5,5
+ [ChunkWorker] Starting generation for chunk 7,-1
+ [ChunkWorker] Starting generation for chunk 7,1
+ [ChunkWorker] Completed generation for chunk 5,-5, vertices: 7072
+ [ChunkWorker] Completed generation for chunk 7,1, vertices: 4328
+ [ChunkWorker] Completed generation for chunk 5,5, vertices: 8208
+ [ChunkWorker] Completed generation for chunk 7,-1, vertices: 8048
+ [ChunkWorker] Starting generation for chunk -6,-4
+ [ChunkWorker] Starting generation for chunk -6,4
+ [ChunkWorker] Starting generation for chunk -4,-6
+ [ChunkWorker] Starting generation for chunk -4,6
+ [ChunkWorker] Completed generation for chunk -6,4, vertices: 1068
+ [ChunkWorker] Completed generation for chunk -4,-6, vertices: 2108
+ [ChunkWorker] Completed generation for chunk -6,-4, vertices: 2568
+ [ChunkWorker] Completed generation for chunk -4,6, vertices: 6504
+ [ChunkWorker] Starting generation for chunk 4,-6
+ [ChunkWorker] Starting generation for chunk 4,6
+ [ChunkWorker] Starting generation for chunk 6,-4
+ [ChunkWorker] Starting generation for chunk 6,4
+ [ChunkWorker] Completed generation for chunk 4,-6, vertices: 4812
+ [ChunkWorker] Completed generation for chunk 4,6, vertices: 6240
+ [ChunkWorker] Completed generation for chunk 6,-4, vertices: 4864
+ [ChunkWorker] Completed generation for chunk 6,4, vertices: 5444
+ [ChunkWorker] Starting generation for chunk -7,-2
+ [ChunkWorker] Starting generation for chunk -7,2
+ [ChunkWorker] Starting generation for chunk -2,-7
+ [ChunkWorker] Starting generation for chunk -2,7
+ [ChunkWorker] Completed generation for chunk -2,7, vertices: 5460
+ [ChunkWorker] Completed generation for chunk -2,-7, vertices: 3944
+ [ChunkWorker] Completed generation for chunk -7,-2, vertices: 2900
+ [ChunkWorker] Completed generation for chunk -7,2, vertices: 744
+ [ChunkWorker] Starting generation for chunk 2,-7
+ [ChunkWorker] Starting generation for chunk 2,7
+ [ChunkWorker] Starting generation for chunk 7,-2
+ [ChunkWorker] Starting generation for chunk 7,2
+ [ChunkWorker] Completed generation for chunk 2,7, vertices: 1956
+ [ChunkWorker] Completed generation for chunk 7,-2, vertices: 7792
+ [ChunkWorker] Completed generation for chunk 7,2, vertices: 10976
+ [ChunkWorker] Completed generation for chunk 2,-7, vertices: 5452
+ [ChunkWorker] Starting generation for chunk -7,-3
+ [ChunkWorker] Starting generation for chunk -7,3
+ [ChunkWorker] Starting generation for chunk -3,-7
+ [ChunkWorker] Starting generation for chunk -3,7
+ [ChunkWorker] Completed generation for chunk -7,3, vertices: 784
+ [ChunkWorker] Completed generation for chunk -7,-3, vertices: 2988
+ [ChunkWorker] Completed generation for chunk -3,-7, vertices: 2928
+ [ChunkWorker] Completed generation for chunk -3,7, vertices: 4916
+ [ChunkWorker] Starting generation for chunk 3,-7
+ [ChunkWorker] Starting generation for chunk 3,7
+ [ChunkWorker] Starting generation for chunk 7,-3
+ [ChunkWorker] Starting generation for chunk 7,3
+ [ChunkWorker] Completed generation for chunk 3,-7, vertices: 5688
+ [ChunkWorker] Completed generation for chunk 7,-3, vertices: 7844
+ [ChunkWorker] Completed generation for chunk 7,3, vertices: 8824
+ [ChunkWorker] Completed generation for chunk 3,7, vertices: 6004
+ [ChunkWorker] Starting generation for chunk -6,-5
+ [ChunkWorker] Starting generation for chunk -6,5
+ [ChunkWorker] Starting generation for chunk -5,-6
+ [ChunkWorker] Starting generation for chunk -5,6
+ [ChunkWorker] Completed generation for chunk -6,-5, vertices: 2860
+ [ChunkWorker] Completed generation for chunk -5,-6, vertices: 2976
+ [ChunkWorker] Completed generation for chunk -5,6, vertices: 8004
+ [ChunkWorker] Completed generation for chunk -6,5, vertices: 2016
+ [ChunkWorker] Starting generation for chunk 5,-6
+ [ChunkWorker] Starting generation for chunk 5,6
+ [ChunkWorker] Starting generation for chunk 6,-5
+ [ChunkWorker] Starting generation for chunk 6,5
+ [ChunkWorker] Completed generation for chunk 5,-6, vertices: 6448
+ [ChunkWorker] Completed generation for chunk 5,6, vertices: 6552
+ [ChunkWorker] Completed generation for chunk 6,-5, vertices: 7400
+ [ChunkWorker] Completed generation for chunk 6,5, vertices: 6028
+ [ChunkWorker] Starting generation for chunk -8,0
+ [ChunkWorker] Starting generation for chunk 0,-8
+ [ChunkWorker] Starting generation for chunk 0,8
+ [ChunkWorker] Starting generation for chunk 8,0
+ [ChunkWorker] Completed generation for chunk -8,0, vertices: 780
+ [ChunkWorker] Completed generation for chunk 0,8, vertices: 1120
+ [ChunkWorker] Completed generation for chunk 0,-8, vertices: 3148
+ [ChunkWorker] Completed generation for chunk 8,0, vertices: 4204
+ [ChunkWorker] Starting generation for chunk -8,-1
+ [ChunkWorker] Starting generation for chunk -8,1
+ [ChunkWorker] Starting generation for chunk -7,-4
+ [ChunkWorker] Starting generation for chunk -7,4
+ [ChunkWorker] Completed generation for chunk -8,-1, vertices: 820
+ [ChunkWorker] Completed generation for chunk -8,1, vertices: 764
+ [ChunkWorker] Completed generation for chunk -7,4, vertices: 840
+ [ChunkWorker] Completed generation for chunk -7,-4, vertices: 2704
+ [ChunkWorker] Starting generation for chunk -4,-7
+ [ChunkWorker] Starting generation for chunk -4,7
+ [ChunkWorker] Starting generation for chunk -1,-8
+ [ChunkWorker] Starting generation for chunk -1,8
+ [ChunkWorker] Completed generation for chunk -4,-7, vertices: 2420
+ [ChunkWorker] Completed generation for chunk -1,-8, vertices: 4572
+ [ChunkWorker] Completed generation for chunk -4,7, vertices: 6512
+ [ChunkWorker] Completed generation for chunk -1,8, vertices: 8636
+ [ChunkWorker] Starting generation for chunk 1,-8
+ [ChunkWorker] Starting generation for chunk 1,8
+ [ChunkWorker] Starting generation for chunk 4,-7
+ [ChunkWorker] Starting generation for chunk 4,7
+ [ChunkWorker] Completed generation for chunk 1,8, vertices: 2424
+ [ChunkWorker] Completed generation for chunk 1,-8, vertices: 4612
+ [ChunkWorker] Completed generation for chunk 4,-7, vertices: 6032
+ [ChunkWorker] Completed generation for chunk 4,7, vertices: 7040
+ [ChunkWorker] Starting generation for chunk 7,-4
+ [ChunkWorker] Starting generation for chunk 7,4
+ [ChunkWorker] Starting generation for chunk 8,-1
+ [ChunkWorker] Starting generation for chunk 8,1
+ [ChunkWorker] Completed generation for chunk 7,4, vertices: 4680
+ [ChunkWorker] Completed generation for chunk 7,-4, vertices: 6240
+ [ChunkWorker] Completed generation for chunk 8,1, vertices: 3940
+ [ChunkWorker] Completed generation for chunk 8,-1, vertices: 6548
+ [ChunkWorker] Starting generation for chunk -8,-2
+ [ChunkWorker] Starting generation for chunk -8,2
+ [ChunkWorker] Starting generation for chunk -2,-8
+ [ChunkWorker] Starting generation for chunk -2,8
+ [ChunkWorker] Completed generation for chunk -8,2, vertices: 668
+ [ChunkWorker] Completed generation for chunk -2,8, vertices: 5428
+ [ChunkWorker] Completed generation for chunk -8,-2, vertices: 2436
+ [ChunkWorker] Completed generation for chunk -2,-8, vertices: 3876
+ [ChunkWorker] Starting generation for chunk 2,-8
+ [ChunkWorker] Starting generation for chunk 2,8
+ [ChunkWorker] Starting generation for chunk 8,-2
+ [ChunkWorker] Starting generation for chunk 8,2
+ [ChunkWorker] Completed generation for chunk 2,8, vertices: 3200
+ [ChunkWorker] Completed generation for chunk 2,-8, vertices: 5960
+ [ChunkWorker] Completed generation for chunk 8,2, vertices: 4416
+ [ChunkWorker] Completed generation for chunk 8,-2, vertices: 10860
+ [ChunkWorker] Starting generation for chunk -6,-6
+ [ChunkWorker] Starting generation for chunk -6,6
+ [ChunkWorker] Starting generation for chunk 6,-6
+ [ChunkWorker] Starting generation for chunk 6,6
+ [ChunkWorker] Completed generation for chunk -6,-6, vertices: 2388
+ [ChunkWorker] Completed generation for chunk -6,6, vertices: 9456
+ [ChunkWorker] Completed generation for chunk 6,6, vertices: 6772
+ [ChunkWorker] Completed generation for chunk 6,-6, vertices: 7372
+ [ChunkWorker] Starting generation for chunk -8,-3
+ [ChunkWorker] Starting generation for chunk -8,3
+ [ChunkWorker] Starting generation for chunk -3,-8
+ [ChunkWorker] Starting generation for chunk -3,8
+ [ChunkWorker] Completed generation for chunk -8,-3, vertices: 4096
+ [ChunkWorker] Completed generation for chunk -3,-8, vertices: 4024
+ [ChunkWorker] Completed generation for chunk -8,3, vertices: 704
+ [ChunkWorker] Completed generation for chunk -3,8, vertices: 7264
+ [ChunkWorker] Starting generation for chunk 3,-8
+ [ChunkWorker] Starting generation for chunk 3,8
+ [ChunkWorker] Starting generation for chunk 8,-3
+ [ChunkWorker] Starting generation for chunk 8,3
+ [ChunkWorker] Completed generation for chunk 3,-8, vertices: 4928
+ [ChunkWorker] Completed generation for chunk 8,-3, vertices: 6272
+ [ChunkWorker] Completed generation for chunk 3,8, vertices: 7708
+ [ChunkWorker] Completed generation for chunk 8,3, vertices: 8756
+ [ChunkWorker] Starting generation for chunk -7,-5
+ [ChunkWorker] Starting generation for chunk -7,5
+ [ChunkWorker] Starting generation for chunk -5,-7
+ [ChunkWorker] Starting generation for chunk -5,7
+ [ChunkWorker] Completed generation for chunk -7,5, vertices: 2196
+ [ChunkWorker] Completed generation for chunk -5,7, vertices: 6872
+ [ChunkWorker] Completed generation for chunk -7,-5, vertices: 2400
+ [ChunkWorker] Completed generation for chunk -5,-7, vertices: 1876
+ [ChunkWorker] Starting generation for chunk 5,-7
+ [ChunkWorker] Starting generation for chunk 5,7
+ [ChunkWorker] Starting generation for chunk 7,-5
+ [ChunkWorker] Starting generation for chunk 7,5
+ [ChunkWorker] Completed generation for chunk 5,-7, vertices: 5160
+ [ChunkWorker] Completed generation for chunk 5,7, vertices: 5092
+ [ChunkWorker] Completed generation for chunk 7,5, vertices: 6184
+ [ChunkWorker] Completed generation for chunk 7,-5, vertices: 8640
+ [ChunkWorker] Starting generation for chunk -8,-4
+ [ChunkWorker] Starting generation for chunk -8,4
+ [ChunkWorker] Starting generation for chunk -4,-8
+ [ChunkWorker] Starting generation for chunk -4,8
+ [ChunkWorker] Completed generation for chunk -8,-4, vertices: 2048
+ [ChunkWorker] Completed generation for chunk -4,-8, vertices: 2120
+ [ChunkWorker] Completed generation for chunk -4,8, vertices: 5308
+ [ChunkWorker] Completed generation for chunk -8,4, vertices: 940
+ [ChunkWorker] Starting generation for chunk 4,-8
+ [ChunkWorker] Starting generation for chunk 4,8
+ [ChunkWorker] Starting generation for chunk 8,-4
+ [ChunkWorker] Starting generation for chunk 8,4
+ [ChunkWorker] Completed generation for chunk 4,8, vertices: 6820
+ [ChunkWorker] Completed generation for chunk 4,-8, vertices: 6092
+ [ChunkWorker] Completed generation for chunk 8,-4, vertices: 5028
+ [ChunkWorker] Completed generation for chunk 8,4, vertices: 6344
+ [ChunkWorker] Starting generation for chunk -7,-6
+ [ChunkWorker] Starting generation for chunk -7,6
+ [ChunkWorker] Starting generation for chunk -6,-7
+ [ChunkWorker] Starting generation for chunk -6,7
+ [ChunkWorker] Completed generation for chunk -6,-7, vertices: 2360
+ [ChunkWorker] Completed generation for chunk -7,6, vertices: 9836
+ [ChunkWorker] Completed generation for chunk -6,7, vertices: 9072
+ [ChunkWorker] Completed generation for chunk -7,-6, vertices: 2200
+ [ChunkWorker] Starting generation for chunk 6,-7
+ [ChunkWorker] Starting generation for chunk 6,7
+ [ChunkWorker] Starting generation for chunk 7,-6
+ [ChunkWorker] Starting generation for chunk 7,6
+ [ChunkWorker] Completed generation for chunk 6,-7, vertices: 6540
+ [ChunkWorker] Completed generation for chunk 6,7, vertices: 6276
+ [ChunkWorker] Completed generation for chunk 7,6, vertices: 3532
+ [ChunkWorker] Completed generation for chunk 7,-6, vertices: 5912
+ [ChunkWorker] Starting generation for chunk -8,-5
+ [ChunkWorker] Starting generation for chunk -8,5
+ [ChunkWorker] Starting generation for chunk -5,-8
+ [ChunkWorker] Starting generation for chunk -5,8
+ [ChunkWorker] Completed generation for chunk -5,-8, vertices: 2124
+ [ChunkWorker] Completed generation for chunk -8,-5, vertices: 2484
+ [ChunkWorker] Completed generation for chunk -8,5, vertices: 3860
+ [ChunkWorker] Completed generation for chunk -5,8, vertices: 6908
+ [ChunkWorker] Starting generation for chunk 5,-8
+ [ChunkWorker] Starting generation for chunk 5,8
+ [ChunkWorker] Starting generation for chunk 8,-5
+ [ChunkWorker] Starting generation for chunk 8,5
+ [ChunkWorker] Completed generation for chunk 5,-8, vertices: 5168
+ [ChunkWorker] Completed generation for chunk 5,8, vertices: 4988
+ [ChunkWorker] Completed generation for chunk 8,-5, vertices: 6004
+ [ChunkWorker] Completed generation for chunk 8,5, vertices: 7044
+ [ChunkWorker] Starting generation for chunk -7,-7
+ [ChunkWorker] Starting generation for chunk -7,7
+ [ChunkWorker] Starting generation for chunk 7,-7
+ [ChunkWorker] Starting generation for chunk 7,7
+ [ChunkWorker] Completed generation for chunk -7,7, vertices: 4784
+ [ChunkWorker] Completed generation for chunk 7,-7, vertices: 5020
+ [ChunkWorker] Completed generation for chunk -7,-7, vertices: 1392
+ [ChunkWorker] Completed generation for chunk 7,7, vertices: 5136
+ [ChunkWorker] Starting generation for chunk -8,-6
+ [ChunkWorker] Starting generation for chunk -8,6
+ [ChunkWorker] Starting generation for chunk -6,-8
+ [ChunkWorker] Starting generation for chunk -6,8
+ [ChunkWorker] Completed generation for chunk -8,-6, vertices: 2140
+ [ChunkWorker] Completed generation for chunk -6,-8, vertices: 1816
+ [ChunkWorker] Completed generation for chunk -6,8, vertices: 5992
+ [ChunkWorker] Completed generation for chunk -8,6, vertices: 8044
+ [ChunkWorker] Starting generation for chunk 6,-8
+ [ChunkWorker] Starting generation for chunk 6,8
+ [ChunkWorker] Starting generation for chunk 8,-6
+ [ChunkWorker] Starting generation for chunk 8,6
+ [ChunkWorker] Completed generation for chunk 6,-8, vertices: 5564
+ [ChunkWorker] Completed generation for chunk 6,8, vertices: 6020
+ [ChunkWorker] Completed generation for chunk 8,-6, vertices: 4384
+ [ChunkWorker] Completed generation for chunk 8,6, vertices: 5472
+ [ChunkWorker] Starting generation for chunk -8,-7
+ [ChunkWorker] Starting generation for chunk -8,7
+ [ChunkWorker] Starting generation for chunk -7,-8
+ [ChunkWorker] Starting generation for chunk -7,8
+ [ChunkWorker] Completed generation for chunk -8,-7, vertices: 1648
+ [ChunkWorker] Completed generation for chunk -7,-8, vertices: 1520
+ [ChunkWorker] Completed generation for chunk -8,7, vertices: 9560
+ [ChunkWorker] Completed generation for chunk -7,8, vertices: 5472
+ [ChunkWorker] Starting generation for chunk 7,-8
+ [ChunkWorker] Starting generation for chunk 7,8
+ [ChunkWorker] Starting generation for chunk 8,-7
+ [ChunkWorker] Starting generation for chunk 8,7
+ [ChunkWorker] Completed generation for chunk 7,-8, vertices: 9216
+ [ChunkWorker] Completed generation for chunk 7,8, vertices: 4192
+ [ChunkWorker] Completed generation for chunk 8,-7, vertices: 3064
+ [ChunkWorker] Completed generation for chunk 8,7, vertices: 5332
+ [ChunkWorker] Starting generation for chunk -8,-8
+ [ChunkWorker] Starting generation for chunk -8,8
+ [ChunkWorker] Starting generation for chunk 8,-8
+ [ChunkWorker] Starting generation for chunk 8,8
+ [ChunkWorker] Completed generation for chunk -8,-8, vertices: 1116
+ [ChunkWorker] Completed generation for chunk 8,-8, vertices: 5688
+ [ChunkWorker] Completed generation for chunk 8,8, vertices: 6224
+ [ChunkWorker] Completed generation for chunk -8,8, vertices: 5668
+ [ChunkWorker] Starting generation for chunk -1,-9
+ [ChunkWorker] Starting generation for chunk -9,-1
+ [ChunkWorker] Starting generation for chunk -9,-2
+ [ChunkWorker] Starting generation for chunk -9,0
+ [ChunkWorker] Completed generation for chunk -9,0, vertices: 660
+ [ChunkWorker] Starting generation for chunk -2,-9
+ [ChunkWorker] Completed generation for chunk -1,-9, vertices: 2872
+ [ChunkWorker] Starting generation for chunk 0,-9
+ [ChunkWorker] Completed generation for chunk -9,-1, vertices: 836
+ [ChunkWorker] Completed generation for chunk -9,-2, vertices: 844
+ [ChunkWorker] Starting generation for chunk -9,-3
+ [ChunkWorker] Starting generation for chunk -9,1
+ [ChunkWorker] Completed generation for chunk -2,-9, vertices: 2708
+ [ChunkWorker] Completed generation for chunk 0,-9, vertices: 4648
+ [ChunkWorker] Completed generation for chunk -9,1, vertices: 744
+ [ChunkWorker] Completed generation for chunk -9,-3, vertices: 3152
+ [ChunkWorker] Starting generation for chunk -3,-9
+ [ChunkWorker] Starting generation for chunk 1,-9
+ [ChunkWorker] Starting generation for chunk -9,-4
+ [ChunkWorker] Starting generation for chunk -9,2
+ [ChunkWorker] Completed generation for chunk -3,-9, vertices: 1984
+ [ChunkWorker] Completed generation for chunk -9,2, vertices: 824
+ [ChunkWorker] Completed generation for chunk -9,-4, vertices: 1636
+ [ChunkWorker] Completed generation for chunk 1,-9, vertices: 4456
+ [ChunkWorker] Starting generation for chunk -4,-9
+ [ChunkWorker] Starting generation for chunk 2,-9
+ [ChunkWorker] Starting generation for chunk -9,-5
+ [ChunkWorker] Starting generation for chunk -9,3
+ [ChunkWorker] Completed generation for chunk -4,-9, vertices: 2816
+ [ChunkWorker] Completed generation for chunk -9,-5, vertices: 1404
+ [ChunkWorker] Completed generation for chunk 2,-9, vertices: 3324
+ [ChunkWorker] Completed generation for chunk -9,3, vertices: 1024
+ [ChunkWorker] Starting generation for chunk -5,-9
+ [ChunkWorker] Starting generation for chunk 3,-9
+ [ChunkWorker] Starting generation for chunk -9,-6
+ [ChunkWorker] Starting generation for chunk -9,4
+ [ChunkWorker] Completed generation for chunk 3,-9, vertices: 4296
+ [ChunkWorker] Completed generation for chunk -9,-6, vertices: 1728
+ [ChunkWorker] Completed generation for chunk -5,-9, vertices: 1488
+ [ChunkWorker] Completed generation for chunk -9,4, vertices: 1432
+ [ChunkWorker] Starting generation for chunk -6,-9
+ [ChunkWorker] Completed generation for chunk -6,-9, vertices: 1524
+ [ChunkWorker] Starting generation for chunk 4,-9
+ [ChunkWorker] Starting generation for chunk -9,-7
+ [ChunkWorker] Starting generation for chunk -9,5
+ [ChunkWorker] Starting generation for chunk -7,-9
+ [ChunkWorker] Completed generation for chunk 4,-9, vertices: 5580
+ [ChunkWorker] Completed generation for chunk -7,-9, vertices: 2208
+ [ChunkWorker] Completed generation for chunk -9,5, vertices: 5592
+ [ChunkWorker] Completed generation for chunk -9,-7, vertices: 1376
+ [ChunkWorker] Starting generation for chunk 5,-9
+ [ChunkWorker] Starting generation for chunk -9,-8
+ [ChunkWorker] Starting generation for chunk -9,6
+ [ChunkWorker] Starting generation for chunk -8,-9
+ [ChunkWorker] Completed generation for chunk -9,-8, vertices: 1560
+ [ChunkWorker] Completed generation for chunk 5,-9, vertices: 6200
+ [ChunkWorker] Completed generation for chunk -9,6, vertices: 5736
+ [ChunkWorker] Completed generation for chunk -8,-9, vertices: 1912
+ [ChunkWorker] Starting generation for chunk 6,-9
+ [ChunkWorker] Starting generation for chunk -9,-9
+ [ChunkWorker] Starting generation for chunk -9,7
+ [ChunkWorker] Starting generation for chunk 7,-9
+ [ChunkWorker] Completed generation for chunk -9,-9, vertices: 1520
+ [ChunkWorker] Completed generation for chunk 6,-9, vertices: 5416
+ [ChunkWorker] Completed generation for chunk 7,-9, vertices: 7116
+ [ChunkWorker] Completed generation for chunk -9,7, vertices: 8508
+ [ChunkWorker] Starting generation for chunk -1,-10
+ [ChunkWorker] Starting generation for chunk -2,-10
+ [ChunkWorker] Starting generation for chunk 0,-10
+ [ChunkWorker] Starting generation for chunk -3,-10
+ [ChunkWorker] Completed generation for chunk -2,-10, vertices: 2020
+ [ChunkWorker] Starting generation for chunk 1,-10
+ [ChunkWorker] Completed generation for chunk 0,-10, vertices: 4292
+ [ChunkWorker] Starting generation for chunk -4,-10
+ [ChunkWorker] Completed generation for chunk -3,-10, vertices: 2308
+ [ChunkWorker] Completed generation for chunk -1,-10, vertices: 3132
+ [ChunkWorker] Completed generation for chunk 1,-10, vertices: 4040
+ [ChunkWorker] Completed generation for chunk -4,-10, vertices: 3396
+ [ChunkWorker] Starting generation for chunk 2,-10
+ [ChunkWorker] Starting generation for chunk -5,-10
+ [ChunkWorker] Starting generation for chunk 3,-10
+ [ChunkWorker] Completed generation for chunk 3,-10, vertices: 5476
+ [ChunkWorker] Completed generation for chunk -5,-10, vertices: 1496
+ [ChunkWorker] Completed generation for chunk 2,-10, vertices: 4980
+ [ChunkWorker] Starting generation for chunk -6,-10
+ [ChunkWorker] Starting generation for chunk 4,-10
+ [ChunkWorker] Starting generation for chunk -7,-10
+ [ChunkWorker] Starting generation for chunk 5,-10
+ [ChunkWorker] Completed generation for chunk -6,-10, vertices: 1660
+ [ChunkWorker] Completed generation for chunk 4,-10, vertices: 4724
+ [ChunkWorker] Completed generation for chunk -7,-10, vertices: 1296
+ [ChunkWorker] Completed generation for chunk 5,-10, vertices: 5988
+ [ChunkWorker] Starting generation for chunk -8,-10
+ [ChunkWorker] Starting generation for chunk 6,-10
+ [ChunkWorker] Starting generation for chunk -9,-10
+ [ChunkWorker] Starting generation for chunk 7,-10
+ [ChunkWorker] Completed generation for chunk -8,-10, vertices: 876
+ [ChunkWorker] Completed generation for chunk -9,-10, vertices: 840
+ [ChunkWorker] Completed generation for chunk 6,-10, vertices: 5776
+ [ChunkWorker] Completed generation for chunk 7,-10, vertices: 6196
+ [ChunkWorker] Starting generation for chunk -1,7
+ [ChunkWorker] Starting generation for chunk -2,7
+ [ChunkWorker] Starting generation for chunk 0,7
+ [ChunkWorker] Starting generation for chunk -3,7
+ [ChunkWorker] Completed generation for chunk -3,7, vertices: 4916
+ [ChunkWorker] Completed generation for chunk -1,7, vertices: 5056
+ [ChunkWorker] Starting generation for chunk 1,7
+ [ChunkWorker] Starting generation for chunk -4,7
+ [ChunkWorker] Completed generation for chunk 0,7, vertices: 1276
+ [ChunkWorker] Completed generation for chunk -2,7, vertices: 5460
+ [ChunkWorker] Completed generation for chunk 1,7, vertices: 1276
+ [ChunkWorker] Completed generation for chunk -4,7, vertices: 6512
+ [ChunkWorker] Starting generation for chunk 2,7
+ [ChunkWorker] Starting generation for chunk -5,7
+ [ChunkWorker] Starting generation for chunk 3,7
+ [ChunkWorker] Starting generation for chunk -6,7
+ [ChunkWorker] Completed generation for chunk 3,7, vertices: 6004
+ [ChunkWorker] Completed generation for chunk -6,7, vertices: 9072
+ [ChunkWorker] Completed generation for chunk 2,7, vertices: 1956
+ [ChunkWorker] Completed generation for chunk -5,7, vertices: 6872
+ [ChunkWorker] Starting generation for chunk 4,7
+ [ChunkWorker] Starting generation for chunk -7,7
+ [ChunkWorker] Starting generation for chunk 5,7
+ [ChunkWorker] Starting generation for chunk -8,7
+ [ChunkWorker] Completed generation for chunk 4,7, vertices: 7040
+ [ChunkWorker] Completed generation for chunk -7,7, vertices: 4784
+ [ChunkWorker] Completed generation for chunk 5,7, vertices: 5092
+ [ChunkWorker] Completed generation for chunk -8,7, vertices: 9560
+ [ChunkWorker] Starting generation for chunk 6,7
+ [ChunkWorker] Starting generation for chunk -9,7
+ [ChunkWorker] Starting generation for chunk 7,7
+ [ChunkWorker] Completed generation for chunk 6,7, vertices: 6276
+ [ChunkWorker] Completed generation for chunk 7,7, vertices: 5136
+ [ChunkWorker] Completed generation for chunk -9,7, vertices: 8508
+ [ChunkWorker] Starting generation for chunk -10,-1
+ [ChunkWorker] Starting generation for chunk -10,-2
+ [ChunkWorker] Starting generation for chunk -10,0
+ [ChunkWorker] Starting generation for chunk -10,-3
+ [ChunkWorker] Completed generation for chunk -10,-1, vertices: 720
+ [ChunkWorker] Completed generation for chunk -10,-3, vertices: 2988
+ [ChunkWorker] Starting generation for chunk -10,1
+ [ChunkWorker] Starting generation for chunk -10,-4
+ [ChunkWorker] Completed generation for chunk -10,0, vertices: 776
+ [ChunkWorker] Completed generation for chunk -10,-2, vertices: 864
+ [ChunkWorker] Starting generation for chunk -10,2
+ [ChunkWorker] Starting generation for chunk -10,-5
+ [ChunkWorker] Completed generation for chunk -10,1, vertices: 652
+ [ChunkWorker] Completed generation for chunk -10,-4, vertices: 1900
+ [ChunkWorker] Completed generation for chunk -10,2, vertices: 672
+ [ChunkWorker] Completed generation for chunk -10,-5, vertices: 1752
+ [ChunkWorker] Starting generation for chunk -10,3
+ [ChunkWorker] Starting generation for chunk -10,-6
+ [ChunkWorker] Starting generation for chunk -10,4
+ [ChunkWorker] Starting generation for chunk -10,-7
+ [ChunkWorker] Completed generation for chunk -10,3, vertices: 888
+ [ChunkWorker] Completed generation for chunk -10,4, vertices: 4708
+ [ChunkWorker] Completed generation for chunk -10,-7, vertices: 1752
+ [ChunkWorker] Completed generation for chunk -10,-6, vertices: 1796
+ [ChunkWorker] Starting generation for chunk -10,5
+ [ChunkWorker] Starting generation for chunk -10,-8
+ [ChunkWorker] Starting generation for chunk -10,6
+ [ChunkWorker] Starting generation for chunk -10,-9
+ [ChunkWorker] Completed generation for chunk -10,5, vertices: 4744
+ [ChunkWorker] Completed generation for chunk -10,-8, vertices: 1548
+ [ChunkWorker] Completed generation for chunk -10,-9, vertices: 1020
+ [ChunkWorker] Completed generation for chunk -10,6, vertices: 5656
+ [ChunkWorker] Starting generation for chunk -10,7
+ [ChunkWorker] Completed generation for chunk -10,7, vertices: 4196
+ [ChunkWorker] Starting generation for chunk -11,-1
+ [ChunkWorker] Starting generation for chunk -11,-2
+ [ChunkWorker] Starting generation for chunk -11,0
+ [ChunkWorker] Starting generation for chunk -11,-3
+ [ChunkWorker] Completed generation for chunk -11,0, vertices: 660
+ [ChunkWorker] Completed generation for chunk -11,-1, vertices: 628
+ [ChunkWorker] Completed generation for chunk -11,-3, vertices: 1364
+ [ChunkWorker] Completed generation for chunk -11,-2, vertices: 576
+ [ChunkWorker] Starting generation for chunk -11,1
+ [ChunkWorker] Starting generation for chunk -11,-4
+ [ChunkWorker] Starting generation for chunk -11,2
+ [ChunkWorker] Starting generation for chunk -11,-5
+ [ChunkWorker] Completed generation for chunk -11,1, vertices: 604
+ [ChunkWorker] Completed generation for chunk -11,2, vertices: 824
+ [ChunkWorker] Completed generation for chunk -11,-4, vertices: 2620
+ [ChunkWorker] Completed generation for chunk -11,-5, vertices: 1960
+ [ChunkWorker] Starting generation for chunk -11,3
+ [ChunkWorker] Starting generation for chunk -11,-6
+ [ChunkWorker] Starting generation for chunk -11,4
+ [ChunkWorker] Starting generation for chunk -11,-7
+ [ChunkWorker] Completed generation for chunk -11,-6, vertices: 1276
+ [ChunkWorker] Completed generation for chunk -11,3, vertices: 3252
+ [ChunkWorker] Completed generation for chunk -11,-7, vertices: 1080
+ [ChunkWorker] Completed generation for chunk -11,4, vertices: 3804
+ [ChunkWorker] Starting generation for chunk -11,5
+ [ChunkWorker] Starting generation for chunk -11,-8
+ [ChunkWorker] Starting generation for chunk -11,6
+ [ChunkWorker] Starting generation for chunk -11,-9
+ [ChunkWorker] Completed generation for chunk -11,5, vertices: 3360
+ [ChunkWorker] Completed generation for chunk -11,6, vertices: 5112
+ [ChunkWorker] Completed generation for chunk -11,-8, vertices: 1080
+ [ChunkWorker] Completed generation for chunk -11,-9, vertices: 1384
+ [ChunkWorker] Starting generation for chunk -11,7
+ [ChunkWorker] Completed generation for chunk -11,7, vertices: 2420
+ [ChunkWorker] Starting generation for chunk 6,-1
+ [ChunkWorker] Starting generation for chunk 6,-2
+ [ChunkWorker] Starting generation for chunk 6,0
+ [ChunkWorker] Starting generation for chunk 6,-3
+ [ChunkWorker] Completed generation for chunk 6,-3, vertices: 6136
+ [ChunkWorker] Starting generation for chunk 6,1
+ [ChunkWorker] Completed generation for chunk 6,-2, vertices: 9856
+ [ChunkWorker] Starting generation for chunk 6,-4
+ [ChunkWorker] Completed generation for chunk 6,-1, vertices: 5328
+ [ChunkWorker] Starting generation for chunk 6,2
+ [ChunkWorker] Completed generation for chunk 6,0, vertices: 10468
+ [ChunkWorker] Starting generation for chunk 6,-5
+ [ChunkWorker] Completed generation for chunk 6,1, vertices: 8128
+ [ChunkWorker] Completed generation for chunk 6,-4, vertices: 4864
+ [ChunkWorker] Completed generation for chunk 6,2, vertices: 7816
+ [ChunkWorker] Completed generation for chunk 6,-5, vertices: 7400
+ [ChunkWorker] Starting generation for chunk 6,3
+ [ChunkWorker] Starting generation for chunk 6,-6
+ [ChunkWorker] Starting generation for chunk 6,4
+ [ChunkWorker] Starting generation for chunk 6,-7
+ [ChunkWorker] Completed generation for chunk 6,3, vertices: 6752
+ [ChunkWorker] Completed generation for chunk 6,4, vertices: 5444
+ [ChunkWorker] Completed generation for chunk 6,-6, vertices: 7372
+ [ChunkWorker] Completed generation for chunk 6,-7, vertices: 6540
+ [ChunkWorker] Starting generation for chunk 6,5
+ [ChunkWorker] Starting generation for chunk 6,-8
+ [ChunkWorker] Starting generation for chunk 6,6
+ [ChunkWorker] Starting generation for chunk 6,-9
+ [ChunkWorker] Completed generation for chunk 6,5, vertices: 6028
+ [ChunkWorker] Completed generation for chunk 6,-8, vertices: 5564
+ [ChunkWorker] Completed generation for chunk 6,-9, vertices: 5416
+ [ChunkWorker] Completed generation for chunk 6,6, vertices: 6772
+ [ChunkWorker] Starting generation for chunk 6,7
+ [ChunkWorker] Completed generation for chunk 6,7, vertices: 6276
+ [ChunkWorker] Starting generation for chunk 7,-2
+ [ChunkWorker] Starting generation for chunk 7,-1
+ [ChunkWorker] Starting generation for chunk 7,0
+ [ChunkWorker] Starting generation for chunk 7,-3
+ [ChunkWorker] Completed generation for chunk 7,0, vertices: 6964
+ [ChunkWorker] Completed generation for chunk 7,-2, vertices: 7792
+ [ChunkWorker] Starting generation for chunk 7,1
+ [ChunkWorker] Starting generation for chunk 7,-4
+ [ChunkWorker] Completed generation for chunk 7,-3, vertices: 7844
+ [ChunkWorker] Completed generation for chunk 7,-1, vertices: 8048
+ [ChunkWorker] Completed generation for chunk 7,-4, vertices: 6240
+ [ChunkWorker] Completed generation for chunk 7,1, vertices: 4328
+ [ChunkWorker] Starting generation for chunk 7,2
+ [ChunkWorker] Starting generation for chunk 7,-5
+ [ChunkWorker] Starting generation for chunk 7,3
+ [ChunkWorker] Starting generation for chunk 7,-6
+ [ChunkWorker] Completed generation for chunk 7,3, vertices: 8824
+ [ChunkWorker] Completed generation for chunk 7,-6, vertices: 5912
+ [ChunkWorker] Completed generation for chunk 7,-5, vertices: 8640
+ [ChunkWorker] Completed generation for chunk 7,2, vertices: 10976
+ [ChunkWorker] Starting generation for chunk 7,4
+ [ChunkWorker] Starting generation for chunk 7,-7
+ [ChunkWorker] Starting generation for chunk 7,5
+ [ChunkWorker] Starting generation for chunk 7,-8
+ [ChunkWorker] Completed generation for chunk 7,4, vertices: 4680
+ [ChunkWorker] Completed generation for chunk 7,-7, vertices: 5020
+ [ChunkWorker] Completed generation for chunk 7,5, vertices: 6184
+ [ChunkWorker] Completed generation for chunk 7,-8, vertices: 9216
+ [ChunkWorker] Starting generation for chunk 7,6
+ [ChunkWorker] Starting generation for chunk 7,-9
+ [ChunkWorker] Starting generation for chunk 7,7
+ [ChunkWorker] Completed generation for chunk 7,6, vertices: 3532
+ [ChunkWorker] Completed generation for chunk 7,7, vertices: 5136
+ [ChunkWorker] Completed generation for chunk 7,-9, vertices: 7116
+ [ChunkWorker] Starting generation for chunk 8,-1
+ [ChunkWorker] Starting generation for chunk 8,-2
+ [ChunkWorker] Starting generation for chunk 8,-3
+ [ChunkWorker] Starting generation for chunk 8,0
+ [ChunkWorker] Completed generation for chunk 8,-3, vertices: 6272
+ [ChunkWorker] Completed generation for chunk 8,-2, vertices: 10860
+ [ChunkWorker] Completed generation for chunk 8,0, vertices: 4204
+ [ChunkWorker] Completed generation for chunk 8,-1, vertices: 6548
+ [ChunkWorker] Starting generation for chunk 8,1
+ [ChunkWorker] Starting generation for chunk 8,-4
+ [ChunkWorker] Starting generation for chunk 8,2
+ [ChunkWorker] Starting generation for chunk 8,-5
+ [ChunkWorker] Completed generation for chunk 8,2, vertices: 4416
+ [ChunkWorker] Completed generation for chunk 8,-4, vertices: 5028
+ [ChunkWorker] Completed generation for chunk 8,-5, vertices: 6004
+ [ChunkWorker] Completed generation for chunk 8,1, vertices: 3940
+ [ChunkWorker] Starting generation for chunk 8,3
+ [ChunkWorker] Starting generation for chunk 8,-6
+ [ChunkWorker] Starting generation for chunk 8,4
+ [ChunkWorker] Starting generation for chunk 8,-7
+ [ChunkWorker] Completed generation for chunk 8,-6, vertices: 4384
+ [ChunkWorker] Completed generation for chunk 8,4, vertices: 6344
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 8,3, vertices: 8756
+ [ChunkWorker] Completed generation for chunk 8,-7, vertices: 3064
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 8,5
+ [World] Chunk 8,-6 generation completed: success
+ [ChunkWorker] Starting generation for chunk 8,-8
+ [World] Chunk 8,4 generation completed: success
+ [ChunkWorker] Starting generation for chunk 8,6
+ [World] Chunk 8,3 generation completed: success
+ [ChunkWorker] Starting generation for chunk 8,-9
+ [World] Chunk 8,-7 generation completed: success
+ Time: 08:39, isDaytime: true
+ Sun dir: [0.767, 0.642, 0.000], Moon dir: [-0.767, -0.642, 0.000]
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 8,5, vertices: 7044
+ [ChunkWorker] Completed generation for chunk 8,-8, vertices: 5688
+ [ChunkWorker] Completed generation for chunk 8,6, vertices: 5472
+ [ChunkWorker] Completed generation for chunk 8,-9, vertices: 7176
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 8,7
+ [World] Chunk 8,5 generation completed: success
+ [World] Chunk 8,-8 generation completed: success
+ [World] Chunk 8,6 generation completed: success
+ [World] Chunk 8,-9 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 8,7, vertices: 5332
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk 8,7 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Time: 08:40, isDaytime: true
+ Sun dir: [0.765, 0.643, 0.000], Moon dir: [-0.765, -0.643, 0.000]
+ Time: 08:40, isDaytime: true
+ Sun dir: [0.764, 0.646, 0.000], Moon dir: [-0.764, -0.646, 0.000]
+ Camera: 2.7, 180.0, -17.4
+ Camera rotation: -0.52, -0.38, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 08:43, isDaytime: true
+ Sun dir: [0.756, 0.654, 0.000], Moon dir: [-0.756, -0.654, 0.000]
+ Time: 08:43, isDaytime: true
+ Sun dir: [0.756, 0.654, 0.000], Moon dir: [-0.756, -0.654, 0.000]
+ Time: 08:44, isDaytime: true
+ Sun dir: [0.753, 0.658, 0.000], Moon dir: [-0.753, -0.658, 0.000]
+ [ChunkWorker] Starting generation for chunk -9,-1
+ [ChunkWorker] Starting generation for chunk -9,-2
+ [ChunkWorker] Starting generation for chunk -9,0
+ [ChunkWorker] Starting generation for chunk -9,-3
+ [ChunkWorker] Completed generation for chunk -9,0, vertices: 660
+ [ChunkWorker] Starting generation for chunk -9,1
+ [World] Chunk -9,0 generation completed: success
+ [ChunkWorker] Completed generation for chunk -9,-3, vertices: 3152
+ [ChunkWorker] Starting generation for chunk -9,-4
+ [World] Chunk -9,-3 generation completed: success
+ [ChunkWorker] Completed generation for chunk -9,-1, vertices: 836
+ [ChunkWorker] Starting generation for chunk -9,2
+ [ChunkWorker] Completed generation for chunk -9,-2, vertices: 844
+ [World] Chunk -9,-1 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-5
+ [World] Chunk -9,-2 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,1, vertices: 744
+ [ChunkWorker] Completed generation for chunk -9,-4, vertices: 1636
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,2, vertices: 824
+ [ChunkWorker] Completed generation for chunk -9,-5, vertices: 1404
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -9,3
+ [World] Chunk -9,1 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-6
+ [World] Chunk -9,-4 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,4
+ [World] Chunk -9,2 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-7
+ [World] Chunk -9,-5 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,4, vertices: 1432
+ [ChunkWorker] Completed generation for chunk -9,-6, vertices: 1728
+ [ChunkWorker] Completed generation for chunk -9,3, vertices: 1024
+ [ChunkWorker] Completed generation for chunk -9,-7, vertices: 1376
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -9,5
+ [World] Chunk -9,4 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-8
+ [World] Chunk -9,3 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,6
+ [World] Chunk -9,-6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-9
+ [World] Chunk -9,-7 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,-8, vertices: 1560
+ [ChunkWorker] Completed generation for chunk -9,5, vertices: 5592
+ [ChunkWorker] Completed generation for chunk -9,-9, vertices: 1520
+ [ChunkWorker] Completed generation for chunk -9,6, vertices: 5736
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -9,7
+ [World] Chunk -9,-8 generation completed: success
+ [World] Chunk -9,5 generation completed: success
+ [World] Chunk -9,-9 generation completed: success
+ [World] Chunk -9,6 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,7, vertices: 8508
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk -9,7 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Camera: -8.5, 180.0, -31.1
+ Camera rotation: -0.53, -0.42, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ [ChunkWorker] Starting generation for chunk -1,-10
+ [ChunkWorker] Starting generation for chunk -2,-10
+ [ChunkWorker] Starting generation for chunk 0,-10
+ [ChunkWorker] Starting generation for chunk -3,-10
+ [ChunkWorker] Completed generation for chunk -2,-10, vertices: 2020
+ [ChunkWorker] Completed generation for chunk -1,-10, vertices: 3132
+ [ChunkWorker] Starting generation for chunk 1,-10
+ [World] Chunk -2,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -4,-10
+ [World] Chunk -1,-10 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -3,-10, vertices: 2308
+ [ChunkWorker] Completed generation for chunk 0,-10, vertices: 4292
+ [ChunkWorker] Completed generation for chunk 1,-10, vertices: 4040
+ [ChunkWorker] Completed generation for chunk -4,-10, vertices: 3396
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 2,-10
+ [World] Chunk -3,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -5,-10
+ [World] Chunk 0,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk 3,-10
+ [World] Chunk 1,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -6,-10
+ [World] Chunk -4,-10 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -5,-10, vertices: 1496
+ [ChunkWorker] Completed generation for chunk 2,-10, vertices: 4980
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -6,-10, vertices: 1660
+ [ChunkWorker] Completed generation for chunk 3,-10, vertices: 5476
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 4,-10
+ [World] Chunk -5,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -7,-10
+ [World] Chunk 2,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk 5,-10
+ [World] Chunk -6,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -8,-10
+ [World] Chunk 3,-10 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -7,-10, vertices: 1296
+ [ChunkWorker] Completed generation for chunk 4,-10, vertices: 4724
+ [ChunkWorker] Completed generation for chunk -8,-10, vertices: 876
+ [ChunkWorker] Completed generation for chunk 5,-10, vertices: 5988
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 6,-10
+ [World] Chunk -7,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-10
+ [World] Chunk 4,-10 generation completed: success
+ [ChunkWorker] Starting generation for chunk 7,-10
+ [World] Chunk -8,-10 generation completed: success
+ [World] Chunk 5,-10 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 7,-10, vertices: 6196
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,-10, vertices: 840
+ [ChunkWorker] Completed generation for chunk 6,-10, vertices: 5776
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk 7,-10 generation completed: success
+ [World] Chunk -9,-10 generation completed: success
+ [World] Chunk 6,-10 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Camera: -13.0, 180.0, -50.4
+ Camera rotation: -0.53, -0.60, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 08:48, isDaytime: true
+ Sun dir: [0.742, 0.670, 0.000], Moon dir: [-0.742, -0.670, 0.000]
+ [ChunkWorker] Starting generation for chunk -2,-11
+ [ChunkWorker] Starting generation for chunk -1,-11
+ [ChunkWorker] Starting generation for chunk 0,-11
+ [ChunkWorker] Starting generation for chunk -3,-11
+ [ChunkWorker] Completed generation for chunk -3,-11, vertices: 2396
+ [ChunkWorker] Completed generation for chunk 0,-11, vertices: 3188
+ [ChunkWorker] Starting generation for chunk 1,-11
+ [ChunkWorker] Completed generation for chunk -1,-11, vertices: 2504
+ [World] Chunk -3,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk -4,-11
+ [World] Chunk 0,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 2,-11
+ [World] Chunk -1,-11 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -2,-11, vertices: 2200
+ [ChunkWorker] Completed generation for chunk -4,-11, vertices: 1488
+ [ChunkWorker] Completed generation for chunk 1,-11, vertices: 4128
+ [ChunkWorker] Completed generation for chunk 2,-11, vertices: 4196
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -5,-11
+ [World] Chunk -2,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 3,-11
+ [World] Chunk -4,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk -6,-11
+ [World] Chunk 1,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 4,-11
+ [World] Chunk 2,-11 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 3,-11, vertices: 3520
+ [ChunkWorker] Completed generation for chunk -6,-11, vertices: 1176
+ [ChunkWorker] Completed generation for chunk 4,-11, vertices: 3340
+ [ChunkWorker] Completed generation for chunk -5,-11, vertices: 1444
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -7,-11
+ [World] Chunk -6,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 5,-11
+ [World] Chunk 3,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk -8,-11
+ [World] Chunk 4,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 6,-11
+ [World] Chunk -5,-11 generation completed: success
+ [ChunkWorker] Completed generation for chunk -7,-11, vertices: 948
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -8,-11, vertices: 680
+ [ChunkWorker] Completed generation for chunk 5,-11, vertices: 4580
+ [ChunkWorker] Completed generation for chunk 6,-11, vertices: 4980
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -9,-11
+ [World] Chunk -7,-11 generation completed: success
+ [ChunkWorker] Starting generation for chunk 7,-11
+ [World] Chunk -8,-11 generation completed: success
+ [World] Chunk 5,-11 generation completed: success
+ [World] Chunk 6,-11 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -9,-11, vertices: 872
+ [ChunkWorker] Completed generation for chunk 7,-11, vertices: 4260
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Time: 08:49, isDaytime: true
+ Sun dir: [0.739, 0.673, 0.000], Moon dir: [-0.739, -0.673, 0.000]
+ [World] Chunk -9,-11 generation completed: success
+ [World] Chunk 7,-11 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -1,-12
+ [ChunkWorker] Starting generation for chunk -2,-12
+ [ChunkWorker] Starting generation for chunk 0,-12
+ [ChunkWorker] Starting generation for chunk -3,-12
+ [ChunkWorker] Completed generation for chunk -3,-12, vertices: 1832
+ [ChunkWorker] Completed generation for chunk 0,-12, vertices: 2672
+ [ChunkWorker] Completed generation for chunk -2,-12, vertices: 2412
+ [ChunkWorker] Completed generation for chunk -1,-12, vertices: 2644
+ [ChunkWorker] Starting generation for chunk 1,-12
+ [World] Chunk -3,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -4,-12
+ [World] Chunk 0,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk 2,-12
+ [World] Chunk -2,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -5,-12
+ [World] Chunk -1,-12 generation completed: success
+ [ChunkWorker] Completed generation for chunk -4,-12, vertices: 1304
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 2,-12, vertices: 3604
+ [ChunkWorker] Completed generation for chunk -5,-12, vertices: 964
+ [ChunkWorker] Completed generation for chunk 1,-12, vertices: 2528
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 3,-12
+ [World] Chunk -4,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -6,-12
+ [World] Chunk -5,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk 4,-12
+ [World] Chunk 2,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -7,-12
+ [World] Chunk 1,-12 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -6,-12, vertices: 724
+ [ChunkWorker] Completed generation for chunk 3,-12, vertices: 3476
+ [ChunkWorker] Completed generation for chunk -7,-12, vertices: 504
+ [ChunkWorker] Completed generation for chunk 4,-12, vertices: 2664
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 5,-12
+ [World] Chunk -6,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -8,-12
+ [World] Chunk -7,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk 6,-12
+ [World] Chunk 3,-12 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,-12
+ [World] Chunk 4,-12 generation completed: success
+ [ChunkWorker] Completed generation for chunk -8,-12, vertices: 756
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 6,-12, vertices: 5052
+ [ChunkWorker] Completed generation for chunk -9,-12, vertices: 904
+ [ChunkWorker] Completed generation for chunk 5,-12, vertices: 3736
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 7,-12
+ [World] Chunk -8,-12 generation completed: success
+ [World] Chunk 6,-12 generation completed: success
+ [World] Chunk -9,-12 generation completed: success
+ [World] Chunk 5,-12 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 7,-12, vertices: 4668
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk 7,-12 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Time: 08:52, isDaytime: true
+ Sun dir: [0.731, 0.682, 0.000], Moon dir: [-0.731, -0.682, 0.000]
+ Camera: -4.4, 180.0, -102.5
+ Camera rotation: -0.58, -1.94, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 08:57, isDaytime: true
+ Sun dir: [0.714, 0.700, 0.000], Moon dir: [-0.714, -0.700, 0.000]
+ Camera: -5.7, 180.0, -100.2
+ Camera rotation: -0.44, -2.07, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 09:00, isDaytime: true
+ Sun dir: [0.707, 0.707, 0.000], Moon dir: [-0.707, -0.707, 0.000]
+ [ChunkWorker] Starting generation for chunk -1,5
+ [ChunkWorker] Starting generation for chunk -2,5
+ [ChunkWorker] Starting generation for chunk 0,5
+ [ChunkWorker] Starting generation for chunk -3,5
+ [ChunkWorker] Completed generation for chunk 0,5, vertices: 1760
+ [ChunkWorker] Completed generation for chunk -1,5, vertices: 1956
+ [ChunkWorker] Starting generation for chunk 1,5
+ [ChunkWorker] Completed generation for chunk -2,5, vertices: 2656
+ [World] Chunk 0,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk -4,5
+ [World] Chunk -1,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk 2,5
+ [World] Chunk -2,5 generation completed: success
+ [ChunkWorker] Completed generation for chunk -3,5, vertices: 6976
+ [ChunkWorker] Starting generation for chunk -5,5
+ [World] Chunk -3,5 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 1,5, vertices: 5424
+ [ChunkWorker] Completed generation for chunk 2,5, vertices: 4608
+ [ChunkWorker] Completed generation for chunk -4,5, vertices: 7052
+ [ChunkWorker] Completed generation for chunk -5,5, vertices: 3432
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 3,5
+ [World] Chunk 1,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk -6,5
+ [World] Chunk 2,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk 4,5
+ [World] Chunk -4,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk -7,5
+ [World] Chunk -5,5 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -6,5, vertices: 2016
+ [ChunkWorker] Completed generation for chunk 3,5, vertices: 6172
+ [ChunkWorker] Completed generation for chunk 4,5, vertices: 6616
+ [ChunkWorker] Completed generation for chunk -7,5, vertices: 2196
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 5,5
+ [World] Chunk -6,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk -8,5
+ [World] Chunk 3,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk 6,5
+ [World] Chunk 4,5 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,5
+ [World] Chunk -7,5 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -8,5, vertices: 3860
+ [ChunkWorker] Completed generation for chunk -9,5, vertices: 5592
+ [ChunkWorker] Completed generation for chunk 6,5, vertices: 6028
+ [ChunkWorker] Completed generation for chunk 5,5, vertices: 8208
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=4, blockId=water, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 7,5
+ [World] Chunk -8,5 generation completed: success
+ [World] Chunk -9,5 generation completed: success
+ [World] Chunk 6,5 generation completed: success
+ [World] Chunk 5,5 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 7,5, vertices: 6184
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk 7,5 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk -1,6
+ [ChunkWorker] Starting generation for chunk -2,6
+ [ChunkWorker] Starting generation for chunk 0,6
+ [ChunkWorker] Starting generation for chunk -3,6
+ [ChunkWorker] Completed generation for chunk -1,6, vertices: 1404
+ [ChunkWorker] Starting generation for chunk 1,6
+ [World] Chunk -1,6 generation completed: success
+ [ChunkWorker] Completed generation for chunk 0,6, vertices: 2508
+ [ChunkWorker] Starting generation for chunk -4,6
+ [World] Chunk 0,6 generation completed: success
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -2,6, vertices: 6364
+ [ChunkWorker] Completed generation for chunk -3,6, vertices: 5132
+ [ChunkWorker] Completed generation for chunk 1,6, vertices: 5340
+ [ChunkWorker] Completed generation for chunk -4,6, vertices: 6504
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 2,6
+ [World] Chunk -3,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -5,6
+ [World] Chunk -2,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk 3,6
+ [World] Chunk 1,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -6,6
+ [World] Chunk -4,6 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk -5,6, vertices: 8004
+ [ChunkWorker] Completed generation for chunk 2,6, vertices: 4784
+ [ChunkWorker] Completed generation for chunk -6,6, vertices: 9456
+ [ChunkWorker] Completed generation for chunk 3,6, vertices: 3100
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 4,6
+ [World] Chunk -5,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -7,6
+ [World] Chunk 2,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk 5,6
+ [World] Chunk -6,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -8,6
+ [World] Chunk 3,6 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 4,6, vertices: 6240
+ [ChunkWorker] Completed generation for chunk 5,6, vertices: 6552
+ [ChunkWorker] Completed generation for chunk -7,6, vertices: 9836
+ [ChunkWorker] Completed generation for chunk -8,6, vertices: 8044
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [ChunkWorker] Starting generation for chunk 6,6
+ [World] Chunk 4,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk -9,6
+ [World] Chunk 5,6 generation completed: success
+ [ChunkWorker] Starting generation for chunk 7,6
+ [World] Chunk -7,6 generation completed: success
+ [World] Chunk -8,6 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ [ChunkWorker] Completed generation for chunk 6,6, vertices: 6772
+ [ChunkWorker] Completed generation for chunk 7,6, vertices: 3532
+ [ChunkWorker] Completed generation for chunk -9,6, vertices: 5736
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ [World] Chunk 6,6 generation completed: success
+ [World] Chunk 7,6 generation completed: success
+ [World] Chunk -9,6 generation completed: success
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Block face: blockIndex=2, blockId=dirt, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=1, blockId=stone, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Block face: blockIndex=3, blockId=grass, textureIndex=0, faceType=1
+ Creating material with atlas texture: EXISTS
+ Atlas texture details: Object
+ Camera: -11.8, 180.0, -42.4
+ Camera rotation: -0.43, -1.58, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -11.7, 180.0, -41.4
+ Camera rotation: -0.43, -1.52, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 09:06, isDaytime: true
+ Sun dir: [0.688, 0.725, 0.000], Moon dir: [-0.688, -0.725, 0.000]
+ Time: 09:06, isDaytime: true
+ Sun dir: [0.688, 0.726, 0.000], Moon dir: [-0.688, -0.726, 0.000]
+ Camera: -9.3, 180.0, -40.2
+ Camera rotation: -0.54, -1.53, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 09:07, isDaytime: true
+ Sun dir: [0.683, 0.730, 0.000], Moon dir: [-0.683, -0.730, 0.000]
+ Time: 09:10, isDaytime: true
+ Sun dir: [0.675, 0.737, 0.000], Moon dir: [-0.675, -0.737, 0.000]
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 09:13, isDaytime: true
+ Sun dir: [0.664, 0.747, 0.000], Moon dir: [-0.664, -0.747, 0.000]
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Camera: -7.6, 180.0, -40.3
+ Camera rotation: -0.56, -1.55, 0.00
+ Visible chunks: 289
+ Sample chunks: (0,0), (-1,0), (0,-1)
+ Time: 09:22, isDaytime: true
+ Sun dir: [0.636, 0.772, 0.000], Moon dir: [-0.636, -0.772, 0.000]
+main.js:425 Time: 09:22, isDaytime: true
+main.js:426 Sun dir: [0.633, 0.774, 0.000], Moon dir: [-0.633, -0.774, 0.000]
+main.js:425 Time: 09:23, isDaytime: true
+main.js:426 Sun dir: [0.629, 0.777, 0.000], Moon dir: [-0.629, -0.777, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:26, isDaytime: true
+main.js:426 Sun dir: [0.621, 0.784, 0.000], Moon dir: [-0.621, -0.784, 0.000]
+main.js:425 Time: 09:28, isDaytime: true
+main.js:426 Sun dir: [0.614, 0.789, 0.000], Moon dir: [-0.614, -0.789, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:32, isDaytime: true
+main.js:426 Sun dir: [0.600, 0.800, 0.000], Moon dir: [-0.600, -0.800, 0.000]
+main.js:425 Time: 09:32, isDaytime: true
+main.js:426 Sun dir: [0.598, 0.801, 0.000], Moon dir: [-0.598, -0.801, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:37, isDaytime: true
+main.js:426 Sun dir: [0.582, 0.813, 0.000], Moon dir: [-0.582, -0.813, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:38, isDaytime: true
+main.js:426 Sun dir: [0.580, 0.815, 0.000], Moon dir: [-0.580, -0.815, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:49, isDaytime: true
+main.js:426 Sun dir: [0.537, 0.843, 0.000], Moon dir: [-0.537, -0.843, 0.000]
+main.js:425 Time: 09:50, isDaytime: true
+main.js:426 Sun dir: [0.537, 0.844, 0.000], Moon dir: [-0.537, -0.844, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 09:58, isDaytime: true
+main.js:426 Sun dir: [0.505, 0.863, 0.000], Moon dir: [-0.505, -0.863, 0.000]
+main.js:425 Time: 09:59, isDaytime: true
+main.js:426 Sun dir: [0.503, 0.864, 0.000], Moon dir: [-0.503, -0.864, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 10:01, isDaytime: true
+main.js:426 Sun dir: [0.493, 0.870, 0.000], Moon dir: [-0.493, -0.870, 0.000]
+main.js:425 Time: 10:03, isDaytime: true
+main.js:426 Sun dir: [0.488, 0.873, 0.000], Moon dir: [-0.488, -0.873, 0.000]
+main.js:425 Time: 10:03, isDaytime: true
+main.js:426 Sun dir: [0.487, 0.874, 0.000], Moon dir: [-0.487, -0.874, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 10:11, isDaytime: true
+main.js:426 Sun dir: [0.454, 0.891, 0.000], Moon dir: [-0.454, -0.891, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 10:15, isDaytime: true
+main.js:426 Sun dir: [0.440, 0.898, 0.000], Moon dir: [-0.440, -0.898, 0.000]
+main.js:425 Time: 10:16, isDaytime: true
+main.js:426 Sun dir: [0.436, 0.900, 0.000], Moon dir: [-0.436, -0.900, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 10:20, isDaytime: true
+main.js:426 Sun dir: [0.420, 0.907, 0.000], Moon dir: [-0.420, -0.907, 0.000]
+main.js:425 Time: 10:22, isDaytime: true
+main.js:426 Sun dir: [0.413, 0.911, 0.000], Moon dir: [-0.413, -0.911, 0.000]
+main.js:425 Time: 10:22, isDaytime: true
+main.js:426 Sun dir: [0.413, 0.911, 0.000], Moon dir: [-0.413, -0.911, 0.000]
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)
+main.js:425 Time: 10:31, isDaytime: true
+main.js:426 Sun dir: [0.376, 0.926, 0.000], Moon dir: [-0.376, -0.926, 0.000]
+main.js:425 Time: 10:32, isDaytime: true
+main.js:426 Sun dir: [0.372, 0.928, 0.000], Moon dir: [-0.372, -0.928, 0.000]
+115 log entries are not shown.
+main.js:651 Camera: -7.6, 180.0, -40.3
+main.js:652 Camera rotation: -0.56, -1.55, 0.00
+main.js:653 Visible chunks: 289
+main.js:658 Sample chunks: (0,0), (-1,0), (0,-1)

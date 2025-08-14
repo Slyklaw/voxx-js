@@ -155,7 +155,7 @@ export class Chunk {
     this.hasVoxelData = true;
   }
 
-  generateMeshData() {
+  generateMeshData(textureSystem = null) {
     const positions = [];
     const normals = [];
     const colors = [];
@@ -163,6 +163,7 @@ export class Chunk {
     const indices = [];
     const blockTypes = []; // Add block type attribute
     const faceTypes = []; // Add face type attribute (0=top, 1=sides, 2=bottom)
+    const textureBounds = []; // Add texture bounds attribute (u1, v1, u2, v2)
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
 
@@ -253,30 +254,82 @@ export class Chunk {
               
               normals.push(...normal, ...normal, ...normal, ...normal);
 
-              // Get block color and type
+              // Get block color and type information
               const blockIndex = Math.abs(val);
               const blockColor = getBlockColor(blockIndex);
+              
+              // Determine face type based on normal direction
+              let faceTypeValue;
+              if (d === 1) { // Y axis
+                if (normal[1] > 0) {
+                  faceTypeValue = 0; // Top face
+                } else {
+                  faceTypeValue = 2; // Bottom face
+                }
+              } else {
+                faceTypeValue = 1; // Side faces (X or Z axis)
+              }
+              
+              // Get texture index directly from texture system
+              const blockIdMap = ['air', 'stone', 'dirt', 'grass', 'water', 'snow'];
+              const blockId = blockIdMap[blockIndex] || 'air';
+              
+              let textureIndex = 0; // Default to fallback texture
+              if (textureSystem && textureSystem.textureMapping) {
+                const faceTypeName = faceTypeValue === 0 ? 'top' : faceTypeValue === 1 ? 'sides' : 'bottom';
+                textureIndex = textureSystem.textureMapping.get(`${blockId}_${faceTypeName}`) || 0;
+              }
+              
+              // Debug logging for first few faces
+              if (positions.length < 50) { // Only log first few faces to avoid spam
+                console.log(`Block face: blockIndex=${blockIndex}, blockId=${blockId}, textureIndex=${textureIndex}, faceType=${faceTypeValue}`);
+              }
+              
               for (let i = 0; i < 4; i++) {
                 colors.push(blockColor.r, blockColor.g, blockColor.b);
-                blockTypes.push(blockIndex); // Store block type for each vertex
-                faceTypes.push(faceType); // Store face type for each vertex
+                blockTypes.push(blockIndex); // Pass block index as blockType
+                faceTypes.push(faceTypeValue);
               }
 
-              // Add UV coordinates for texture mapping
-              if (blockIndex !== BLOCK_TYPES.AIR) {
-                // For all solid blocks, create proper UV coordinates for texture tiling
-                // This ensures textures repeat correctly across greedy mesh quads
-                uvs.push(
-                  0, 0,    // v1 - bottom-left
-                  w, 0,    // v2 - bottom-right (repeat w times)
-                  0, h,    // v3 - top-left (repeat h times)
-                  w, h     // v4 - top-right (repeat w*h times)
-                );
-
-
+              // Add UV coordinates and texture bounds for texture atlas mapping
+              if (blockIndex !== BLOCK_TYPES.AIR && this.textureSystem) {
+                // Convert faceTypeValue to face string
+                const faceTypeString = faceTypeValue === 0 ? 'top' : faceTypeValue === 1 ? 'sides' : 'bottom';
+                
+                // Get atlas UV coordinates for this block and face
+                const atlasCoords = this.textureSystem.textureUVMapping.get(`${blockId}_${faceTypeString}`);
+                
+                if (atlasCoords) {
+                  const { u1, v1, u2, v2 } = atlasCoords;
+                  
+                  // For tiling, we pass the quad dimensions as UV coordinates
+                  // The shader will handle wrapping within the texture bounds
+                  uvs.push(
+                    0, 0,     // v1 - bottom-left (0,0 in quad space)
+                    w, 0,     // v2 - bottom-right (w,0 in quad space)
+                    0, h,     // v3 - top-left (0,h in quad space)
+                    w, h      // v4 - top-right (w,h in quad space)
+                  );
+                  
+                  // Add texture bounds for each vertex (u1, v1, u2, v2)
+                  for (let i = 0; i < 4; i++) {
+                    textureBounds.push(u1, v1, u2, v2);
+                  }
+                } else {
+                  // Fallback to simple tiled UV coordinates if texture not found
+                  uvs.push(0, 0, w, 0, 0, h, w, h);
+                  // Default texture bounds (full atlas)
+                  for (let i = 0; i < 4; i++) {
+                    textureBounds.push(0, 0, 1, 1);
+                  }
+                }
               } else {
                 // Default UVs for AIR blocks (shouldn't be rendered anyway)
                 uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
+                // Default texture bounds
+                for (let i = 0; i < 4; i++) {
+                  textureBounds.push(0, 0, 1, 1);
+                }
               }
 
               // Create indices for two triangles
@@ -305,14 +358,48 @@ export class Chunk {
       }
     }
 
+    // Ensure all arrays have valid data and proper lengths
+    const validPositions = positions.length > 0 && positions.length % 3 === 0 ? new Float32Array(positions) : new Float32Array([]);
+    const validNormals = normals.length > 0 && normals.length % 3 === 0 ? new Float32Array(normals) : new Float32Array([]);
+    const validColors = colors.length > 0 && colors.length % 3 === 0 ? new Float32Array(colors) : new Float32Array([]);
+    const validUvs = uvs.length > 0 && uvs.length % 2 === 0 ? new Float32Array(uvs) : new Float32Array([]);
+    const validIndices = indices.length > 0 ? new Uint32Array(indices) : new Uint32Array([]);
+    const validBlockTypes = blockTypes.length > 0 ? new Float32Array(blockTypes) : new Float32Array([]);
+    const validFaceTypes = faceTypes.length > 0 ? new Float32Array(faceTypes) : new Float32Array([]);
+    const validTextureBounds = textureBounds.length > 0 ? new Float32Array(textureBounds) : new Float32Array([]);
+
+    // Validate that all vertex attributes have the same vertex count
+    const vertexCount = validPositions.length / 3;
+    if (vertexCount > 0) {
+      if (validNormals.length !== vertexCount * 3 || 
+          validColors.length !== vertexCount * 3 || 
+          validUvs.length !== vertexCount * 2 ||
+          validBlockTypes.length !== vertexCount ||
+          validFaceTypes.length !== vertexCount ||
+          validTextureBounds.length !== vertexCount * 4) {
+        console.warn('Vertex attribute length mismatch in chunk mesh generation');
+        return {
+          positions: new Float32Array([]),
+          normals: new Float32Array([]),
+          colors: new Float32Array([]),
+          uvs: new Float32Array([]),
+          indices: new Uint32Array([]),
+          blockTypes: new Float32Array([]),
+          faceTypes: new Float32Array([]),
+          textureBounds: new Float32Array([])
+        };
+      }
+    }
+
     return {
-      positions: new Float32Array(positions),
-      normals: new Float32Array(normals),
-      colors: new Float32Array(colors),
-      uvs: new Float32Array(uvs),
-      indices: new Uint32Array(indices),
-      blockTypes: new Float32Array(blockTypes),
-      faceTypes: new Float32Array(faceTypes)
+      positions: validPositions,
+      normals: validNormals,
+      colors: validColors,
+      uvs: validUvs,
+      indices: validIndices,
+      blockTypes: validBlockTypes,
+      faceTypes: validFaceTypes,
+      textureBounds: validTextureBounds
     };
   }
 
@@ -324,7 +411,8 @@ export class Chunk {
       return;
     }
 
-    const meshData = this.generateMeshData();
+    // Pass texture system if available (will be set by renderer)
+    const meshData = this.generateMeshData(this.textureSystem);
 
     // For forced updates (block placement/destruction), update in place to avoid flash
     if (forceUpdate && this.mesh && this.meshReady) {
@@ -375,15 +463,32 @@ export class Chunk {
     // Store current visibility state
     const wasVisible = this.mesh.visible;
 
-    // Create new geometry
+    // Create new geometry with safety checks
     const newGeometry = new THREE.BufferGeometry();
-    newGeometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
-    newGeometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
-    newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
-    newGeometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
-    newGeometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
-    newGeometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
-    newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+    if (meshData.positions && meshData.positions.length > 0) {
+      newGeometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
+    }
+    if (meshData.normals && meshData.normals.length > 0) {
+      newGeometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
+    }
+    if (meshData.colors && meshData.colors.length > 0) {
+      newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    }
+    if (meshData.uvs && meshData.uvs.length > 0) {
+      newGeometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
+    }
+    if (meshData.blockTypes && meshData.blockTypes.length > 0) {
+      newGeometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
+    }
+    if (meshData.faceTypes && meshData.faceTypes.length > 0) {
+      newGeometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
+    }
+    if (meshData.textureBounds && meshData.textureBounds.length > 0) {
+      newGeometry.setAttribute('textureBounds', new THREE.BufferAttribute(meshData.textureBounds, 4));
+    }
+    if (meshData.indices && meshData.indices.length > 0) {
+      newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+    }
 
     // Replace geometry while keeping the mesh and material
     const oldGeometry = this.mesh.geometry;
@@ -400,7 +505,7 @@ export class Chunk {
   }
 
   _createMeshFromData(meshData) {
-    if (!meshData || meshData.positions.length === 0) {
+    if (!meshData || !meshData.positions || meshData.positions.length === 0) {
       // Empty chunk
       if (this.mesh) {
         this.mesh.geometry.dispose();
@@ -408,22 +513,40 @@ export class Chunk {
         this.mesh = null;
       }
       this.needsUpdate = false;
+      this.meshReady = false;
       return;
     }
 
     // Create geometry
     const geometry = new THREE.BufferGeometry();
 
-    // Set attributes
-    geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
-    geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
-    geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
-    geometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
-    geometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
-    geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+    // Set attributes with safety checks
+    if (meshData.positions && meshData.positions.length > 0) {
+      geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
+    }
+    if (meshData.normals && meshData.normals.length > 0) {
+      geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
+    }
+    if (meshData.colors && meshData.colors.length > 0) {
+      geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
+    }
+    if (meshData.uvs && meshData.uvs.length > 0) {
+      geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
+    }
+    if (meshData.blockTypes && meshData.blockTypes.length > 0) {
+      geometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
+    }
+    if (meshData.faceTypes && meshData.faceTypes.length > 0) {
+      geometry.setAttribute('faceType', new THREE.BufferAttribute(meshData.faceTypes, 1));
+    }
+    if (meshData.textureBounds && meshData.textureBounds.length > 0) {
+      geometry.setAttribute('textureBounds', new THREE.BufferAttribute(meshData.textureBounds, 4));
+    }
+    if (meshData.indices && meshData.indices.length > 0) {
+      geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
+    }
 
-    // Create shader material with individual block textures
+    // Create shader material with individual textures
     // Note: The renderer will set the actual texture uniforms
     const material = new THREE.ShaderMaterial({
       vertexShader: CHUNK_VERTEX_SHADER,
@@ -432,26 +555,8 @@ export class Chunk {
         lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
         lightColor: { value: new THREE.Color(0xffffff) },
         ambientColor: { value: new THREE.Color(0x404040) },
-        
-        // Individual block textures - will be set by renderer
-        airTopTexture: { value: null },
-        airSidesTexture: { value: null },
-        airBottomTexture: { value: null },
-        stoneTopTexture: { value: null },
-        stoneSidesTexture: { value: null },
-        stoneBottomTexture: { value: null },
-        dirtTopTexture: { value: null },
-        dirtSidesTexture: { value: null },
-        dirtBottomTexture: { value: null },
-        grassTopTexture: { value: null },
-        grassSidesTexture: { value: null },
-        grassBottomTexture: { value: null },
-        waterTopTexture: { value: null },
-        waterSidesTexture: { value: null },
-        waterBottomTexture: { value: null },
-        snowTopTexture: { value: null },
-        snowSidesTexture: { value: null },
-        snowBottomTexture: { value: null }
+        textureCount: { value: 1 }
+        // Individual texture uniforms will be set by renderer
       }
     });
 

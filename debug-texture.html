@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Texture System</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #info { margin-bottom: 20px; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h2>Debug Texture System</h2>
+        <p>This test shows texture indices as colors:</p>
+        <ul>
+            <li>Red: Texture index 1 (should be solid blocks)</li>
+            <li>Blue: Texture index 0 (should be air/fallback)</li>
+        </ul>
+        <div id="status">Loading...</div>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+
+    <script type="module">
+        import { Renderer } from './renderer.js';
+        import { Chunk } from './chunk.js';
+        import { pluginManager } from './plugins.js';
+        import { BLOCK_TYPES } from './blocks.js';
+
+        async function test() {
+            const statusDiv = document.getElementById('status');
+            const canvas = document.getElementById('canvas');
+
+            try {
+                // Initialize plugin manager (optional)
+                try {
+                    await pluginManager.loadPlugin('./base-blocks-plugin.js');
+                } catch (e) {
+                    console.warn('Plugin loading failed, continuing without plugins');
+                }
+
+                // Initialize renderer
+                const renderer = new Renderer();
+                await renderer.init(canvas);
+                statusDiv.textContent = 'Renderer initialized, creating test chunk...';
+
+                // Create a simple test chunk
+                const chunk = new Chunk(0, 0);
+                
+                // Fill chunk with some test blocks
+                for (let x = 0; x < 32; x++) {
+                    for (let z = 0; z < 32; z++) {
+                        for (let y = 0; y < 10; y++) {
+                            if (y < 5) {
+                                chunk.setVoxel(x, y, z, BLOCK_TYPES.STONE);
+                            } else if (y < 8) {
+                                chunk.setVoxel(x, y, z, BLOCK_TYPES.DIRT);
+                            } else {
+                                chunk.setVoxel(x, y, z, BLOCK_TYPES.GRASS);
+                            }
+                        }
+                    }
+                }
+                
+                chunk.hasVoxelData = true;
+                
+                // Generate mesh
+                chunk.updateMesh(true);
+                
+                statusDiv.textContent = 'Test chunk created, rendering...';
+
+                // Set up camera
+                const camera = {
+                    position: { x: 16, y: 15, z: 25 },
+                    rotation: { x: -0.3, y: 0, z: 0 }
+                };
+
+                // Render loop
+                function animate() {
+                    renderer.render([chunk], camera);
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+                
+                statusDiv.innerHTML = `
+                    <strong>✅ Debug test running!</strong><br>
+                    Look for red blocks (texture index 1) and blue blocks (texture index 0)<br>
+                    Check console for debugging information.
+                `;
+
+            } catch (error) {
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}<br><pre>${error.stack}</pre>`;
+                console.error('Test failed:', error);
+            }
+        }
+
+        test();
+    </script>
+</body>
+</html>
