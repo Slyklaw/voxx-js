@@ -59,6 +59,26 @@ void main() {
     
     // Wrap UV coordinates within the texture bounds for proper tiling
     vec2 localUv = fract(vUv);
+    
+    // Check face direction and apply appropriate texture rotation
+    if (abs(normal.x - 1.0) < 0.1) {
+      // East face: rotate -90 degrees
+      // -90 degree rotation matrix: [0, 1; -1, 0]
+      localUv = vec2(localUv.y, 1.0 - localUv.x);
+    } else if (abs(normal.x + 1.0) < 0.1) {
+      // West face: rotate -90 degrees
+      // -90 degree rotation matrix: [0, 1; -1, 0]
+      localUv = vec2(localUv.y, 1.0 - localUv.x);
+    } else if (abs(normal.z + 1.0) < 0.1) {
+      // South face: rotate 180 degrees
+      // 180 degree rotation: flip both u and v
+      localUv = vec2(1.0 - localUv.x, 1.0 - localUv.y);
+    } else if (abs(normal.z - 1.0) < 0.1) {
+      // North face: rotate 180 degrees
+      // 180 degree rotation: flip both u and v
+      localUv = vec2(1.0 - localUv.x, 1.0 - localUv.y);
+    }
+    
     vec2 atlasUv = vec2(
       u1 + localUv.x * uRange,
       v1 + localUv.y * vRange
