@@ -166,7 +166,7 @@ export class Engine {
      * Create view matrix for camera based on player position and rotation
      * @param {Object} playerPos - Player position {x, y, z}
      * @param {Object} playerRot - Player rotation {yaw, pitch}
-     * @returns {Float32Array} 4x4 view matrix
+     * @returns {Float32Array} 4x4 view matrix (column-major)
      */
     createViewMatrix(playerPos = { x: 0, y: 50, z: 0 }, playerRot = { yaw: 0, pitch: 0 }) {
         // Camera at player position with eye height offset
@@ -174,19 +174,23 @@ export class Engine {
         const eyeY = playerPos.y + 1.7;
         const eyeZ = playerPos.z;
         
-        // Simple rotation around Y axis (yaw only for now)
+        // Yaw rotation (looking left/right)
         const cos = Math.cos(playerRot.yaw);
         const sin = Math.sin(playerRot.yaw);
         
-        // View matrix: rotation + translation
+        // View matrix in column-major format:
+        // Column 0: Right vector
+        // Column 1: Up vector  
+        // Column 2: Forward vector
+        // Column 3: Translation (negative eye position in rotated space)
         return new Float32Array([
-            cos, 0, sin, 0,
-            0, 1, 0, 0,
-            -sin, 0, cos, 0,
-            -(cos * eyeX + sin * eyeZ), 
-            -eyeY,
-            -(-sin * eyeX + cos * eyeZ),
-            1
+            cos,  0,    -sin,   0,           // Column 0
+            0,    1,     0,     0,           // Column 1
+            sin,  0,     cos,   0,           // Column 2
+            -(cos * eyeX + sin * eyeZ),      // Column 3, x
+            -eyeY,                           // Column 3, y
+            -(-sin * eyeX + cos * eyeZ),     // Column 3, z
+            1                                // Column 3, w
         ]);
     }
     
