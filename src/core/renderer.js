@@ -11,6 +11,12 @@ export class Renderer {
         this.vertexBuffer = null;
         this.indexBuffer = null;
         
+        // Detect WebGL version
+        const versionString = gl.getParameter(gl.VERSION);
+        const match = versionString.match(/WebGL (\d+\.\d+)/);
+        this.glVersion = match ? parseFloat(match[1]) : 1;
+        this.shaderVersionPrefix = this.glVersion >= 2 ? '#version 300 es\n' : '';
+        
         // Initialize shaders and buffers
         this.initRenderer();
         
@@ -35,18 +41,26 @@ export class Renderer {
      * Create and compile vertex and fragment shaders
      */
     createShaders() {
+        // Determine shader syntax based on WebGL version
+        const isWebGL2 = this.glVersion >= 2;
+        const inKeyword = isWebGL2 ? 'in' : 'attribute';
+        const outKeyword = isWebGL2 ? 'out' : 'varying';
+        const textureFunc = isWebGL2 ? 'texture' : 'texture2D';
+        const fragColor = isWebGL2 ? 'fragColor' : 'gl_FragColor';
+        const versionPrefix = isWebGL2 ? '#version 300 es\n' : '';
+        
         // Vertex shader source
-        const vsSource = `
-            attribute vec3 aPosition;
-            attribute vec2 aTexCoord;
-            attribute vec3 aNormal;
+        const vsSource = `${versionPrefix}
+            ${inKeyword} vec3 aPosition;
+            ${inKeyword} vec2 aTexCoord;
+            ${inKeyword} vec3 aNormal;
             
             uniform mat4 uModelViewMatrix;
             uniform mat4 uProjectionMatrix;
             
-            varying vec2 vTexCoord;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+            ${outKeyword} vec2 vTexCoord;
+            ${outKeyword} vec3 vNormal;
+            ${outKeyword} vec3 vPosition;
             
             void main() {
                 gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
@@ -57,14 +71,16 @@ export class Renderer {
         `;
         
         // Fragment shader source
-        const fsSource = `
+        const fsSource = `${versionPrefix}
             precision mediump float;
             
-            varying vec2 vTexCoord;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+            ${isWebGL2 ? 'in' : 'varying'} vec2 vTexCoord;
+            ${isWebGL2 ? 'in' : 'varying'} vec3 vNormal;
+            ${isWebGL2 ? 'in' : 'varying'} vec3 vPosition;
             
             uniform sampler2D uSampler;
+            
+            ${isWebGL2 ? 'out vec4 fragColor;' : ''}
             
             void main() {
                 // Simple lighting calculation
@@ -73,12 +89,12 @@ export class Renderer {
                 vec3 lightColor = vec3(1.0, 1.0, 1.0);
                 
                 // Sample texture
-                vec4 texelColor = texture2D(uSampler, vTexCoord);
+                vec4 texelColor = ${textureFunc}(uSampler, vTexCoord);
                 
                 // Apply lighting
                 vec3 finalColor = texelColor.rgb * diff * lightColor;
                 
-                gl_FragColor = vec4(finalColor, texelColor.a);
+                ${fragColor} = vec4(finalColor, texelColor.a);
             }
         `;
         
