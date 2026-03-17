@@ -3,14 +3,17 @@
  * Handles chunk-based world storage and generation
  */
 import { CHUNK_SIZE, WORLD_SEED_DEFAULT } from './constants.js';
+import { ChunkManager } from '../chunks/chunk-manager.js';
+import { logger } from './logger.js';
+import { VoxelError } from './errors.js';
 
 export class World {
     constructor() {
-        this.chunks = new Map(); // Store chunks by coordinates
+        this.chunkManager = new ChunkManager();
         this.chunkSize = CHUNK_SIZE;
         this.worldSeed = WORLD_SEED_DEFAULT;
 
-        console.log('World system initialized');
+        logger.info('World system initialized');
     }
     
     /**
@@ -20,25 +23,17 @@ export class World {
      * @param {number} z - Chunk Z coordinate
      */
     generateChunk(x, y, z) {
-        const chunkKey = `${x},${y},${z}`;
-        
-        // Check if chunk already exists
-        if (this.chunks.has(chunkKey)) {
-            return this.chunks.get(chunkKey);
+        const existing = this.chunkManager.getChunk(x, y, z);
+        if (existing.data.some(v => v !== null)) {
+            return existing; // Already generated
         }
         
-        // Create new chunk
-        const chunk = {
-            x: x,
-            y: y,
-            z: z,
-            data: this.generateChunkData(x, y, z),
-            loaded: true
-        };
-        
-        this.chunks.set(chunkKey, chunk);
-        console.log(`Generated chunk at (${x}, ${y}, ${z})`);
-        return chunk;
+        // Generate data into chunk
+        const data = this.generateChunkData(x, y, z);
+        existing.data = data;
+        existing.markLoaded();
+        logger.debug(`Generated chunk at (${x}, ${y}, ${z})`);
+        return existing;
     }
     
     /**
@@ -146,20 +141,13 @@ export class World {
     }
     
     /**
-     * Get or generate a chunk
+     * Get or generate a chunk (delegates to ChunkManager)
      * @param {number} x - Chunk X coordinate
      * @param {number} y - Chunk Y coordinate  
      * @param {number} z - Chunk Z coordinate
      */
     getChunk(x, y, z) {
-        const chunkKey = `${x},${y},${z}`;
-        
-        if (this.chunks.has(chunkKey)) {
-            return this.chunks.get(chunkKey);
-        }
-        
-        // Generate new chunk if it doesn't exist
-        return this.generateChunk(x, y, z);
+        return this.chunkManager.getChunk(x, y, z);
     }
     
     /**
@@ -178,7 +166,7 @@ export class World {
      * Load world from storage (simplified)
      */
     loadWorld() {
-        console.log('Loading world...');
+        logger.info('Loading world...');
         // In a real implementation, this would load from IndexedDB or file
     }
     
@@ -186,7 +174,7 @@ export class World {
      * Save world to storage (simplified)
      */
     saveWorld() {
-        console.log('Saving world...');
+        logger.info('Saving world...');
         // In a real implementation, this would save to IndexedDB or file
     }
 }
