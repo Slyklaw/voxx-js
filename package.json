@@ -1,0 +1,13 @@
+{
+  "name": "voxx-js",
+  "version": "1.0.0",
+  "description": "A browser-based voxel engine (like Minecraft) built with vanilla JavaScript and WebGL",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0"
+  }
+}
