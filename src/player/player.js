@@ -272,9 +272,12 @@ export class Player {
             this.velocity.z = 0;
         }
         
-        // Apply rotation to movement direction
+        // Transform camera-space velocity to world-space
+        // Camera space: +X = right, -Z = forward (view direction)
+        // World space rotation from yaw:
         const cos = Math.cos(this.rotation.yaw);
         const sin = Math.sin(this.rotation.yaw);
+        // Rotate camera velocity to world velocity
         const finalX = this.velocity.x * cos - this.velocity.z * sin;
         const finalZ = this.velocity.x * sin + this.velocity.z * cos;
         this.velocity.x = finalX;
