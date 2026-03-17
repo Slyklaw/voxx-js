@@ -21,7 +21,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **BUG-01**: Fix non-deterministic world generation — replace Math.random with seeded RNG (simplex-noise)
 - [x] **BUG-02**: Fix diagonal movement physics normalization — ensure diagonal movement not faster than straight
-- [ ] **BUG-03**: Implement collision detection — player cannot walk through blocks or fall through floor
+- [x] **BUG-03**: Implement collision detection — player cannot walk through blocks or fall through floor
 - [x] **BUG-04**: Add input validation for voxel coordinates to prevent array index out of bounds
 
 ### Missing Features (Core)
@@ -50,7 +50,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TEST-01**: Add test framework and basic test structure
 - [x] **TEST-02**: Write tests for world generation determinism
 - [x] **TEST-03**: Write tests for chunk coordinate calculations
-- [ ] **TEST-04**: Write tests for player physics calculations
+- [x] **TEST-04**: Write tests for player physics calculations
 - [ ] **TEST-05**: Write tests for renderer matrix math
 
 ## v2 Requirements
@@ -101,7 +101,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TECH-07 | Phase 1 | Complete |
 | BUG-01 | Phase 1 | Complete |
 | BUG-02 | Phase 3 | Complete |
-| BUG-03 | Phase 3 | Pending |
+| BUG-03 | Phase 3 | Complete |
 | BUG-04 | Phase 1 | Complete |
 | FEAT-01 | Phase 4 | Pending |
 | FEAT-02 | Phase 5 | Pending |
@@ -118,7 +118,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-01 | Phase 1 | Complete |
 | TEST-02 | Phase 1 | Complete |
 | TEST-03 | Phase 1 | Complete |
-| TEST-04 | Phase 3 | Pending |
+| TEST-04 | Phase 3 | Complete |
 | TEST-05 | Phase 2 | Pending |
 
 **Coverage:**

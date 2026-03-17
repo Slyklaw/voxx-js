@@ -49,6 +49,7 @@ Progress: 40% (2/5 phases complete)
 | Phase 02-rendering P04 | 3min | 2 tasks | 2 files |
 | Phase 02-rendering P05 | 2min | 2 tasks | 1 files |
 | Phase 03-physics P01 | 1min | 2 tasks | 2 files |
+| Phase 03-physics P02 | 2min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
