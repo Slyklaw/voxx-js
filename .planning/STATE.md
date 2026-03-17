@@ -5,33 +5,35 @@
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Deliver a stable, performant voxel engine with core gameplay features (block placement, collision detection, persistence).
-**Current focus:** Foundation (Phase 1) - context gathered
+**Current focus:** Phase 2 complete - ready for Phase 3 (Physics)
 
 ## Current Position
 
-Phase: 2 of 5 (Rendering)
-Plan: 5/5
-Status: Phase 2 plans 1-4 complete
-Last activity: 2026-03-17 — Completed chunk loading optimization (02-03) and vertex pooling (02-04)
+Phase: 3 of 5 (Physics)
+Plan: 1/2
+Status: Phase 3 - plan 1/2 complete - diagonal movement normalized
+Last activity: 2026-03-17 — Completed plan 03-01: diagonal movement normalization
 
-Progress: 40%
+Progress: 40% (2/5 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 1 min
-- Total execution time: 0.17 hours
+- Total plans completed: 14 (8 Phase 1 + 5 Phase 2 + 1 Phase 3)
+- Average duration: 2 min
+- Total execution time: 0.43 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 6 | 7 | 1 min |
+| 1. Foundation | 8 | 8 | 1.5 min |
+| 2. Rendering | 5 | 5 | 2.4 min |
+| 3. Physics | 1 | 1 | 1 min |
 
 **Recent Trend:**
-- Last 5 plans: 1min, 1min, 1min, 1min, 3min
-- Trend: N/A
+- Phase 2 plans: 2min, 2min, 3min, 3min, 2min
+- Trend: Consistent ~2.5 min per plan
 
 *Updated after each plan completion*
 | Phase 01-foundation P07 | 2min | 2 tasks | 3 files |
@@ -42,10 +44,11 @@ Progress: 40%
 | Phase 01-foundation P06 | 3min | 2 tasks | 4 files |
 | Phase 01-foundation P08 | 1min | 2 tasks | 2 files |
 | Phase 02-rendering P01 | 2min | 2 tasks | 2 files |
-| Phase 02-rendering P02 | 3min | 2 tasks | 2 files |
+| Phase 02-rendering P02 | 2min | 2 tasks | 2 files |
 | Phase 02-rendering P03 | 3min | 2 tasks | 2 files |
-| Phase 02-rendering P04 | 2 | 2 tasks | 2 files |
-| Phase 02-rendering P03 | 3min | 2 tasks | 2 files |
+| Phase 02-rendering P04 | 3min | 2 tasks | 2 files |
+| Phase 02-rendering P05 | 2min | 2 tasks | 1 files |
+| Phase 03-physics P01 | 1min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -70,6 +73,9 @@ Recent decisions affecting current work:
 - [02-03]: HYSTERESIS_MARGIN = 2 chunks beyond VIEW_DISTANCE before unloading
 - [02-03]: CHUNKS_PER_FRAME = 4 to limit load per frame
 - [02-03]: MAX_POOL_SIZE = 128 to cap recycled chunk objects
+- [Phase 03-physics]: Test decision
+- [Phase 03-physics]: Use vector normalization with Math.sqrt to ensure diagonal speed equals straight speed
+- [Phase 03-physics]: Preserve yaw rotation after normalization to maintain intended direction
 
 ### Pending Todos
 
@@ -82,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-17
-Stopped at: Completed 02-04-PLAN.md - Vertex pooling
-Resume file: None (plan complete)
+Stopped at: Phase 3 plan 1 complete - diagonal movement normalized
+Resume file: None (plan 03-01 complete)

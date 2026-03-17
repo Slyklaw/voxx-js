@@ -11,7 +11,7 @@ Five phases transform the existing codebase from a prototype with technical debt
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** - Clean architecture, seeded RNG, error handling, basic tests
-- [ ] **Phase 2: Rendering** - WebGL 2.0, frustum culling, chunk loading optimization
+- [x] **Phase 2: Rendering** - WebGL 2.0, frustum culling, chunk loading optimization
 - [ ] **Phase 3: Physics** - Collision detection, player movement fixes, physics tests
 - [ ] **Phase 4: World & Interaction** - Block placement/removal, inventory, terrain generation
 - [ ] **Phase 5: Persistence** - World save/load, chunk pooling, comprehensive tests
@@ -52,7 +52,14 @@ Plans:
   3. Renderer attempts WebGL 2.0, falls back to WebGL 1.0 if unavailable
   4. Multiple chunks batched into fewer draw calls (vertex pooling active)
   5. Renderer matrix math calculations pass unit tests
-**Plans**: TBD
+**Plans**: 5 plans in 2 waves
+
+Plans:
+- [x] 02-01-PLAN.md — WebGL 2.0 with fallback (PERF-04)
+- [x] 02-02-PLAN.md — Frustum culling (PERF-01)
+- [x] 02-03-PLAN.md — Chunk loading hysteresis (PERF-03, FEAT-05)
+- [x] 02-04-PLAN.md — Vertex pooling (PERF-05)
+- [x] 02-05-PLAN.md — Matrix math tests (TEST-05)
 
 ### Phase 3: Physics
 **Goal**: Implement accurate collision detection and fix player movement physics
@@ -97,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 8/8 | Complete | 2026-03-17 |
-| 2. Rendering | 4/5 | In Progress|  |
+| 2. Rendering | 5/5 | Complete | 2026-03-17 |
 | 3. Physics | 0/TBD | Not started | - |
 | 4. World & Interaction | 0/TBD | Not started | - |
 | 5. Persistence | 0/TBD | Not started | - |
