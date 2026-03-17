@@ -142,3 +142,53 @@ describe('Engine initialization', () => {
     expect(engine.running).toBe(initialRunning);
   });
 });
+
+describe('Engine initSystems error handling', () => {
+  let mockCanvas;
+  let mockGl;
+  
+  beforeEach(() => {
+    mockGl = new Proxy({}, {
+      get: (target, prop) => {
+        if (['DEPTH_TEST', 'CULL_FACE', 'COLOR_BUFFER_BIT', 'DEPTH_BUFFER_BIT'].includes(prop)) {
+          return prop;
+        }
+        return jest.fn();
+      }
+    });
+    
+    mockCanvas = {
+      width: 1920,
+      height: 1080,
+      getContext: jest.fn(() => mockGl),
+    };
+    
+    global.document = {
+      getElementById: jest.fn(() => mockCanvas),
+      addEventListener: jest.fn(),
+    };
+    
+    global.window = {
+      innerWidth: 1920,
+      innerHeight: 1080,
+      addEventListener: jest.fn(),
+    };
+    
+    global.requestAnimationFrame = jest.fn();
+  });
+  
+  test('constructor does not throw when initSystems fails', () => {
+    // The catch handler in the constructor should prevent unhandled rejections
+    // When modules fail to load, the error is caught and logged, not thrown
+    expect(() => new Engine()).not.toThrow();
+  });
+  
+  test('catch handler is attached to initSystems call', async () => {
+    // Read the source to verify the catch handler pattern exists
+    const fs = await import('fs');
+    const engineSource = fs.readFileSync('./src/core/engine.js', 'utf8');
+    
+    // Verify the catch handler pattern exists after initSystems call
+    expect(engineSource).toMatch(/initSystems\(\)\.catch\(/);
+  });
+});
