@@ -92,11 +92,14 @@ export class Engine {
 
             if (playerModule.status === 'fulfilled') {
                 this.player = new playerModule.value.Player();
+                // Enable fly camera for debugging
+                this.player.flyMode = true;
+                this.player.velocity.y = 0;
                 
                 // Spawn player above terrain surface at origin
                 if (this.world) {
                     const terrainHeight = this.world.getTerrainHeight(0, 0);
-                    const spawnY = terrainHeight + 1;
+                    const spawnY = terrainHeight + 5;
                     this.player.setPosition(0, spawnY, 0);
                     logger.info(`Player spawned at y=${spawnY} (terrain at y=${terrainHeight})`);
                 }

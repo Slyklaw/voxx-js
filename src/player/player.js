@@ -36,6 +36,9 @@ export class Player {
         this.collisionWidth = 0.3;  // Half of player width (0.6 total)
         this.collisionHeight = 0.9; // Half of player height (1.8 total)
 
+        // Fly mode (no collision, no gravity, space/up, shift/down)
+        this.flyMode = false;
+
         // Camera settings
         this.walkSpeed = WALK_SPEED;
         this.jumpStrength = JUMP_STRENGTH;
@@ -84,7 +87,7 @@ export class Player {
                 this.movement.right = true;
                 break;
             case ' ':
-                if (this.onGround) {
+                if (this.onGround || this.flyMode) {
                     this.movement.jump = true;
                 }
                 break;
@@ -170,6 +173,21 @@ export class Player {
      * @param {Object} chunkManager - Optional chunk manager for collision detection
      */
     update(deltaTime, chunkManager) {
+        // Fly mode: no gravity, no collision, space/up shift/down
+        if (this.flyMode) {
+            // Handle movement input (sets velocity including vertical)
+            this.handleMovement(deltaTime);
+            // Update position directly
+            this.position.x += this.velocity.x * deltaTime;
+            this.position.y += this.velocity.y * deltaTime;
+            this.position.z += this.velocity.z * deltaTime;
+            // Keep onGround false
+            this.onGround = false;
+            // Do NOT reset jump/sneak flags; they are cleared by keyup events
+            return;
+        }
+
+        // Normal mode: original physics
         // Handle jumping
         if (this.movement.jump && this.onGround) {
             this.jump();
@@ -280,12 +298,25 @@ export class Player {
         const finalZ = -this.velocity.x * sin + this.velocity.z * cos;
         this.velocity.x = finalX || 0;
         this.velocity.z = finalZ || 0;
+        
+        // Fly mode vertical movement
+        if (this.flyMode) {
+            if (this.movement.jump) {
+                this.velocity.y = moveSpeed;
+            } else if (this.movement.sneak) {
+                this.velocity.y = -moveSpeed;
+            } else {
+                this.velocity.y = 0;
+            }
+        }
+        // In normal mode, vertical velocity is set by physics (jump/gravity)
     }
     
     /**
      * Make the player jump
      */
     jump() {
+        if (this.flyMode) return;
         this.velocity.y = this.jumpStrength;
         this.onGround = false;
     }
