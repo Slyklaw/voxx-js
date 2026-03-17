@@ -135,28 +135,103 @@ export class Player {
     }
     
     /**
+     * Check if a position collides with solid voxels
+     * Tests all 8 corners of the player bounding box
+     * @param {number} newX - X position to check
+     * @param {number} newY - Y position to check (feet)
+     * @param {number} newZ - Z position to check
+     * @param {Object} chunkManager - Chunk manager for voxel queries
+     * @returns {boolean} True if collision detected
+     */
+    checkCollision(newX, newY, newZ, chunkManager) {
+        // Check all 8 corners of player bounding box
+        const corners = [
+            [newX - this.collisionWidth, newY, newZ - this.collisionWidth],
+            [newX + this.collisionWidth, newY, newZ - this.collisionWidth],
+            [newX - this.collisionWidth, newY, newZ + this.collisionWidth],
+            [newX + this.collisionWidth, newY, newZ + this.collisionWidth],
+            [newX - this.collisionWidth, newY + this.collisionHeight * 2, newZ - this.collisionWidth],
+            [newX + this.collisionWidth, newY + this.collisionHeight * 2, newZ - this.collisionWidth],
+            [newX - this.collisionWidth, newY + this.collisionHeight * 2, newZ + this.collisionWidth],
+            [newX + this.collisionWidth, newY + this.collisionHeight * 2, newZ + this.collisionWidth],
+        ];
+
+        for (const [cx, cy, cz] of corners) {
+            if (this.isPositionSolid(cx, cy, cz, chunkManager)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Update player state
      * @param {number} deltaTime - Time elapsed since last update in seconds
+     * @param {Object} chunkManager - Optional chunk manager for collision detection
      */
-    update(deltaTime) {
+    update(deltaTime, chunkManager) {
         // Handle jumping
         if (this.movement.jump && this.onGround) {
             this.jump();
         }
-        
-        // Apply gravity
+
+        // Apply gravity when not on ground
         if (!this.onGround) {
             this.velocity.y -= this.gravity * deltaTime;
         }
-        
-        // Update position based on velocity
-        this.position.x += this.velocity.x * deltaTime;
-        this.position.y += this.velocity.y * deltaTime;
-        this.position.z += this.velocity.z * deltaTime;
-        
-        // Handle movement input
+
+        // Handle movement input (sets horizontal velocity)
         this.handleMovement(deltaTime);
-        
+
+        // Calculate new position
+        let newX = this.position.x + this.velocity.x * deltaTime;
+        let newY = this.position.y + this.velocity.y * deltaTime;
+        let newZ = this.position.z + this.velocity.z * deltaTime;
+
+        // Collision detection and response
+        if (chunkManager) {
+            // Try X movement
+            if (!this.checkCollision(newX, this.position.y, this.position.z, chunkManager)) {
+                this.position.x = newX;
+            } else {
+                this.velocity.x = 0;
+            }
+
+            // Try Y movement (vertical)
+            if (!this.checkCollision(this.position.x, newY, this.position.z, chunkManager)) {
+                this.position.y = newY;
+                this.onGround = false;
+            } else {
+                // If moving down, we hit ground
+                if (this.velocity.y < 0) {
+                    this.onGround = true;
+                    // Snap to top of block
+                    this.position.y = Math.floor(this.position.y) + 1;
+                }
+                this.velocity.y = 0;
+            }
+
+            // Try Z movement
+            if (!this.checkCollision(this.position.x, this.position.y, newZ, chunkManager)) {
+                this.position.z = newZ;
+            } else {
+                this.velocity.z = 0;
+            }
+        } else {
+            // No chunk manager - just update position (for testing)
+            this.position.x = newX;
+            this.position.y = newY;
+            this.position.z = newZ;
+        }
+
+        // Check if standing on ground
+        if (this.velocity.y === 0 && this.onGround) {
+            // Verify still on ground
+            if (chunkManager && !this.checkCollision(this.position.x, this.position.y - 0.1, this.position.z, chunkManager)) {
+                this.onGround = false;
+            }
+        }
+
         // Reset jump flag after processing
         this.movement.jump = false;
     }
