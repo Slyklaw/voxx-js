@@ -126,7 +126,7 @@ export class Player {
     handleMouseMove(event) {
         // Only process if the game is focused and mouse is captured
         if (document.pointerLockElement === document.getElementById('gameCanvas')) {
-            this.rotation.yaw -= event.movementX * this.mouseSensitivity;
+            this.rotation.yaw += event.movementX * this.mouseSensitivity;
             this.rotation.pitch -= event.movementY * this.mouseSensitivity;
             
             // Clamp pitch to avoid flipping
