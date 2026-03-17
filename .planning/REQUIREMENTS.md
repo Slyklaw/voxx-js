@@ -38,7 +38,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **PERF-02**: Implement chunk object pooling to reduce memory allocations
 - [ ] **PERF-03**: Add chunk loading hysteresis and distance threshold
 - [x] **PERF-04**: Upgrade to WebGL 2.0 with WebGL 1.0 fallback
-- [ ] **PERF-05**: Implement vertex pooling to reduce draw calls (avoid naive chunk rendering)
+- [x] **PERF-05**: Implement vertex pooling to reduce draw calls (avoid naive chunk rendering)
 
 ### Security Considerations
 
@@ -112,7 +112,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-02 | Phase 5 | Pending |
 | PERF-03 | Phase 2 | Pending |
 | PERF-04 | Phase 2 | Complete |
-| PERF-05 | Phase 2 | Pending |
+| PERF-05 | Phase 2 | Complete |
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
 | TEST-01 | Phase 1 | Complete |
