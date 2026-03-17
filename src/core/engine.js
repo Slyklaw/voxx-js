@@ -92,6 +92,15 @@ export class Engine {
 
             if (playerModule.status === 'fulfilled') {
                 this.player = new playerModule.value.Player();
+                
+                // Spawn player above terrain surface at origin
+                if (this.world) {
+                    const terrainHeight = this.world.getTerrainHeight(0, 0);
+                    const spawnY = terrainHeight + 1;
+                    this.player.setPosition(0, spawnY, 0);
+                    logger.info(`Player spawned at y=${spawnY} (terrain at y=${terrainHeight})`);
+                }
+                
                 logger.info('Player system initialized');
             } else {
                 logger.error('Failed to load player module:', playerModule.reason);
@@ -144,8 +153,23 @@ export class Engine {
             // Clear the canvas
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
             
-            // Get loaded chunks from chunk manager for frustum culling
-            const chunks = this.world?.chunkManager?.getLoadedChunks() || [];
+            // MINIMAL TEST: only render the chunk the player is in
+            const pcx = Math.floor(playerPos.x / 32);
+            const pcy = Math.floor(playerPos.y / 32);
+            const pcz = Math.floor(playerPos.z / 32);
+            
+            // Force generate the player's chunk if empty
+            if (this.world) {
+                const playerChunk = this.world.getChunk(pcx, pcy, pcz);
+                if (playerChunk && !playerChunk.data.some(v => v !== null)) {
+                    const data = this.world.generateChunkData(pcx, pcy, pcz);
+                    playerChunk.data = data;
+                    playerChunk.markLoaded();
+                }
+            }
+            
+            const playerChunk = this.world?.chunkManager?.getChunk(pcx, pcy, pcz);
+            const chunks = playerChunk ? [playerChunk] : [];
             
             // Create view matrix based on player position and rotation
             const playerRot = this.player?.getRotation() || { yaw: 0, pitch: 0 };
@@ -174,24 +198,51 @@ export class Engine {
         const eyeY = playerPos.y + 1.7;
         const eyeZ = playerPos.z;
         
-        // Yaw rotation (looking left/right)
-        const cos = Math.cos(playerRot.yaw);
-        const sin = Math.sin(playerRot.yaw);
+        const yaw = playerRot.yaw;
+        const pitch = playerRot.pitch;
         
-        // View matrix in column-major format:
-        // When yaw=0: looking along -Z, Right=(1,0,0), Forward=(0,0,-1)
-        // Column 0: Right vector = (cos, 0, -sin)
-        // Column 1: Up vector = (0, 1, 0)  
-        // Column 2: Forward vector = (-sin, 0, -cos)
-        // Column 3: -dot(basis, eye) for each
+        // Yaw rotation
+        const cosYaw = Math.cos(yaw);
+        const sinYaw = Math.sin(yaw);
+        
+        // Forward after yaw (horizontal)
+        const forwardX = sinYaw;
+        const forwardY = 0;
+        const forwardZ = cosYaw;
+        
+        // Right vector = cross(worldUp, forward) where worldUp = (0,1,0)
+        const rightX = cosYaw;
+        const rightY = 0;
+        const rightZ = -sinYaw;
+        
+        // Pitch rotation around right axis
+        const cosPitch = Math.cos(pitch);
+        const sinPitch = Math.sin(pitch);
+        
+        // Rotate forward around right axis (positive pitch = look up)
+        // Using rotation formula: v_rot = v * cosPitch - (a × v) * sinPitch
+        // where a = right axis, v = forward after yaw
+        // cross(right, forward) = (0, -1, 0) independent of yaw
+        const finalForwardX = forwardX * cosPitch;
+        const finalForwardY = sinPitch;  // since forwardY = 0, crossY = -1, minus sign gives +sinPitch
+        const finalForwardZ = forwardZ * cosPitch;
+        
+        // Up vector = cross(finalForward, right) (ensures no roll)
+        const upX = finalForwardY * rightZ - finalForwardZ * rightY;
+        const upY = finalForwardZ * rightX - finalForwardX * rightZ;
+        const upZ = finalForwardX * rightY - finalForwardY * rightX;
+        
+        // Translation components
+        const transX = -(rightX * eyeX + rightY * eyeY + rightZ * eyeZ);
+        const transY = -(upX * eyeX + upY * eyeY + upZ * eyeZ);
+        const transZ = finalForwardX * eyeX + finalForwardY * eyeY + finalForwardZ * eyeZ;
+        
+        // Column-major: columns are right, up, -finalForward, translation
         return new Float32Array([
-            cos,  0,    -sin,   0,                    // Column 0: Right
-            0,    1,     0,     0,                    // Column 1: Up
-            -sin, 0,    -cos,   0,                    // Column 2: Forward
-            -cos * eyeX + sin * eyeZ,                 // Column 3, x
-            -eyeY,                                    // Column 3, y
-            sin * eyeX + cos * eyeZ,                  // Column 3, z
-            1                                         // Column 3, w
+            rightX, upX, -finalForwardX, 0,
+            rightY, upY, -finalForwardY, 0,
+            rightZ, upZ, -finalForwardZ, 0,
+            transX, transY, transZ, 1
         ]);
     }
     
@@ -211,10 +262,20 @@ export class Engine {
         const rot = this.player?.getRotation() || { yaw: 0, pitch: 0 };
         const mvmt = this.player?.movement || {};
         
-        // Calculate look-at vector from yaw/pitch
-        const lookX = Math.sin(rot.yaw) * Math.cos(rot.pitch);
-        const lookY = -Math.sin(rot.pitch);
-        const lookZ = -Math.cos(rot.yaw) * Math.cos(rot.pitch);
+        // Calculate look-at vector from yaw/pitch (apply yaw then pitch rotation)
+        const cosYaw = Math.cos(rot.yaw);
+        const sinYaw = Math.sin(rot.yaw);
+        const cosPitch = Math.cos(rot.pitch);
+        const sinPitch = Math.sin(rot.pitch);
+        
+        // Forward after yaw
+        const afterYawX = sinYaw;
+        const afterYawZ = cosYaw;
+        
+        // Forward after pitch (rotated around right axis)
+        const lookX = afterYawX * cosPitch;
+        const lookY = sinPitch;
+        const lookZ = afterYawZ * cosPitch;
         
         debugEl.innerHTML = `
             <div>Player: (${playerPos.x.toFixed(1)}, ${playerPos.y.toFixed(1)}, ${playerPos.z.toFixed(1)})</div>

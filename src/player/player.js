@@ -249,9 +249,9 @@ export class Player {
         
         // Forward/backward
         if (this.movement.forward && !this.movement.backward) {
-            moveZ = 1;
+            moveZ = 1;  // forward is +Z
         } else if (this.movement.backward && !this.movement.forward) {
-            moveZ = -1;
+            moveZ = -1;   // backward is -Z
         }
         
         // Strafing left/right - original signs (relative to camera via rotation)

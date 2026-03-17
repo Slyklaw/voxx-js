@@ -188,28 +188,41 @@ export class Renderer {
         // Filter chunks through frustum test
         const visibleChunks = chunks.filter(chunk => this.isChunkInFrustum(chunk, this.frustumPlanes));
         
-        // Reset vertex pool for new frame
-        this.vertexPool.reset();
+        // Render in batches when pool fills up
+        let chunkIndex = 0;
+        let totalDrawn = 0;
         
-        // Add all visible chunk geometry to the pool
-        for (const chunk of visibleChunks) {
-            if (chunk.data) {
-                this.vertexPool.addChunkGeometry(chunk.x, chunk.y, chunk.z, chunk.data, CHUNK_SIZE);
+        while (chunkIndex < visibleChunks.length) {
+            // Reset vertex pool for new batch
+            this.vertexPool.reset();
+            
+            // Add chunks until pool is full or no more chunks
+            while (chunkIndex < visibleChunks.length) {
+                const chunk = visibleChunks[chunkIndex];
+                if (chunk.data) {
+                    const result = this.vertexPool.addChunkGeometry(chunk.x, chunk.y, chunk.z, chunk.data, CHUNK_SIZE);
+                    if (result === null) {
+                        // Pool full, break to draw this batch
+                        break;
+                    }
+                }
+                chunkIndex++;
             }
+            
+            // Upload geometry data to GPU
+            this.vertexPool.upload();
+            
+            // Set uniforms
+            this.gl.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false, projectionMatrix);
+            this.gl.uniformMatrix4fv(this.uniformLocations.modelViewMatrix, false, modelViewMatrix);
+            
+            // Bind vertex pool attributes
+            this.vertexPool.bind(this.attribLocations);
+            
+            // Draw this batch
+            this.vertexPool.draw();
+            totalDrawn++;
         }
-        
-        // Upload geometry data to GPU
-        this.vertexPool.upload();
-        
-        // Set uniforms
-        this.gl.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false, projectionMatrix);
-        this.gl.uniformMatrix4fv(this.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-        
-        // Bind vertex pool attributes
-        this.vertexPool.bind(this.attribLocations);
-        
-        // Single draw call for all chunks
-        this.vertexPool.draw();
         
         return visibleChunks.length;
     }
@@ -359,9 +372,9 @@ export function createFrustumFromMatrix(matrix) {
 
 function extractPlane(m, row1, row2, negate = false) {
     const scale = negate ? -1 : 1;
-    const a = m[row1 * 4 + 0] + scale * m[row2 * 4 + 0];
-    const b = m[row1 * 4 + 1] + scale * m[row2 * 4 + 1];
-    const c = m[row1 * 4 + 2] + scale * m[row2 * 4 + 2];
-    const d = m[row1 * 4 + 3] + scale * m[row2 * 4 + 3];
+    const a = m[row1 + 0 * 4] + scale * m[row2 + 0 * 4];
+    const b = m[row1 + 1 * 4] + scale * m[row2 + 1 * 4];
+    const c = m[row1 + 2 * 4] - scale * m[row2 + 2 * 4];
+    const d = m[row1 + 3 * 4] + scale * m[row2 + 3 * 4];
     return { a, b, c, d };
 }

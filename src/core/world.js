@@ -173,6 +173,38 @@ export class World {
     }
     
     /**
+     * Get terrain surface height at world coordinates
+     * @param {number} x - World X coordinate
+     * @param {number} z - World Z coordinate
+     * @returns {number} Y coordinate of the topmost solid voxel
+     */
+    getTerrainHeight(x, z) {
+        const chunkX = Math.floor(x / this.chunkSize);
+        const chunkZ = Math.floor(z / this.chunkSize);
+        
+        const chunk = this.chunkManager.getChunk(chunkX, 0, chunkZ);
+        if (!chunk || !chunk.data) {
+            return this.getHeightAt(
+                ((x % this.chunkSize) + this.chunkSize) % this.chunkSize,
+                ((z % this.chunkSize) + this.chunkSize) % this.chunkSize,
+                chunkX, chunkZ
+            );
+        }
+        
+        const localX = ((x % this.chunkSize) + this.chunkSize) % this.chunkSize;
+        const localZ = ((z % this.chunkSize) + this.chunkSize) % this.chunkSize;
+        
+        // Scan from top of chunk downward to find surface
+        for (let y = this.chunkSize - 1; y >= 0; y--) {
+            const index = this.getVoxelIndex(localX, y, localZ);
+            if (chunk.data[index] !== null) {
+                return y;
+            }
+        }
+        return 0;
+    }
+    
+    /**
      * Get or generate a chunk (delegates to ChunkManager)
      * @param {number} x - Chunk X coordinate
      * @param {number} y - Chunk Y coordinate  
@@ -189,6 +221,16 @@ export class World {
     update(playerPos) {
         if (playerPos && this.chunkManager) {
             this.chunkManager.update(playerPos);
+            
+            // Generate terrain for any newly loaded chunks
+            const loadedChunks = this.chunkManager.getLoadedChunks();
+            for (const chunk of loadedChunks) {
+                if (chunk.data && !chunk.data.some(v => v !== null)) {
+                    const data = this.generateChunkData(chunk.x, chunk.y, chunk.z);
+                    chunk.data = data;
+                    chunk.markLoaded();
+                }
+            }
         }
     }
     

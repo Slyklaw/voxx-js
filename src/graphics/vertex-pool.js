@@ -5,10 +5,23 @@
  */
 import { CHUNK_SIZE } from '../core/constants.js';
 
-// Vertex format: x, y, z, nx, ny, nz, u, v (8 floats = 32 bytes)
-const FLOATS_PER_VERTEX = 8;
+// Vertex format: x, y, z, nx, ny, nz, r, g, b (9 floats = 36 bytes)
+const FLOATS_PER_VERTEX = 9;
 const BYTES_PER_FLOAT = 4;
 const VERTEX_STRIDE = FLOATS_PER_VERTEX * BYTES_PER_FLOAT;
+
+// Voxel type to color mapping
+const VOXEL_COLORS = {
+    grass: [0.3, 0.6, 0.2],
+    dirt:  [0.5, 0.35, 0.2],
+    stone: [0.5, 0.5, 0.5],
+    default: [0.8, 0.2, 0.8]  // Magenta for unknown
+};
+
+function getVoxelColor(voxel) {
+    if (!voxel || !voxel.type) return VOXEL_COLORS.default;
+    return VOXEL_COLORS[voxel.type] || VOXEL_COLORS.default;
+}
 
 // Face definitions: directions, normals, vertex offsets
 const FACES = [
@@ -33,14 +46,14 @@ export class VertexPool {
      * @param {number} maxVertices - Maximum vertices in pool
      * @param {number} maxIndices - Maximum indices in pool
      */
-    constructor(gl, maxVertices = 65535, maxIndices = 98300) {
+    constructor(gl, maxVertices = 262144, maxIndices = 393216) {
         this.gl = gl;
         this.maxVertices = maxVertices;
         this.maxIndices = maxIndices;
         
         // Allocate CPU-side buffers
         this.vertexData = new Float32Array(maxVertices * FLOATS_PER_VERTEX);
-        this.indexData = new Uint16Array(maxIndices);
+        this.indexData = new Uint32Array(maxIndices);
         
         // Current counts
         this.vertexCount = 0;
@@ -122,6 +135,7 @@ export class VertexPool {
                             
                             // Add 4 vertices for this face
                             const baseVertex = this.vertexCount;
+                            const color = getVoxelColor(voxel);
                             
                             for (let i = 0; i < 4; i++) {
                                 const corner = face.corners[i];
@@ -137,9 +151,10 @@ export class VertexPool {
                                 this.vertexData[vertIdx + 4] = face.normal[1];
                                 this.vertexData[vertIdx + 5] = face.normal[2];
                                 
-                                // UV (simple 0-1 mapping per face)
-                                this.vertexData[vertIdx + 6] = i === 0 || i === 3 ? 0 : 1;
-                                this.vertexData[vertIdx + 7] = i < 2 ? 0 : 1;
+                                // Color (RGB)
+                                this.vertexData[vertIdx + 6] = color[0];
+                                this.vertexData[vertIdx + 7] = color[1];
+                                this.vertexData[vertIdx + 8] = color[2];
                             }
                             
                             // Add 6 indices (2 triangles) for this face
@@ -216,7 +231,7 @@ export class VertexPool {
      */
     draw() {
         if (this.indexCount > 0) {
-            this.gl.drawElements(this.gl.TRIANGLES, this.indexCount, this.gl.UNSIGNED_SHORT, 0);
+            this.gl.drawElements(this.gl.TRIANGLES, this.indexCount, this.gl.UNSIGNED_INT, 0);
         }
     }
     
