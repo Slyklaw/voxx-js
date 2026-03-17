@@ -3,6 +3,7 @@
  * Represents a 32x32x32 section of the world
  */
 import { CHUNK_SIZE } from '../core/constants.js';
+import { logger } from '../core/logger.js';
 
 export class Chunk {
     constructor(x, y, z) {
@@ -20,7 +21,7 @@ export class Chunk {
             this.data[i] = null;
         }
 
-        console.log(`Chunk created at (${x}, ${y}, ${z})`);
+        logger.debug(`Chunk created at (${x}, ${y}, ${z})`);
     }
     
     /**

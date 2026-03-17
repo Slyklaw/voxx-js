@@ -2,6 +2,7 @@
  * Rendering system for Voxx-JS voxel engine
  * Handles WebGL rendering of the voxel world
  */
+import { logger } from './logger.js';
 export class Renderer {
     constructor(gl, canvas) {
         this.gl = gl;
@@ -13,7 +14,7 @@ export class Renderer {
         // Initialize shaders and buffers
         this.initRenderer();
         
-        console.log('Renderer initialized');
+        logger.info('Renderer initialized');
     }
     
     /**
