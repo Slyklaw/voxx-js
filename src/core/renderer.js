@@ -3,6 +3,8 @@
  * Handles WebGL rendering of the voxel world
  */
 import { logger } from './logger.js';
+import { CHUNK_SIZE } from './constants.js';
+
 export class Renderer {
     constructor(gl, canvas) {
         this.gl = gl;
@@ -16,6 +18,9 @@ export class Renderer {
         const match = versionString.match(/WebGL (\d+\.\d+)/);
         this.glVersion = match ? parseFloat(match[1]) : 1;
         this.shaderVersionPrefix = this.glVersion >= 2 ? '#version 300 es\n' : '';
+        
+        // Frustum culling state
+        this.frustumPlanes = null;
         
         // Initialize shaders and buffers
         this.initRenderer();
@@ -311,18 +316,31 @@ export class Renderer {
     }
     
     /**
-     * Render the scene
+     * Render the scene with frustum culling
+     * @param {Array} chunks - Array of chunk objects to render
+     * @param {Float32Array} viewMatrix - Camera view matrix (4x4)
      */
-    render() {
+    render(chunks = [], viewMatrix = null) {
         // Clear the canvas
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         
         // Use our shader program
         this.gl.useProgram(this.program);
         
-        // Set up matrices (simplified - in a real engine these would be more complex)
+        // Set up projection matrix
         const projectionMatrix = this.createProjectionMatrix();
-        const modelViewMatrix = this.createModelViewMatrix();
+        
+        // Use provided view matrix or default
+        const modelViewMatrix = viewMatrix || this.createModelViewMatrix();
+        
+        // Calculate combined projection-view matrix for frustum culling
+        const pvMatrix = multiply(projectionMatrix, modelViewMatrix);
+        
+        // Extract frustum planes from combined matrix
+        this.frustumPlanes = createFrustumFromMatrix(pvMatrix);
+        
+        // Filter chunks through frustum test
+        const visibleChunks = chunks.filter(chunk => this.isChunkInFrustum(chunk, this.frustumPlanes));
         
         // Set uniforms
         this.gl.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false, projectionMatrix);
@@ -343,9 +361,79 @@ export class Renderer {
         this.gl.enableVertexAttribArray(this.attribLocations.normal);
         this.gl.vertexAttribPointer(this.attribLocations.normal, 3, this.gl.FLOAT, false, 0, 0);
         
-        // Bind index buffer and draw
+        // Bind index buffer
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
+        
+        // Draw only visible chunks
+        const chunksDrawn = visibleChunks.length;
+        if (chunksDrawn > 0) {
+            // For each visible chunk, set model matrix and draw
+            // Currently draws one cube per chunk at chunk position
+            for (const chunk of visibleChunks) {
+                // Set chunk position in model matrix
+                const chunkModelMatrix = this.createChunkModelMatrix(chunk.x, chunk.y, chunk.z);
+                this.gl.uniformMatrix4fv(this.uniformLocations.modelViewMatrix, false, chunkModelMatrix);
+                this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
+            }
+        }
+        
+        return chunksDrawn;
+    }
+    
+    /**
+     * Create a model matrix for a chunk position
+     * @param {number} chunkX - Chunk X coordinate
+     * @param {number} chunkY - Chunk Y coordinate
+     * @param {number} chunkZ - Chunk Z coordinate
+     */
+    createChunkModelMatrix(chunkX, chunkY, chunkZ) {
+        // Translation matrix for chunk position
+        const x = chunkX * CHUNK_SIZE;
+        const y = chunkY * CHUNK_SIZE;
+        const z = chunkZ * CHUNK_SIZE;
+        
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            x, y, z, 1
+        ]);
+    }
+    
+    /**
+     * Test if a chunk is inside the frustum
+     * @param {Object} chunk - Chunk with x, y, z coordinates
+     * @param {Array} frustumPlanes - Array of 6 frustum planes
+     * @returns {boolean} True if chunk is visible
+     */
+    isChunkInFrustum(chunk, frustumPlanes) {
+        if (!frustumPlanes || frustumPlanes.length !== 6) {
+            return true; // No frustum, assume visible
+        }
+        
+        // Calculate chunk world bounds
+        const minX = chunk.x * CHUNK_SIZE;
+        const minY = chunk.y * CHUNK_SIZE;
+        const minZ = chunk.z * CHUNK_SIZE;
+        const maxX = minX + CHUNK_SIZE;
+        const maxY = minY + CHUNK_SIZE;
+        const maxZ = minZ + CHUNK_SIZE;
+        
+        // Test against each frustum plane
+        for (const plane of frustumPlanes) {
+            // Find the p-vertex (point most negative relative to plane normal)
+            const pVertexX = plane.a >= 0 ? maxX : minX;
+            const pVertexY = plane.b >= 0 ? maxY : minY;
+            const pVertexZ = plane.c >= 0 ? maxZ : minZ;
+            
+            // If p-vertex is outside this plane, chunk is completely outside frustum
+            const distance = plane.a * pVertexX + plane.b * pVertexY + plane.c * pVertexZ + plane.d;
+            if (distance < 0) {
+                return false;
+            }
+        }
+        
+        return true; // Chunk passes all plane tests
     }
     
     /**
@@ -388,4 +476,58 @@ export class Renderer {
         this.canvas.height = height;
         this.gl.viewport(0, 0, width, height);
     }
+}
+
+// Matrix multiplication for 4x4 matrices (column-major)
+export function multiply(a, b) {
+    const result = new Float32Array(16);
+    for (let col = 0; col < 4; col++) {
+        for (let row = 0; row < 4; row++) {
+            let sum = 0;
+            for (let k = 0; k < 4; k++) {
+                sum += a[k * 4 + row] * b[col * 4 + k];
+            }
+            result[col * 4 + row] = sum;
+        }
+    }
+    return result;
+}
+
+// Extract frustum planes from view-projection matrix (column-major)
+export function createFrustumFromMatrix(matrix) {
+    // Planes: left, right, bottom, top, near, far
+    const planes = [];
+    // Left plane: row3 + row0
+    planes.push(extractPlane(matrix, 3, 0));
+    // Right plane: row3 - row0
+    planes.push(extractPlane(matrix, 3, 0, true));
+    // Bottom plane: row3 + row1
+    planes.push(extractPlane(matrix, 3, 1));
+    // Top plane: row3 - row1
+    planes.push(extractPlane(matrix, 3, 1, true));
+    // Near plane: row3 + row2
+    planes.push(extractPlane(matrix, 3, 2));
+    // Far plane: row3 - row2
+    planes.push(extractPlane(matrix, 3, 2, true));
+    
+    // Normalize planes
+    for (const plane of planes) {
+        const len = Math.sqrt(plane.a * plane.a + plane.b * plane.b + plane.c * plane.c);
+        if (len > 0) {
+            plane.a /= len;
+            plane.b /= len;
+            plane.c /= len;
+            plane.d /= len;
+        }
+    }
+    return planes;
+}
+
+function extractPlane(m, row1, row2, negate = false) {
+    const scale = negate ? -1 : 1;
+    const a = m[row1 * 4 + 0] + scale * m[row2 * 4 + 0];
+    const b = m[row1 * 4 + 1] + scale * m[row2 * 4 + 1];
+    const c = m[row1 * 4 + 2] + scale * m[row2 * 4 + 2];
+    const d = m[row1 * 4 + 3] + scale * m[row2 * 4 + 3];
+    return { a, b, c, d };
 }
