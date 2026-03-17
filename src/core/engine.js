@@ -147,8 +147,9 @@ export class Engine {
             // Get loaded chunks from chunk manager for frustum culling
             const chunks = this.world?.chunkManager?.getLoadedChunks() || [];
             
-            // Create view matrix based on player position
-            const viewMatrix = this.createViewMatrix(playerPos);
+            // Create view matrix based on player position and rotation
+            const playerRot = this.player?.getRotation() || { yaw: 0, pitch: 0 };
+            const viewMatrix = this.createViewMatrix(playerPos, playerRot);
             
             // Render with frustum culling - pass chunks and view matrix
             this.renderer.render(chunks, viewMatrix);
@@ -162,22 +163,30 @@ export class Engine {
     }
     
     /**
-     * Create view matrix for camera based on player position
+     * Create view matrix for camera based on player position and rotation
      * @param {Object} playerPos - Player position {x, y, z}
+     * @param {Object} playerRot - Player rotation {yaw, pitch}
      * @returns {Float32Array} 4x4 view matrix
      */
-    createViewMatrix(playerPos = { x: 0, y: 50, z: 0 }) {
+    createViewMatrix(playerPos = { x: 0, y: 50, z: 0 }, playerRot = { yaw: 0, pitch: 0 }) {
         // Camera at player position with eye height offset
         const eyeX = playerPos.x;
-        const eyeY = playerPos.y + 1.7; // Eye height
-        const eyeZ = playerPos.z + 3;   // Slightly behind player
+        const eyeY = playerPos.y + 1.7;
+        const eyeZ = playerPos.z;
         
-        // Simple translation matrix
+        // Simple rotation around Y axis (yaw only for now)
+        const cos = Math.cos(playerRot.yaw);
+        const sin = Math.sin(playerRot.yaw);
+        
+        // View matrix: rotation + translation
         return new Float32Array([
-            1, 0, 0, 0,
+            cos, 0, sin, 0,
             0, 1, 0, 0,
-            0, 0, 1, 0,
-            -eyeX, -eyeY, -eyeZ, 1
+            -sin, 0, cos, 0,
+            -(cos * eyeX + sin * eyeZ), 
+            -eyeY,
+            -(-sin * eyeX + cos * eyeZ),
+            1
         ]);
     }
     
@@ -194,13 +203,21 @@ export class Engine {
         const chunkX = Math.floor(playerPos.x / 32);
         const chunkY = Math.floor(playerPos.y / 32);
         const chunkZ = Math.floor(playerPos.z / 32);
+        const rot = this.player?.getRotation() || { yaw: 0, pitch: 0 };
+        
+        // Calculate look-at vector from yaw/pitch
+        const lookX = Math.sin(rot.yaw) * Math.cos(rot.pitch);
+        const lookY = -Math.sin(rot.pitch);
+        const lookZ = -Math.cos(rot.yaw) * Math.cos(rot.pitch);
         
         debugEl.innerHTML = `
             <div>Player: (${playerPos.x.toFixed(1)}, ${playerPos.y.toFixed(1)}, ${playerPos.z.toFixed(1)})</div>
             <div>Chunk: (${chunkX}, ${chunkY}, ${chunkZ})</div>
+            <div>Yaw: ${(rot.yaw * 180 / Math.PI).toFixed(0)}° Pitch: ${(rot.pitch * 180 / Math.PI).toFixed(0)}°</div>
+            <div>Look: (${lookX.toFixed(2)}, ${lookY.toFixed(2)}, ${lookZ.toFixed(2)})</div>
             <div>Velocity: (${vel.x.toFixed(1)}, ${vel.y.toFixed(1)}, ${vel.z.toFixed(1)})</div>
             <div>On Ground: ${onGround}</div>
-            <div>Chunks Loaded: ${chunkCount}</div>
+            <div>Chunks: ${chunkCount}</div>
             <div>FPS: ${deltaTime > 0 ? Math.round(1/deltaTime) : 0}</div>
         `;
     }
