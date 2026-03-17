@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **TECH-01**: Eliminate duplicate world data structures (World vs ChunkManager) — consolidate chunk management into ChunkManager only
 - [x] **TECH-02**: Extract hardcoded constants (CHUNK_SIZE = 32) to shared constants module
-- [ ] **TECH-03**: Add error handling to async module loading in Engine.initSystems()
+- [x] **TECH-03**: Add error handling to async module loading in Engine.initSystems()
 - [ ] **TECH-04**: Implement stub methods (loadWorld, saveWorld, update persistence) with IndexedDB
 - [ ] **TECH-05**: Fix event listener memory leaks in Player class — add cleanup method
-- [ ] **TECH-06**: Implement logging levels, disable debug logs in production
+- [x] **TECH-06**: Implement logging levels, disable debug logs in production
 - [x] **TECH-07**: Add package.json with dependencies (Three.js, Cannon-es, Simplex-noise, Dexie)
 
 ### Bug Fixes
@@ -94,10 +94,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | TECH-01 | Phase 1 | Pending |
 | TECH-02 | Phase 1 | Complete |
-| TECH-03 | Phase 1 | Pending |
+| TECH-03 | Phase 1 | Complete |
 | TECH-04 | Phase 5 | Pending |
 | TECH-05 | Phase 1 | Pending |
-| TECH-06 | Phase 1 | Pending |
+| TECH-06 | Phase 1 | Complete |
 | TECH-07 | Phase 1 | Complete |
 | BUG-01 | Phase 1 | Pending |
 | BUG-02 | Phase 3 | Pending |
