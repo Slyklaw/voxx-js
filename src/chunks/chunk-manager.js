@@ -2,7 +2,7 @@
  * Chunk management system for Voxx-JS voxel engine
  * Handles loading, unloading, and organization of chunks
  */
-import { CHUNK_SIZE, VIEW_DISTANCE } from '../core/constants.js';
+import { CHUNK_SIZE, VIEW_DISTANCE, HYSTERESIS_MARGIN, CHUNKS_PER_FRAME, MAX_POOL_SIZE } from '../core/constants.js';
 import { logger } from '../core/logger.js';
 import { ChunkError } from '../core/errors.js';
 import { Chunk } from './chunk.js';
@@ -14,6 +14,10 @@ export class ChunkManager {
 
         // View distance in chunks (player can see this many chunks in each direction)
         this.viewDistance = VIEW_DISTANCE;
+        this.loadDistance = VIEW_DISTANCE;
+        this.unloadDistance = VIEW_DISTANCE + HYSTERESIS_MARGIN;
+        this.chunksToLoad = []; // Queue of pending chunk coordinates
+        this.pool = []; // Recycled chunk objects
 
         logger.info('Chunk manager initialized');
     }
@@ -31,11 +35,27 @@ export class ChunkManager {
             return this.chunks.get(chunkKey);
         }
         
-        // Create new chunk
-        const chunk = new Chunk(x, y, z);
-        chunk.markLoaded();
+        // Try to reuse from pool
+        let chunk;
+        if (this.pool.length > 0) {
+            chunk = this.pool.pop();
+            // Reinitialize chunk with new coordinates
+            chunk.x = x;
+            chunk.y = y;
+            chunk.z = z;
+            chunk.data.fill(null);
+            chunk.loaded = false;
+            chunk.modified = false;
+            chunk.markLoaded();
+            logger.debug(`Reused chunk at (${x}, ${y}, ${z})`);
+        } else {
+            // Create new chunk
+            chunk = new Chunk(x, y, z);
+            chunk.markLoaded();
+            logger.debug(`Created chunk at (${x}, ${y}, ${z})`);
+        }
+        
         this.chunks.set(chunkKey, chunk);
-        logger.debug(`Created chunk at (${x}, ${y}, ${z})`);
         return chunk;
     }
     
@@ -48,26 +68,61 @@ export class ChunkManager {
         const playerChunkY = Math.floor(playerPos.y / this.chunkSize);
         const playerChunkZ = Math.floor(playerPos.z / this.chunkSize);
         
-        // Load chunks within view distance
-        for (let x = -this.viewDistance; x <= this.viewDistance; x++) {
-            for (let y = -this.viewDistance; y <= this.viewDistance; y++) {
-                for (let z = -this.viewDistance; z <= this.viewDistance; z++) {
+        // Build queue of missing chunks within load distance
+        for (let x = -this.loadDistance; x <= this.loadDistance; x++) {
+            for (let y = -this.loadDistance; y <= this.loadDistance; y++) {
+                for (let z = -this.loadDistance; z <= this.loadDistance; z++) {
                     const chunkX = playerChunkX + x;
                     const chunkY = playerChunkY + y;
                     const chunkZ = playerChunkZ + z;
+                    const chunkKey = `${chunkX},${chunkY},${chunkZ}`;
                     
-                    // Only generate chunks that are within reasonable bounds
-                    if (Math.abs(x) <= this.viewDistance && 
-                        Math.abs(y) <= this.viewDistance && 
-                        Math.abs(z) <= this.viewDistance) {
+                    // Skip if already loaded or already queued
+                    if (this.chunks.has(chunkKey) || this.chunksToLoad.some(c => c.key === chunkKey)) {
+                        continue;
+                    }
+                    
+                    // Only add chunks within load distance (Manhattan distance check)
+                    if (Math.abs(x) <= this.loadDistance && 
+                        Math.abs(y) <= this.loadDistance && 
+                        Math.abs(z) <= this.loadDistance) {
                         
-                        this.getChunk(chunkX, chunkY, chunkZ);
+                        const distance = x*x + y*y + z*z; // squared distance for sorting
+                        this.chunksToLoad.push({ key: chunkKey, x: chunkX, y: chunkY, z: chunkZ, distance });
                     }
                 }
             }
         }
         
-        logger.info(`Loaded chunks around player position (${playerPos.x}, ${playerPos.y}, ${playerPos.z})`);
+        // Sort by distance (closest first)
+        this.chunksToLoad.sort((a, b) => a.distance - b.distance);
+        
+        // Load up to CHUNKS_PER_FRAME chunks from the queue
+        let loadedCount = 0;
+        while (this.chunksToLoad.length > 0 && loadedCount < CHUNKS_PER_FRAME) {
+            const chunkInfo = this.chunksToLoad.shift();
+            this.getChunk(chunkInfo.x, chunkInfo.y, chunkInfo.z);
+            loadedCount++;
+        }
+        
+        if (loadedCount > 0) {
+            logger.debug(`Loaded ${loadedCount} chunks, ${this.chunksToLoad.length} remaining in queue`);
+        }
+    }
+    
+    /**
+     * Recycle a chunk by resetting its state and adding to pool
+     * @param {Chunk} chunk - The chunk to recycle
+     */
+    recycleChunk(chunk) {
+        // Clear voxel data
+        chunk.data.fill(null);
+        // Reset chunk state
+        chunk.loaded = false;
+        chunk.modified = false;
+        // Add to pool for reuse
+        this.pool.push(chunk);
+        logger.debug(`Recycled chunk at (${chunk.x}, ${chunk.y}, ${chunk.z})`);
     }
     
     /**
@@ -79,7 +134,7 @@ export class ChunkManager {
         const playerChunkY = Math.floor(playerPos.y / this.chunkSize);
         const playerChunkZ = Math.floor(playerPos.z / this.chunkSize);
         
-        // Remove chunks that are outside view distance
+        // Remove chunks that are outside unload distance
         for (const [key, chunk] of this.chunks.entries()) {
             const [x, y, z] = key.split(',').map(Number);
             
@@ -87,12 +142,16 @@ export class ChunkManager {
             const distanceY = Math.abs(y - playerChunkY);
             const distanceZ = Math.abs(z - playerChunkZ);
             
-            // If chunk is outside view distance, remove it
-            if (distanceX > this.viewDistance || 
-                distanceY > this.viewDistance || 
-                distanceZ > this.viewDistance) {
+            // If chunk is outside unload distance, remove it
+            if (distanceX > this.unloadDistance || 
+                distanceY > this.unloadDistance || 
+                distanceZ > this.unloadDistance) {
                 
                 this.chunks.delete(key);
+                // Add to pool if space available
+                if (this.pool.length < MAX_POOL_SIZE) {
+                    this.recycleChunk(chunk);
+                }
                 logger.debug(`Unloaded chunk at (${x}, ${y}, ${z})`);
             }
         }
