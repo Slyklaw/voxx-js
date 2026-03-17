@@ -3,6 +3,7 @@
  * Handles WebGL rendering of the voxel world
  */
 import { logger } from './logger.js';
+import { VertexPool } from '../graphics/vertex-pool.js';
 import { CHUNK_SIZE } from './constants.js';
 
 export class Renderer {
@@ -10,8 +11,7 @@ export class Renderer {
         this.gl = gl;
         this.canvas = canvas;
         this.program = null;
-        this.vertexBuffer = null;
-        this.indexBuffer = null;
+        this.vertexPool = null;
         
         // Detect WebGL version
         const versionString = gl.getParameter(gl.VERSION);
@@ -35,8 +35,8 @@ export class Renderer {
         // Create and compile shaders
         this.createShaders();
         
-        // Create vertex buffer for rendering
-        this.createBuffers();
+        // Create vertex pool for batched geometry
+        this.vertexPool = new VertexPool(this.gl);
         
         // Set up WebGL state
         this.setupWebGLState();
@@ -152,158 +152,6 @@ export class Renderer {
     }
     
     /**
-     * Create vertex and index buffers
-     */
-    createBuffers() {
-        // Create a simple cube vertex buffer
-        const vertices = [
-            // Front face
-            -0.5, -0.5,  0.5,
-             0.5, -0.5,  0.5,
-             0.5,  0.5,  0.5,
-            -0.5,  0.5,  0.5,
-            
-            // Back face
-            -0.5, -0.5, -0.5,
-            -0.5,  0.5, -0.5,
-             0.5,  0.5, -0.5,
-             0.5, -0.5, -0.5,
-            
-            // Top face
-            -0.5,  0.5, -0.5,
-            -0.5,  0.5,  0.5,
-             0.5,  0.5,  0.5,
-             0.5,  0.5, -0.5,
-            
-            // Bottom face
-            -0.5, -0.5, -0.5,
-             0.5, -0.5, -0.5,
-             0.5, -0.5,  0.5,
-            -0.5, -0.5,  0.5,
-            
-            // Right face
-             0.5, -0.5, -0.5,
-             0.5,  0.5, -0.5,
-             0.5,  0.5,  0.5,
-             0.5, -0.5,  0.5,
-            
-            // Left face
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5,  0.5,
-            -0.5,  0.5,  0.5,
-            -0.5,  0.5, -0.5
-        ];
-        
-        // Create texture coordinates
-        const textureCoords = [
-            // Front face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            
-            // Back face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            
-            // Top face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            
-            // Bottom face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            
-            // Right face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-            
-            // Left face
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0
-        ];
-        
-        // Create normals (simplified)
-        const normals = [
-            // Front face
-            0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-            
-            // Back face
-            0.0, 0.0, -1.0,
-            0.0, 0.0, -1.0,
-            0.0, 0.0, -1.0,
-            0.0, 0.0, -1.0,
-            
-            // Top face
-            0.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 1.0, 0.0,
-            
-            // Bottom face
-            0.0, -1.0, 0.0,
-            0.0, -1.0, 0.0,
-            0.0, -1.0, 0.0,
-            0.0, -1.0, 0.0,
-            
-            // Right face
-            1.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            
-            // Left face
-            -1.0, 0.0, 0.0,
-            -1.0, 0.0, 0.0,
-            -1.0, 0.0, 0.0,
-            -1.0, 0.0, 0.0
-        ];
-        
-        // Create index buffer for cube faces
-        const indices = [
-            0,  1,  2,   0,  2,  3,    // front
-            4,  5,  6,   4,  6,  7,    // back
-            8,  9,  10,  8,  10, 11,   // top
-            12, 13, 14,  12, 14, 15,   // bottom
-            16, 17, 18,  16, 18, 19,   // right
-            20, 21, 22,  20, 22, 23    // left
-        ];
-        
-        // Create and bind vertex buffer
-        this.vertexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-        
-        // Create and bind texture coordinate buffer
-        this.texCoordBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoords), this.gl.STATIC_DRAW);
-        
-        // Create and bind normal buffer
-        this.normalBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.normalBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(normals), this.gl.STATIC_DRAW);
-        
-        // Create and bind index buffer
-        this.indexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
-    }
-    
-    /**
      * Set up WebGL state
      */
     setupWebGLState() {
@@ -316,7 +164,7 @@ export class Renderer {
     }
     
     /**
-     * Render the scene with frustum culling
+     * Render the scene using vertex pooling for batched geometry
      * @param {Array} chunks - Array of chunk objects to render
      * @param {Float32Array} viewMatrix - Camera view matrix (4x4)
      */
@@ -342,42 +190,30 @@ export class Renderer {
         // Filter chunks through frustum test
         const visibleChunks = chunks.filter(chunk => this.isChunkInFrustum(chunk, this.frustumPlanes));
         
+        // Reset vertex pool for new frame
+        this.vertexPool.reset();
+        
+        // Add all visible chunk geometry to the pool
+        for (const chunk of visibleChunks) {
+            if (chunk.data) {
+                this.vertexPool.addChunkGeometry(chunk.x, chunk.y, chunk.z, chunk.data, CHUNK_SIZE);
+            }
+        }
+        
+        // Upload geometry data to GPU
+        this.vertexPool.upload();
+        
         // Set uniforms
         this.gl.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false, projectionMatrix);
         this.gl.uniformMatrix4fv(this.uniformLocations.modelViewMatrix, false, modelViewMatrix);
         
-        // Bind vertex buffer and set attribute pointers
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
-        this.gl.enableVertexAttribArray(this.attribLocations.position);
-        this.gl.vertexAttribPointer(this.attribLocations.position, 3, this.gl.FLOAT, false, 0, 0);
+        // Bind vertex pool attributes
+        this.vertexPool.bind(this.attribLocations);
         
-        // Bind texture coordinate buffer
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer);
-        this.gl.enableVertexAttribArray(this.attribLocations.texCoord);
-        this.gl.vertexAttribPointer(this.attribLocations.texCoord, 2, this.gl.FLOAT, false, 0, 0);
+        // Single draw call for all chunks
+        this.vertexPool.draw();
         
-        // Bind normal buffer
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.normalBuffer);
-        this.gl.enableVertexAttribArray(this.attribLocations.normal);
-        this.gl.vertexAttribPointer(this.attribLocations.normal, 3, this.gl.FLOAT, false, 0, 0);
-        
-        // Bind index buffer
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        
-        // Draw only visible chunks
-        const chunksDrawn = visibleChunks.length;
-        if (chunksDrawn > 0) {
-            // For each visible chunk, set model matrix and draw
-            // Currently draws one cube per chunk at chunk position
-            for (const chunk of visibleChunks) {
-                // Set chunk position in model matrix
-                const chunkModelMatrix = this.createChunkModelMatrix(chunk.x, chunk.y, chunk.z);
-                this.gl.uniformMatrix4fv(this.uniformLocations.modelViewMatrix, false, chunkModelMatrix);
-                this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
-            }
-        }
-        
-        return chunksDrawn;
+        return visibleChunks.length;
     }
     
     /**
