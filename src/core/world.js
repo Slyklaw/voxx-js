@@ -120,31 +120,37 @@ export class World {
     }
     
     /**
-     * Get voxel at world position
+     * Get voxel at world position with coordinate validation
      * @param {number} x - World X coordinate
      * @param {number} y - World Y coordinate
      * @param {number} z - World Z coordinate
+     * @returns {Object|null} Voxel data or null if invalid/out of bounds
      */
     getVoxel(x, y, z) {
-        // Calculate which chunk this voxel is in
+        // Validate coordinates are numbers
+        if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number') {
+            logger.warn(`Invalid voxel coordinates: (${x}, ${y}, ${z}) - not numbers`);
+            return null;
+        }
+
+        // Calculate chunk and local coordinates
         const chunkX = Math.floor(x / this.chunkSize);
         const chunkY = Math.floor(y / this.chunkSize);
         const chunkZ = Math.floor(z / this.chunkSize);
         
-        // Calculate local coordinates within the chunk
-        const localX = x % this.chunkSize;
-        const localY = y % this.chunkSize;
-        const localZ = z % this.chunkSize;
-        
-        // Get or generate the chunk
-        const chunk = this.getChunk(chunkX, chunkY, chunkZ);
+        // Handle negative coordinates properly
+        const localX = ((x % this.chunkSize) + this.chunkSize) % this.chunkSize;
+        const localY = ((y % this.chunkSize) + this.chunkSize) % this.chunkSize;
+        const localZ = ((z % this.chunkSize) + this.chunkSize) % this.chunkSize;
+
+        // Get chunk
+        const chunk = this.chunkManager.getChunk(chunkX, chunkY, chunkZ);
         if (!chunk || !chunk.loaded) {
             return null;
         }
-        
-        // Get voxel data
-        const index = this.getVoxelIndex(localX, localY, localZ);
-        return chunk.data[index];
+
+        // Use chunk's getVoxel which has bounds checking
+        return chunk.getVoxel(localX, localY, localZ);
     }
     
     /**
