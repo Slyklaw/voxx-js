@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Tech Debt
 
-- [ ] **TECH-01**: Eliminate duplicate world data structures (World vs ChunkManager) — consolidate chunk management into ChunkManager only
+- [x] **TECH-01**: Eliminate duplicate world data structures (World vs ChunkManager) — consolidate chunk management into ChunkManager only
 - [x] **TECH-02**: Extract hardcoded constants (CHUNK_SIZE = 32) to shared constants module
 - [x] **TECH-03**: Add error handling to async module loading in Engine.initSystems()
 - [ ] **TECH-04**: Implement stub methods (loadWorld, saveWorld, update persistence) with IndexedDB
@@ -22,7 +22,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **BUG-01**: Fix non-deterministic world generation — replace Math.random with seeded RNG (simplex-noise)
 - [ ] **BUG-02**: Fix diagonal movement physics normalization — ensure diagonal movement not faster than straight
 - [ ] **BUG-03**: Implement collision detection — player cannot walk through blocks or fall through floor
-- [ ] **BUG-04**: Add input validation for voxel coordinates to prevent array index out of bounds
+- [x] **BUG-04**: Add input validation for voxel coordinates to prevent array index out of bounds
 
 ### Missing Features (Core)
 
@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Security Considerations
 
-- [ ] **SEC-01**: Add validation at World level for coordinate inputs
+- [x] **SEC-01**: Add validation at World level for coordinate inputs
 - [ ] **SEC-02**: Ensure event listeners are properly removed on cleanup
 
 ### Test Coverage
@@ -92,7 +92,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TECH-01 | Phase 1 | Pending |
+| TECH-01 | Phase 1 | Complete |
 | TECH-02 | Phase 1 | Complete |
 | TECH-03 | Phase 1 | Complete |
 | TECH-04 | Phase 5 | Pending |
@@ -102,7 +102,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BUG-01 | Phase 1 | Complete |
 | BUG-02 | Phase 3 | Pending |
 | BUG-03 | Phase 3 | Pending |
-| BUG-04 | Phase 1 | Pending |
+| BUG-04 | Phase 1 | Complete |
 | FEAT-01 | Phase 4 | Pending |
 | FEAT-02 | Phase 5 | Pending |
 | FEAT-03 | Phase 4 | Pending |
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-03 | Phase 2 | Pending |
 | PERF-04 | Phase 2 | Pending |
 | PERF-05 | Phase 2 | Pending |
-| SEC-01 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
 | TEST-01 | Phase 1 | Complete |
 | TEST-02 | Phase 1 | Pending |

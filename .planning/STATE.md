@@ -52,6 +52,7 @@ Recent decisions affecting current work:
 - [01-02]: Used Promise.allSettled instead of Promise.all for resilient async module loading
 - [01-02]: Custom error classes carry contextual metadata (coordinates, chunkKey, system name)
 - [01-05]: Used mulberry32 algorithm for seeded PRNG to ensure deterministic terrain generation
+- [Phase 01-03]: ChunkManager is single source of truth for chunk storage — Eliminated duplicate this.chunks Map in World class, World now delegates all chunk operations to ChunkManager
 
 ### Pending Todos
 
