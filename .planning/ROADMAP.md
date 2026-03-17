@@ -30,7 +30,7 @@ Five phases transform the existing codebase from a prototype with technical debt
   5. No uncaught promise rejections during module loading or chunk operations
   6. All coordinate inputs validated before array access (no out-of-bounds errors)
   7. Event listeners cleaned up when Player/Chunk objects are destroyed
-**Plans**: 7 plans in 3 waves
+**Plans**: 8 plans in 3 waves
 
 Plans:
 - [x] 01-01-PLAN.md — Create constants module and initialize Jest (TECH-02, TECH-07, TEST-01)
@@ -39,7 +39,8 @@ Plans:
 - [x] 01-04-PLAN.md — Fix Player event listener cleanup (TECH-05, SEC-02)
 - [x] 01-05-PLAN.md — Replace Math.random with seeded PRNG (BUG-01)
 - [x] 01-06-PLAN.md — Add tests for Chunk and Engine (TEST-02, TEST-03)
-- [ ] 01-07-PLAN.md — Add world generation determinism test and fix logging inconsistencies (TEST-02)
+- [x] 01-07-PLAN.md — Add world generation determinism test and fix logging inconsistencies (TEST-02)
+- [ ] 01-08-PLAN.md — Gap closure: Fix missing catch on async initSystems call (TECH-03)
 
 ### Phase 2: Rendering
 **Goal**: Deliver performant WebGL 2.0 rendering with intelligent chunk visibility and loading management
@@ -95,7 +96,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 7/7 | Complete   | 2026-03-17 |
+| 1. Foundation | 7/8 | Gap Closure | - |
 | 2. Rendering | 0/TBD | Not started | - |
 | 3. Physics | 0/TBD | Not started | - |
 | 4. World & Interaction | 0/TBD | Not started | - |
