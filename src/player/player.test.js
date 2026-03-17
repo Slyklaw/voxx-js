@@ -242,7 +242,7 @@ describe('Collision detection', () => {
     player.update(0.1, mockChunkManager);
     // X should be blocked, but Z should still move
     expect(player.position.x).toBeLessThanOrEqual(4.8);
-    // Z should have moved (forward = +z direction after sign swap)
+    // Z should have moved (forward at yaw=0 = +z direction)
     expect(player.position.z).toBeGreaterThan(0);
   });
 });

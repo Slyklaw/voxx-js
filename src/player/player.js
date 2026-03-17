@@ -247,7 +247,7 @@ export class Player {
         let moveX = 0;
         let moveZ = 0;
         
-        // Forward/backward - swapped signs
+        // Forward/backward
         if (this.movement.forward && !this.movement.backward) {
             moveZ = 1;
         } else if (this.movement.backward && !this.movement.forward) {
@@ -273,14 +273,13 @@ export class Player {
         }
         
         // Transform camera-space velocity to world-space
-        // Camera: +X = right, +Z = forward (after sign swap)
-        // View matrix forward direction: (-sin(yaw), -cos(yaw))
+        // Camera right = (cos, -sin), Camera forward = (sin, cos)
         const cos = Math.cos(this.rotation.yaw);
         const sin = Math.sin(this.rotation.yaw);
-        const finalX = this.velocity.x * cos - this.velocity.z * sin;
-        const finalZ = this.velocity.x * sin + this.velocity.z * cos;
-        this.velocity.x = finalX;
-        this.velocity.z = finalZ;
+        const finalX = this.velocity.x * cos + this.velocity.z * sin;
+        const finalZ = -this.velocity.x * sin + this.velocity.z * cos;
+        this.velocity.x = finalX || 0;
+        this.velocity.z = finalZ || 0;
     }
     
     /**
