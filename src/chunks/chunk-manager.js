@@ -3,17 +3,19 @@
  * Handles loading, unloading, and organization of chunks
  */
 import { CHUNK_SIZE, VIEW_DISTANCE } from '../core/constants.js';
+import { logger } from '../core/logger.js';
+import { ChunkError } from '../core/errors.js';
+import { Chunk } from './chunk.js';
 
 export class ChunkManager {
-    constructor(world) {
-        this.world = world;
+    constructor() {
         this.chunks = new Map(); // Store chunks by coordinates
         this.chunkSize = CHUNK_SIZE;
 
         // View distance in chunks (player can see this many chunks in each direction)
         this.viewDistance = VIEW_DISTANCE;
 
-        console.log('Chunk manager initialized');
+        logger.info('Chunk manager initialized');
     }
     
     /**
@@ -29,9 +31,11 @@ export class ChunkManager {
             return this.chunks.get(chunkKey);
         }
         
-        // Generate new chunk if it doesn't exist
+        // Create new chunk
         const chunk = new Chunk(x, y, z);
+        chunk.markLoaded();
         this.chunks.set(chunkKey, chunk);
+        logger.debug(`Created chunk at (${x}, ${y}, ${z})`);
         return chunk;
     }
     
@@ -63,7 +67,7 @@ export class ChunkManager {
             }
         }
         
-        console.log(`Loaded chunks around player position (${playerPos.x}, ${playerPos.y}, ${playerPos.z})`);
+        logger.info(`Loaded chunks around player position (${playerPos.x}, ${playerPos.y}, ${playerPos.z})`);
     }
     
     /**
@@ -89,7 +93,7 @@ export class ChunkManager {
                 distanceZ > this.viewDistance) {
                 
                 this.chunks.delete(key);
-                console.log(`Unloaded chunk at (${x}, ${y}, ${z})`);
+                logger.debug(`Unloaded chunk at (${x}, ${y}, ${z})`);
             }
         }
     }
