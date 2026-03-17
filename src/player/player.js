@@ -210,8 +210,6 @@ export class Player {
                 }
                 this.velocity.y = 0;
             }
-                this.velocity.y = 0;
-            }
 
             // Try Z movement
             if (!this.checkCollision(this.position.x, this.position.y, newZ, chunkManager)) {
