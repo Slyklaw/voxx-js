@@ -97,7 +97,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 8/8 | Complete | 2026-03-17 |
-| 2. Rendering | 3/5 | In Progress|  |
+| 2. Rendering | 4/5 | In Progress|  |
 | 3. Physics | 0/TBD | Not started | - |
 | 4. World & Interaction | 0/TBD | Not started | - |
 | 5. Persistence | 0/TBD | Not started | - |

@@ -30,13 +30,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **FEAT-02**: Add world persistence using IndexedDB (save/load chunks)
 - [ ] **FEAT-03**: Implement inventory system (9-slot hotbar for block selection)
 - [ ] **FEAT-04**: Add seeded terrain generation (deterministic worlds)
-- [ ] **FEAT-05**: Implement chunk loading throttling and memory pooling
+- [x] **FEAT-05**: Implement chunk loading throttling and memory pooling
 
 ### Performance Improvements
 
 - [x] **PERF-01**: Add frustum culling for rendering — only render visible chunks
 - [ ] **PERF-02**: Implement chunk object pooling to reduce memory allocations
-- [ ] **PERF-03**: Add chunk loading hysteresis and distance threshold
+- [x] **PERF-03**: Add chunk loading hysteresis and distance threshold
 - [x] **PERF-04**: Upgrade to WebGL 2.0 with WebGL 1.0 fallback
 - [x] **PERF-05**: Implement vertex pooling to reduce draw calls (avoid naive chunk rendering)
 
@@ -107,10 +107,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FEAT-02 | Phase 5 | Pending |
 | FEAT-03 | Phase 4 | Pending |
 | FEAT-04 | Phase 4 | Pending |
-| FEAT-05 | Phase 2 | Pending |
+| FEAT-05 | Phase 2 | Complete |
 | PERF-01 | Phase 2 | Complete |
 | PERF-02 | Phase 5 | Pending |
-| PERF-03 | Phase 2 | Pending |
+| PERF-03 | Phase 2 | Complete |
 | PERF-04 | Phase 2 | Complete |
 | PERF-05 | Phase 2 | Complete |
 | SEC-01 | Phase 1 | Complete |

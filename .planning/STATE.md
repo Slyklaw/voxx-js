@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 ## Current Position
 
 Phase: 2 of 5 (Rendering)
-Plan: 4/5
-Status: Phase 2 plan 4 complete - Vertex pooling for batched rendering
-Last activity: 2026-03-17 — Completed vertex pooling (02-04)
+Plan: 5/5
+Status: Phase 2 plans 1-4 complete
+Last activity: 2026-03-17 — Completed chunk loading optimization (02-03) and vertex pooling (02-04)
 
 Progress: 40%
 
@@ -43,7 +43,9 @@ Progress: 40%
 | Phase 01-foundation P08 | 1min | 2 tasks | 2 files |
 | Phase 02-rendering P01 | 2min | 2 tasks | 2 files |
 | Phase 02-rendering P02 | 3min | 2 tasks | 2 files |
+| Phase 02-rendering P03 | 3min | 2 tasks | 2 files |
 | Phase 02-rendering P04 | 2 | 2 tasks | 2 files |
+| Phase 02-rendering P03 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 02-04]: Vertex format uses 8 floats (xyz, normal, uv) at 32 bytes stride for efficient GPU fetch
 - [Phase 02-04]: Interleaved vertex data in single buffer for better cache coalescing vs separate attribute buffers
 - [Phase 02-04]: Boundary voxels assumed solid to prevent visual gaps at chunk edges
+- [02-03]: HYSTERESIS_MARGIN = 2 chunks beyond VIEW_DISTANCE before unloading
+- [02-03]: CHUNKS_PER_FRAME = 4 to limit load per frame
+- [02-03]: MAX_POOL_SIZE = 128 to cap recycled chunk objects
 
 ### Pending Todos
 
