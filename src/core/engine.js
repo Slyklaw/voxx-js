@@ -19,7 +19,7 @@ export class Engine {
         this.initWebGL();
 
         // Initialize systems
-        this.initSystems();
+        this.initSystems().catch(err => logger.error('Failed to initialize systems:', err));
 
         // Start the game loop
         this.start();
