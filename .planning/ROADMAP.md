@@ -40,7 +40,7 @@ Plans:
 - [x] 01-05-PLAN.md — Replace Math.random with seeded PRNG (BUG-01)
 - [x] 01-06-PLAN.md — Add tests for Chunk and Engine (TEST-02, TEST-03)
 - [x] 01-07-PLAN.md — Add world generation determinism test and fix logging inconsistencies (TEST-02)
-- [ ] 01-08-PLAN.md — Gap closure: Fix missing catch on async initSystems call (TECH-03)
+- [x] 01-08-PLAN.md — Gap closure: Fix missing catch on async initSystems call (TECH-03)
 
 ### Phase 2: Rendering
 **Goal**: Deliver performant WebGL 2.0 rendering with intelligent chunk visibility and loading management
@@ -96,7 +96,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 7/8 | Gap Closure | - |
+| 1. Foundation | 8/8 | Complete | 2026-03-17 |
 | 2. Rendering | 0/TBD | Not started | - |
 | 3. Physics | 0/TBD | Not started | - |
 | 4. World & Interaction | 0/TBD | Not started | - |
