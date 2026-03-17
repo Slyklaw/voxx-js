@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Deliver a stable, performant voxel engine with core gameplay features (block placement, collision detection, persistence).
-**Current focus:** Foundation (Phase 1) - awaiting planning
+**Current focus:** Foundation (Phase 1) - context gathered
 
 ## Current Position
 
@@ -57,5 +57,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-16
-Stopped at: Roadmap created, awaiting user approval
-Resume file: None
+Stopped at: Phase 1 context gathered
+Resume file: .planning/phases/01-foundation/01-CONTEXT.md
