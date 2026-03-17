@@ -130,11 +130,38 @@ export class Engine {
         }
         
         if (this.renderer) {
-            this.renderer.render();
+            // Get loaded chunks from chunk manager for frustum culling
+            const chunks = this.world?.chunkManager?.getLoadedChunks() || [];
+            
+            // Create view matrix (camera position/rotation)
+            // For now, use a fixed camera position looking at origin
+            const viewMatrix = this.createViewMatrix();
+            
+            // Render with frustum culling - pass chunks and view matrix
+            this.renderer.render(chunks, viewMatrix);
         }
         
         // Continue the loop
         requestAnimationFrame(() => this.renderLoop());
+    }
+    
+    /**
+     * Create view matrix for camera
+     * @returns {Float32Array} 4x4 view matrix
+     */
+    createViewMatrix() {
+        // Camera at position (0, 50, 100) looking toward origin
+        const eyeX = 0;
+        const eyeY = 50;
+        const eyeZ = 100;
+        
+        // Simple look-at matrix (camera at (0, 50, 100) looking at (0, 0, 0))
+        return new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            -eyeX, -eyeY, -eyeZ, 1
+        ]);
     }
     
     /**
