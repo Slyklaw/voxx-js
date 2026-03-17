@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Fix non-deterministic world generation — replace Math.random with seeded RNG (simplex-noise)
+- [x] **BUG-01**: Fix non-deterministic world generation — replace Math.random with seeded RNG (simplex-noise)
 - [ ] **BUG-02**: Fix diagonal movement physics normalization — ensure diagonal movement not faster than straight
 - [ ] **BUG-03**: Implement collision detection — player cannot walk through blocks or fall through floor
 - [ ] **BUG-04**: Add input validation for voxel coordinates to prevent array index out of bounds
@@ -99,7 +99,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TECH-05 | Phase 1 | Pending |
 | TECH-06 | Phase 1 | Complete |
 | TECH-07 | Phase 1 | Complete |
-| BUG-01 | Phase 1 | Pending |
+| BUG-01 | Phase 1 | Complete |
 | BUG-02 | Phase 3 | Pending |
 | BUG-03 | Phase 3 | Pending |
 | BUG-04 | Phase 1 | Pending |
