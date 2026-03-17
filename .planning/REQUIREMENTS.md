@@ -10,12 +10,12 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Tech Debt
 
 - [ ] **TECH-01**: Eliminate duplicate world data structures (World vs ChunkManager) — consolidate chunk management into ChunkManager only
-- [ ] **TECH-02**: Extract hardcoded constants (CHUNK_SIZE = 32) to shared constants module
+- [x] **TECH-02**: Extract hardcoded constants (CHUNK_SIZE = 32) to shared constants module
 - [ ] **TECH-03**: Add error handling to async module loading in Engine.initSystems()
 - [ ] **TECH-04**: Implement stub methods (loadWorld, saveWorld, update persistence) with IndexedDB
 - [ ] **TECH-05**: Fix event listener memory leaks in Player class — add cleanup method
 - [ ] **TECH-06**: Implement logging levels, disable debug logs in production
-- [ ] **TECH-07**: Add package.json with dependencies (Three.js, Cannon-es, Simplex-noise, Dexie)
+- [x] **TECH-07**: Add package.json with dependencies (Three.js, Cannon-es, Simplex-noise, Dexie)
 
 ### Bug Fixes
 
@@ -47,7 +47,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Test Coverage
 
-- [ ] **TEST-01**: Add test framework and basic test structure
+- [x] **TEST-01**: Add test framework and basic test structure
 - [ ] **TEST-02**: Write tests for world generation determinism
 - [ ] **TEST-03**: Write tests for chunk coordinate calculations
 - [ ] **TEST-04**: Write tests for player physics calculations
@@ -93,12 +93,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TECH-01 | Phase 1 | Pending |
-| TECH-02 | Phase 1 | Pending |
+| TECH-02 | Phase 1 | Complete |
 | TECH-03 | Phase 1 | Pending |
 | TECH-04 | Phase 5 | Pending |
 | TECH-05 | Phase 1 | Pending |
 | TECH-06 | Phase 1 | Pending |
-| TECH-07 | Phase 1 | Pending |
+| TECH-07 | Phase 1 | Complete |
 | BUG-01 | Phase 1 | Pending |
 | BUG-02 | Phase 3 | Pending |
 | BUG-03 | Phase 3 | Pending |
@@ -115,7 +115,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-05 | Phase 2 | Pending |
 | SEC-01 | Phase 1 | Pending |
 | SEC-02 | Phase 1 | Pending |
-| TEST-01 | Phase 1 | Pending |
+| TEST-01 | Phase 1 | Complete |
 | TEST-02 | Phase 1 | Pending |
 | TEST-03 | Phase 1 | Pending |
 | TEST-04 | Phase 3 | Pending |
