@@ -254,11 +254,11 @@ export class Player {
             moveZ = -1;
         }
         
-        // Strafing left/right - swapped signs
+        // Strafing left/right - original signs (relative to camera via rotation)
         if (this.movement.left && !this.movement.right) {
-            moveX = 1;
-        } else if (this.movement.right && !this.movement.left) {
             moveX = -1;
+        } else if (this.movement.right && !this.movement.left) {
+            moveX = 1;
         }
         
         // Normalize diagonal movement
