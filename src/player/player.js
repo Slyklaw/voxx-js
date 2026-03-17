@@ -1,6 +1,7 @@
 /**
  * Player controller and physics system for Voxx-JS voxel engine
  */
+import { logger } from '../core/logger.js';
 import { WALK_SPEED, JUMP_STRENGTH, GRAVITY, MOUSE_SENSITIVITY } from '../core/constants.js';
 
 export class Player {
@@ -37,7 +38,7 @@ export class Player {
         this.gravity = GRAVITY;
         this.mouseSensitivity = MOUSE_SENSITIVITY;
         
-        console.log('Player system initialized');
+        logger.info('Player system initialized');
         
         // Setup input controls
         this.setupInput();
@@ -47,24 +48,18 @@ export class Player {
      * Set up keyboard and mouse input handling
      */
     setupInput() {
-        // Keyboard controls
-        document.addEventListener('keydown', (event) => {
-            this.handleKeyDown(event);
-        });
-        
-        document.addEventListener('keyup', (event) => {
-            this.handleKeyUp(event);
-        });
-        
-        // Mouse controls
-        document.addEventListener('mousemove', (event) => {
-            this.handleMouseMove(event);
-        });
-        
-        // Prevent context menu on right click
-        document.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-        });
+        // Create bound handlers for proper cleanup
+        this._handleKeyDown = this.handleKeyDown.bind(this);
+        this._handleKeyUp = this.handleKeyUp.bind(this);
+        this._handleMouseMove = this.handleMouseMove.bind(this);
+        this._handleContextMenu = (event) => event.preventDefault();
+
+        document.addEventListener('keydown', this._handleKeyDown);
+        document.addEventListener('keyup', this._handleKeyUp);
+        document.addEventListener('mousemove', this._handleMouseMove);
+        document.addEventListener('contextmenu', this._handleContextMenu);
+
+        logger.debug('Player input handlers registered');
     }
     
     /**
@@ -272,5 +267,31 @@ export class Player {
         if (document.exitPointerLock) {
             document.exitPointerLock();
         }
+    }
+
+    /**
+     * Clean up event listeners and resources
+     */
+    destroy() {
+        // Remove all event listeners
+        document.removeEventListener('keydown', this._handleKeyDown);
+        document.removeEventListener('keyup', this._handleKeyUp);
+        document.removeEventListener('mousemove', this._handleMouseMove);
+        document.removeEventListener('contextmenu', this._handleContextMenu);
+
+        // Clear references
+        this._handleKeyDown = null;
+        this._handleKeyUp = null;
+        this._handleMouseMove = null;
+        this._handleContextMenu = null;
+
+        logger.info('Player destroyed, listeners removed');
+    }
+
+    /**
+     * Check if player has been destroyed
+     */
+    isDestroyed() {
+        return this._handleKeyDown === null;
     }
 }
