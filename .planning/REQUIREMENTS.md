@@ -122,8 +122,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-05 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 27
+- v1 requirements: 28 total
+- Mapped to phases: 28
 - Unmapped: 0 ✓
 
 ---
