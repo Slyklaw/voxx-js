@@ -129,7 +129,7 @@ export class Engine {
         
         // Update player (handles input and physics)
         if (this.player && deltaTime > 0) {
-            this.player.update(deltaTime);
+            this.player.update(deltaTime, this.world?.chunkManager);
         }
         
         // Get player position for chunk loading and camera
