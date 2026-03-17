@@ -1,6 +1,8 @@
 /**
  * Player controller and physics system for Voxx-JS voxel engine
  */
+import { WALK_SPEED, JUMP_STRENGTH, GRAVITY, MOUSE_SENSITIVITY } from '../core/constants.js';
+
 export class Player {
     constructor() {
         // Player position (world coordinates)
@@ -30,10 +32,10 @@ export class Player {
         };
         
         // Camera settings
-        this.walkSpeed = 5.0;    // Units per second
-        this.jumpStrength = 8.0;  // Vertical velocity when jumping
-        this.gravity = 20.0;      // Gravity strength
-        this.mouseSensitivity = 0.002; // Mouse sensitivity
+        this.walkSpeed = WALK_SPEED;
+        this.jumpStrength = JUMP_STRENGTH;
+        this.gravity = GRAVITY;
+        this.mouseSensitivity = MOUSE_SENSITIVITY;
         
         console.log('Player system initialized');
         

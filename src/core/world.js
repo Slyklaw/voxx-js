@@ -2,12 +2,14 @@
  * World management system for Voxx-JS voxel engine
  * Handles chunk-based world storage and generation
  */
+import { CHUNK_SIZE, WORLD_SEED_DEFAULT } from './constants.js';
+
 export class World {
     constructor() {
         this.chunks = new Map(); // Store chunks by coordinates
-        this.chunkSize = 32; // 32x32x32 blocks per chunk
-        this.worldSeed = Math.random() * 10000;
-        
+        this.chunkSize = CHUNK_SIZE;
+        this.worldSeed = WORLD_SEED_DEFAULT;
+
         console.log('World system initialized');
     }
     

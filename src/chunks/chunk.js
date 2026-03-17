@@ -2,22 +2,24 @@
  * Chunk data structure for Voxx-JS voxel engine
  * Represents a 32x32x32 section of the world
  */
+import { CHUNK_SIZE } from '../core/constants.js';
+
 export class Chunk {
     constructor(x, y, z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        
+
         // Initialize chunk data
-        this.data = new Array(32 * 32 * 32);
+        this.data = new Array(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
         this.loaded = false;
         this.modified = false;
-        
+
         // Initialize all voxels to air (null)
         for (let i = 0; i < this.data.length; i++) {
             this.data[i] = null;
         }
-        
+
         console.log(`Chunk created at (${x}, ${y}, ${z})`);
     }
     
@@ -29,10 +31,10 @@ export class Chunk {
      */
     getVoxel(x, y, z) {
         // Bounds checking
-        if (x < 0 || x >= 32 || y < 0 || y >= 32 || z < 0 || z >= 32) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
             return null;
         }
-        
+
         const index = this.getVoxelIndex(x, y, z);
         return this.data[index];
     }
@@ -46,10 +48,10 @@ export class Chunk {
      */
     setVoxel(x, y, z, voxel) {
         // Bounds checking
-        if (x < 0 || x >= 32 || y < 0 || y >= 32 || z < 0 || z >= 32) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
             return false;
         }
-        
+
         const index = this.getVoxelIndex(x, y, z);
         this.data[index] = voxel;
         this.modified = true;
@@ -63,7 +65,7 @@ export class Chunk {
      * @param {number} z - Local Z coordinate (0-31)
      */
     getVoxelIndex(x, y, z) {
-        return x + (y * 32) + (z * 32 * 32);
+        return x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE);
     }
     
     /**
@@ -74,9 +76,9 @@ export class Chunk {
      */
     getWorldCoordinates(localX, localY, localZ) {
         return {
-            x: this.x * 32 + localX,
-            y: this.y * 32 + localY,
-            z: this.z * 32 + localZ
+            x: this.x * CHUNK_SIZE + localX,
+            y: this.y * CHUNK_SIZE + localY,
+            z: this.z * CHUNK_SIZE + localZ
         };
     }
     

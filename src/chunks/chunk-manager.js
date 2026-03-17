@@ -2,15 +2,17 @@
  * Chunk management system for Voxx-JS voxel engine
  * Handles loading, unloading, and organization of chunks
  */
+import { CHUNK_SIZE, VIEW_DISTANCE } from '../core/constants.js';
+
 export class ChunkManager {
     constructor(world) {
         this.world = world;
         this.chunks = new Map(); // Store chunks by coordinates
-        this.chunkSize = 32; // 32x32x32 blocks per chunk
-        
+        this.chunkSize = CHUNK_SIZE;
+
         // View distance in chunks (player can see this many chunks in each direction)
-        this.viewDistance = 8;
-        
+        this.viewDistance = VIEW_DISTANCE;
+
         console.log('Chunk manager initialized');
     }
     
