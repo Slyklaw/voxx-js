@@ -247,18 +247,18 @@ export class Player {
         let moveX = 0;
         let moveZ = 0;
         
-        // Forward/backward (along -z/+z axis)
+        // Forward/backward - swapped signs
         if (this.movement.forward && !this.movement.backward) {
-            moveZ = -1;
-        } else if (this.movement.backward && !this.movement.forward) {
             moveZ = 1;
+        } else if (this.movement.backward && !this.movement.forward) {
+            moveZ = -1;
         }
         
-        // Strafing left/right (along -x/+x axis)
+        // Strafing left/right - swapped signs
         if (this.movement.left && !this.movement.right) {
-            moveX = -1;
-        } else if (this.movement.right && !this.movement.left) {
             moveX = 1;
+        } else if (this.movement.right && !this.movement.left) {
+            moveX = -1;
         }
         
         // Normalize diagonal movement
