@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 Phase: 3 of 5 (Physics)
 Plan: 2/2
 Status: Phase 3 complete - diagonal movement fixed, collision detection implemented
-Last activity: 2026-03-17 — Phase 3 complete: AABB collision, gravity, wall sliding
+Last activity: 2026-03-17 — Gap closure: wired up complete rendering pipeline (02-06)
 
 Progress: 60% (3/5 phases complete)
 
@@ -77,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 03-physics]: Test decision
 - [Phase 03-physics]: Use vector normalization with Math.sqrt to ensure diagonal speed equals straight speed
 - [Phase 03-physics]: Preserve yaw rotation after normalization to maintain intended direction
+- [Gap 02-06]: World.update(playerPos) required to trigger chunk loading
+- [Gap 02-06]: Initial chunks loaded on startup (5x5 around spawn) for immediate visibility
+- [Gap 02-06]: VertexPool.addChunkGeometry() handles mesh generation internally
 
 ### Pending Todos
 

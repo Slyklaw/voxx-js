@@ -201,10 +201,10 @@ export class VertexPool {
             gl.vertexAttribPointer(attribLocations.normal, 3, gl.FLOAT, false, VERTEX_STRIDE, 3 * BYTES_PER_FLOAT);
         }
         
-        // Texture coordinate attribute
-        if (attribLocations.texCoord !== undefined && attribLocations.texCoord >= 0) {
-            gl.enableVertexAttribArray(attribLocations.texCoord);
-            gl.vertexAttribPointer(attribLocations.texCoord, 2, gl.FLOAT, false, VERTEX_STRIDE, 6 * BYTES_PER_FLOAT);
+        // Color attribute (was texCoord)
+        if (attribLocations.color !== undefined && attribLocations.color >= 0) {
+            gl.enableVertexAttribArray(attribLocations.color);
+            gl.vertexAttribPointer(attribLocations.color, 3, gl.FLOAT, false, VERTEX_STRIDE, 6 * BYTES_PER_FLOAT);
         }
         
         // Bind index buffer

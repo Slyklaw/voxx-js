@@ -54,52 +54,51 @@ export class Renderer {
         const fragColor = isWebGL2 ? 'fragColor' : 'gl_FragColor';
         const versionPrefix = isWebGL2 ? '#version 300 es\n' : '';
         
-        // Vertex shader source
+        // Vertex shader source - uses vertex colors, not textures
         const vsSource = `${versionPrefix}
             ${inKeyword} vec3 aPosition;
-            ${inKeyword} vec2 aTexCoord;
+            ${inKeyword} vec3 aColor;
             ${inKeyword} vec3 aNormal;
             
             uniform mat4 uModelViewMatrix;
             uniform mat4 uProjectionMatrix;
             
-            ${outKeyword} vec2 vTexCoord;
+            ${outKeyword} vec3 vColor;
             ${outKeyword} vec3 vNormal;
             ${outKeyword} vec3 vPosition;
             
             void main() {
                 gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
-                vTexCoord = aTexCoord;
+                vColor = aColor;
                 vNormal = aNormal;
                 vPosition = aPosition;
             }
         `;
         
-        // Fragment shader source
+        // Fragment shader source - uses vertex colors with lighting
         const fsSource = `${versionPrefix}
             precision mediump float;
             
-            ${isWebGL2 ? 'in' : 'varying'} vec2 vTexCoord;
+            ${isWebGL2 ? 'in' : 'varying'} vec3 vColor;
             ${isWebGL2 ? 'in' : 'varying'} vec3 vNormal;
             ${isWebGL2 ? 'in' : 'varying'} vec3 vPosition;
-            
-            uniform sampler2D uSampler;
             
             ${isWebGL2 ? 'out vec4 fragColor;' : ''}
             
             void main() {
-                // Simple lighting calculation
+                // Simple directional lighting
                 vec3 lightDir = normalize(vec3(0.5, 1.0, 0.5));
-                float diff = max(dot(normalize(vNormal), lightDir), 0.0);
-                vec3 lightColor = vec3(1.0, 1.0, 1.0);
+                vec3 normal = normalize(vNormal);
+                float diff = max(dot(normal, lightDir), 0.0);
                 
-                // Sample texture
-                vec4 texelColor = ${textureFunc}(uSampler, vTexCoord);
+                // Ambient + diffuse lighting
+                float ambient = 0.3;
+                float lighting = ambient + diff * 0.7;
                 
-                // Apply lighting
-                vec3 finalColor = texelColor.rgb * diff * lightColor;
+                // Apply lighting to vertex color
+                vec3 finalColor = vColor * lighting;
                 
-                ${fragColor} = vec4(finalColor, texelColor.a);
+                ${fragColor} = vec4(finalColor, 1.0);
             }
         `;
         
@@ -121,14 +120,13 @@ export class Renderer {
         // Get attribute and uniform locations
         this.attribLocations = {
             position: this.gl.getAttribLocation(this.program, 'aPosition'),
-            texCoord: this.gl.getAttribLocation(this.program, 'aTexCoord'),
+            color: this.gl.getAttribLocation(this.program, 'aColor'),
             normal: this.gl.getAttribLocation(this.program, 'aNormal')
         };
         
         this.uniformLocations = {
             projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix'),
-            modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix'),
-            sampler: this.gl.getUniformLocation(this.program, 'uSampler')
+            modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix')
         };
     }
     
