@@ -224,6 +224,14 @@ window.addEventListener('load', () => {
         window.addEventListener('resize', () => {
             engine.onResize();
         });
+        
+        // Enable pointer lock on canvas click for mouse look
+        const canvas = document.getElementById('gameCanvas');
+        canvas.addEventListener('click', () => {
+            if (!document.pointerLockElement) {
+                canvas.requestPointerLock();
+            }
+        });
     } catch (error) {
         logger.error('Failed to initialize engine:', error);
     }

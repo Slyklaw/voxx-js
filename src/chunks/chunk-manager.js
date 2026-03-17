@@ -68,12 +68,16 @@ export class ChunkManager {
         const playerChunkY = Math.floor(playerPos.y / this.chunkSize);
         const playerChunkZ = Math.floor(playerPos.z / this.chunkSize);
         
+        // Limit vertical loading to just the chunks where terrain exists (y=-1 to y=1)
+        const minY = Math.max(-1, playerChunkY - 1);
+        const maxY = Math.min(1, playerChunkY + 1);
+        
         // Build queue of missing chunks within load distance
         for (let x = -this.loadDistance; x <= this.loadDistance; x++) {
-            for (let y = -this.loadDistance; y <= this.loadDistance; y++) {
+            for (let y = minY; y <= maxY; y++) {
                 for (let z = -this.loadDistance; z <= this.loadDistance; z++) {
                     const chunkX = playerChunkX + x;
-                    const chunkY = playerChunkY + y;
+                    const chunkY = y;
                     const chunkZ = playerChunkZ + z;
                     const chunkKey = `${chunkX},${chunkY},${chunkZ}`;
                     
@@ -82,12 +86,9 @@ export class ChunkManager {
                         continue;
                     }
                     
-                    // Only add chunks within load distance (Manhattan distance check)
-                    if (Math.abs(x) <= this.loadDistance && 
-                        Math.abs(y) <= this.loadDistance && 
-                        Math.abs(z) <= this.loadDistance) {
-                        
-                        const distance = x*x + y*y + z*z; // squared distance for sorting
+                    // Only add chunks within load distance (horizontal only, vertical is limited above)
+                    if (Math.abs(x) <= this.loadDistance && Math.abs(z) <= this.loadDistance) {
+                        const distance = x*x + z*z; // horizontal distance for sorting
                         this.chunksToLoad.push({ key: chunkKey, x: chunkX, y: chunkY, z: chunkZ, distance });
                     }
                 }
