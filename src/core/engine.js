@@ -10,6 +10,7 @@ export class Engine {
         this.canvas = document.getElementById('gameCanvas');
         this.gl = null;
         this.running = false;
+        this.lastTime = 0; // For deltaTime calculation
 
         // Set canvas size to window size
         this.canvas.width = window.innerWidth;
@@ -121,11 +122,18 @@ export class Engine {
     renderLoop() {
         if (!this.running) return;
         
-        // Clear the canvas
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        // Calculate deltaTime (in seconds)
+        const currentTime = performance.now();
+        const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.1); // Cap at 100ms
+        this.lastTime = currentTime;
+        
+        // Update player (handles input and physics)
+        if (this.player && deltaTime > 0) {
+            this.player.update(deltaTime);
+        }
         
         // Get player position for chunk loading and camera
-        const playerPos = this.player?.getPosition() || { x: 0, y: 10, z: 0 };
+        const playerPos = this.player?.getPosition() || { x: 0, y: 50, z: 0 };
         
         // Update world with player position (triggers chunk loading)
         if (this.world) {
@@ -133,6 +141,9 @@ export class Engine {
         }
         
         if (this.renderer) {
+            // Clear the canvas
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            
             // Get loaded chunks from chunk manager for frustum culling
             const chunks = this.world?.chunkManager?.getLoadedChunks() || [];
             
@@ -152,7 +163,7 @@ export class Engine {
      * @param {Object} playerPos - Player position {x, y, z}
      * @returns {Float32Array} 4x4 view matrix
      */
-    createViewMatrix(playerPos = { x: 0, y: 10, z: 0 }) {
+    createViewMatrix(playerPos = { x: 0, y: 50, z: 0 }) {
         // Camera at player position with eye height offset
         const eyeX = playerPos.x;
         const eyeY = playerPos.y + 1.7; // Eye height

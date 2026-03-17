@@ -6,8 +6,8 @@ import { WALK_SPEED, JUMP_STRENGTH, GRAVITY, MOUSE_SENSITIVITY, CHUNK_SIZE } fro
 
 export class Player {
     constructor() {
-        // Player position (world coordinates)
-        this.position = { x: 0, y: 10, z: 0 };
+        // Player position (world coordinates) - spawn above terrain
+        this.position = { x: 0, y: 50, z: 0 };
         
         // Player rotation (in radians)
         this.rotation = { 
