@@ -70,3 +70,71 @@ describe('Player cleanup', () => {
     expect(player.mouseSensitivity).toBe(0.002);
   });
 });
+
+describe('Player movement normalization', () => {
+  let player;
+  
+  beforeEach(() => {
+    // Mock document methods
+    global.document = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      pointerLockElement: null,
+      exitPointerLock: jest.fn(),
+    };
+    global.document.getElementById = jest.fn(() => ({ requestPointerLock: jest.fn() }));
+    
+    player = new Player();
+    // Reset movement keys
+    player.movement = {
+      forward: false,
+      backward: false,
+      left: false,
+      right: false,
+      jump: false,
+      sneak: false,
+    };
+  });
+  
+  afterEach(() => {
+    if (player && !player.isDestroyed()) {
+      player.destroy();
+    }
+  });
+  
+  test('forward movement has correct speed', () => {
+    player.movement.forward = true;
+    player.update(0.1);
+    const speed = Math.sqrt(player.velocity.x ** 2 + player.velocity.z ** 2);
+    expect(speed).toBeCloseTo(player.walkSpeed, 5);
+  });
+  
+  test('diagonal movement equals straight movement speed', () => {
+    player.movement.forward = true;
+    player.movement.left = true;
+    player.update(0.1);
+    const diagonalSpeed = Math.sqrt(player.velocity.x ** 2 + player.velocity.z ** 2);
+    
+    // Reset and test straight
+    player.velocity = { x: 0, y: 0, z: 0 };
+    player.movement.left = false;
+    player.update(0.1);
+    const straightSpeed = Math.sqrt(player.velocity.x ** 2 + player.velocity.z ** 2);
+    
+    expect(diagonalSpeed).toBeCloseTo(straightSpeed, 5);
+  });
+  
+  test('sneak halves speed', () => {
+    player.movement.forward = true;
+    player.movement.sneak = true;
+    player.update(0.1);
+    const speed = Math.sqrt(player.velocity.x ** 2 + player.velocity.z ** 2);
+    expect(speed).toBeCloseTo(player.walkSpeed / 2, 5);
+  });
+  
+  test('no movement when no keys pressed', () => {
+    player.update(0.1);
+    expect(player.velocity.x).toBe(0);
+    expect(player.velocity.z).toBe(0);
+  });
+});
