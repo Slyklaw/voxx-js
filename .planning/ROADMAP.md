@@ -10,7 +10,7 @@ Five phases transform the existing codebase from a prototype with technical debt
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Foundation** - Clean architecture, seeded RNG, error handling, basic tests
+- [x] **Phase 1: Foundation** - Clean architecture, seeded RNG, error handling, basic tests
 - [ ] **Phase 2: Rendering** - WebGL 2.0, frustum culling, chunk loading optimization
 - [ ] **Phase 3: Physics** - Collision detection, player movement fixes, physics tests
 - [ ] **Phase 4: World & Interaction** - Block placement/removal, inventory, terrain generation
@@ -38,7 +38,7 @@ Plans:
 - [x] 01-03-PLAN.md — Consolidate ChunkManager as single source (TECH-01, BUG-04, SEC-01)
 - [x] 01-04-PLAN.md — Fix Player event listener cleanup (TECH-05, SEC-02)
 - [x] 01-05-PLAN.md — Replace Math.random with seeded PRNG (BUG-01)
-- [ ] 01-06-PLAN.md — Add tests for Chunk and Engine (TEST-02, TEST-03)
+- [x] 01-06-PLAN.md — Add tests for Chunk and Engine (TEST-02, TEST-03)
 
 ### Phase 2: Rendering
 **Goal**: Deliver performant WebGL 2.0 rendering with intelligent chunk visibility and loading management
@@ -94,7 +94,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 5/6 | In Progress | - |
+| 1. Foundation | 6/6 | Complete | 2026-03-17 |
 | 2. Rendering | 0/TBD | Not started | - |
 | 3. Physics | 0/TBD | Not started | - |
 | 4. World & Interaction | 0/TBD | Not started | - |

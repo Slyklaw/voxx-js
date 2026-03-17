@@ -48,8 +48,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Test Coverage
 
 - [x] **TEST-01**: Add test framework and basic test structure
-- [ ] **TEST-02**: Write tests for world generation determinism
-- [ ] **TEST-03**: Write tests for chunk coordinate calculations
+- [x] **TEST-02**: Write tests for world generation determinism
+- [x] **TEST-03**: Write tests for chunk coordinate calculations
 - [ ] **TEST-04**: Write tests for player physics calculations
 - [ ] **TEST-05**: Write tests for renderer matrix math
 
@@ -116,8 +116,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
 | TEST-01 | Phase 1 | Complete |
-| TEST-02 | Phase 1 | Pending |
-| TEST-03 | Phase 1 | Pending |
+| TEST-02 | Phase 1 | Complete |
+| TEST-03 | Phase 1 | Complete |
 | TEST-04 | Phase 3 | Pending |
 | TEST-05 | Phase 2 | Pending |
 
