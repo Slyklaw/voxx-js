@@ -12,7 +12,7 @@ Five phases transform the existing codebase from a prototype with technical debt
 
 - [x] **Phase 1: Foundation** - Clean architecture, seeded RNG, error handling, basic tests
 - [x] **Phase 2: Rendering** - WebGL 2.0, frustum culling, chunk loading optimization
-- [ ] **Phase 3: Physics** - Collision detection, player movement fixes, physics tests
+- [x] **Phase 3: Physics** - Collision detection, player movement fixes, physics tests
 - [ ] **Phase 4: World & Interaction** - Block placement/removal, inventory, terrain generation
 - [ ] **Phase 5: Persistence** - World save/load, chunk pooling, comprehensive tests
 
@@ -71,7 +71,11 @@ Plans:
   3. Player cannot fall through floor or world boundary
   4. Player slides along walls when moving diagonally into obstacles
   5. Physics calculation tests pass (velocity, collision response)
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
+
+Plans:
+- [x] 03-01-PLAN.md — Fix diagonal movement normalization (BUG-02)
+- [x] 03-02-PLAN.md — Implement AABB collision detection (BUG-03, TEST-04)
 
 ### Phase 4: World & Interaction
 **Goal**: Enable core gameplay loop - block placement, removal, inventory, and terrain variety
@@ -105,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 8/8 | Complete | 2026-03-17 |
 | 2. Rendering | 5/5 | Complete | 2026-03-17 |
-| 3. Physics | 0/TBD | Not started | - |
+| 3. Physics | 2/2 | Complete | 2026-03-17 |
 | 4. World & Interaction | 0/TBD | Not started | - |
 | 5. Persistence | 0/TBD | Not started | - |
 

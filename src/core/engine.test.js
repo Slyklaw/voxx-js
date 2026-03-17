@@ -101,7 +101,8 @@ describe('Engine initialization', () => {
   
   test('constructor gets WebGL context', () => {
     const engine = new Engine();
-    expect(mockCanvas.getContext).toHaveBeenCalledWith('webgl');
+    // Engine tries webgl2 first, then falls back to webgl
+    expect(mockCanvas.getContext).toHaveBeenCalledWith('webgl2');
     expect(engine.gl).toBe(mockGl);
   });
   

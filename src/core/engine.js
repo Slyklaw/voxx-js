@@ -124,18 +124,20 @@ export class Engine {
         // Clear the canvas
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         
-        // Update and render systems
+        // Get player position for chunk loading and camera
+        const playerPos = this.player?.getPosition() || { x: 0, y: 10, z: 0 };
+        
+        // Update world with player position (triggers chunk loading)
         if (this.world) {
-            this.world.update();
+            this.world.update(playerPos);
         }
         
         if (this.renderer) {
             // Get loaded chunks from chunk manager for frustum culling
             const chunks = this.world?.chunkManager?.getLoadedChunks() || [];
             
-            // Create view matrix (camera position/rotation)
-            // For now, use a fixed camera position looking at origin
-            const viewMatrix = this.createViewMatrix();
+            // Create view matrix based on player position
+            const viewMatrix = this.createViewMatrix(playerPos);
             
             // Render with frustum culling - pass chunks and view matrix
             this.renderer.render(chunks, viewMatrix);
@@ -146,16 +148,17 @@ export class Engine {
     }
     
     /**
-     * Create view matrix for camera
+     * Create view matrix for camera based on player position
+     * @param {Object} playerPos - Player position {x, y, z}
      * @returns {Float32Array} 4x4 view matrix
      */
-    createViewMatrix() {
-        // Camera at position (0, 50, 100) looking toward origin
-        const eyeX = 0;
-        const eyeY = 50;
-        const eyeZ = 100;
+    createViewMatrix(playerPos = { x: 0, y: 10, z: 0 }) {
+        // Camera at player position with eye height offset
+        const eyeX = playerPos.x;
+        const eyeY = playerPos.y + 1.7; // Eye height
+        const eyeZ = playerPos.z + 3;   // Slightly behind player
         
-        // Simple look-at matrix (camera at (0, 50, 100) looking at (0, 0, 0))
+        // Simple translation matrix
         return new Float32Array([
             1, 0, 0, 0,
             0, 1, 0, 0,

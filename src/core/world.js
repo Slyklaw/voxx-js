@@ -16,6 +16,25 @@ export class World {
         this.rng = createRNG(this.worldSeed);
 
         logger.info(`World system initialized with seed: ${this.worldSeed}`);
+        
+        // Load initial chunks around spawn point
+        this.loadInitialChunks();
+    }
+    
+    /**
+     * Load initial chunks around spawn point so terrain is visible on startup
+     */
+    loadInitialChunks() {
+        // Load chunks in a 5x5 area around origin
+        for (let x = -2; x <= 2; x++) {
+            for (let z = -2; z <= 2; z++) {
+                // Get chunk (creates it)
+                this.chunkManager.getChunk(x, 0, z);
+                // Generate terrain data
+                this.generateChunk(x, 0, z);
+            }
+        }
+        logger.info('Loaded initial chunks around spawn');
     }
     
     /**
@@ -165,14 +184,12 @@ export class World {
     
     /**
      * Update world state
+     * @param {Object} playerPos - Player position {x, y, z}
      */
-    update() {
-        // World update logic would go here
-        // For now, we'll just log that it's running
-        // In a real implementation, this might include:
-        // - Chunk loading/unloading based on player position
-        // - World generation for new areas
-        // - Entity updates
+    update(playerPos) {
+        if (playerPos && this.chunkManager) {
+            this.chunkManager.update(playerPos);
+        }
     }
     
     /**
