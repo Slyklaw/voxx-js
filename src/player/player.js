@@ -164,26 +164,42 @@ export class Player {
         // Calculate movement direction based on rotation
         const moveSpeed = this.movement.sneak ? this.walkSpeed / 2 : this.walkSpeed;
         
-        // Forward/backward movement
+        // Calculate raw movement direction (player-local coordinates)
+        let moveX = 0;
+        let moveZ = 0;
+        
+        // Forward/backward (along -z/+z axis)
         if (this.movement.forward && !this.movement.backward) {
-            this.velocity.z = -moveSpeed * Math.cos(this.rotation.yaw);
-            this.velocity.x = moveSpeed * Math.sin(this.rotation.yaw);
+            moveZ = -1;
         } else if (this.movement.backward && !this.movement.forward) {
-            this.velocity.z = moveSpeed * Math.cos(this.rotation.yaw);
-            this.velocity.x = -moveSpeed * Math.sin(this.rotation.yaw);
+            moveZ = 1;
+        }
+        
+        // Strafing left/right (along -x/+x axis)
+        if (this.movement.left && !this.movement.right) {
+            moveX = -1;
+        } else if (this.movement.right && !this.movement.left) {
+            moveX = 1;
+        }
+        
+        // Normalize diagonal movement
+        const magnitude = Math.sqrt(moveX * moveX + moveZ * moveZ);
+        if (magnitude > 0) {
+            // Normalize and scale by moveSpeed
+            this.velocity.x = (moveX / magnitude) * moveSpeed;
+            this.velocity.z = (moveZ / magnitude) * moveSpeed;
         } else {
             this.velocity.x = 0;
             this.velocity.z = 0;
         }
         
-        // Strafing left/right
-        if (this.movement.left && !this.movement.right) {
-            this.velocity.x += moveSpeed * Math.cos(this.rotation.yaw);
-            this.velocity.z += moveSpeed * Math.sin(this.rotation.yaw);
-        } else if (this.movement.right && !this.movement.left) {
-            this.velocity.x -= moveSpeed * Math.cos(this.rotation.yaw);
-            this.velocity.z -= moveSpeed * Math.sin(this.rotation.yaw);
-        }
+        // Apply rotation to movement direction
+        const cos = Math.cos(this.rotation.yaw);
+        const sin = Math.sin(this.rotation.yaw);
+        const finalX = this.velocity.x * cos - this.velocity.z * sin;
+        const finalZ = this.velocity.x * sin + this.velocity.z * cos;
+        this.velocity.x = finalX;
+        this.velocity.z = finalZ;
     }
     
     /**
