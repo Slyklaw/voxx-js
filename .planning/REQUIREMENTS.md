@@ -34,7 +34,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Performance Improvements
 
-- [ ] **PERF-01**: Add frustum culling for rendering — only render visible chunks
+- [x] **PERF-01**: Add frustum culling for rendering — only render visible chunks
 - [ ] **PERF-02**: Implement chunk object pooling to reduce memory allocations
 - [ ] **PERF-03**: Add chunk loading hysteresis and distance threshold
 - [x] **PERF-04**: Upgrade to WebGL 2.0 with WebGL 1.0 fallback
@@ -108,7 +108,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FEAT-03 | Phase 4 | Pending |
 | FEAT-04 | Phase 4 | Pending |
 | FEAT-05 | Phase 2 | Pending |
-| PERF-01 | Phase 2 | Pending |
+| PERF-01 | Phase 2 | Complete |
 | PERF-02 | Phase 5 | Pending |
 | PERF-03 | Phase 2 | Pending |
 | PERF-04 | Phase 2 | Complete |

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 ## Current Position
 
 Phase: 2 of 5 (Rendering)
-Plan: 1/5
-Status: Phase 2 plan 1 complete - WebGL 2.0 upgrade with fallback
-Last activity: 2026-03-17 — Completed WebGL 2.0 upgrade (02-01)
+Plan: 2/5
+Status: Phase 2 plan 2 complete - Frustum culling implemented
+Last activity: 2026-03-17 — Completed frustum culling (02-02)
 
-Progress: 20%
+Progress: 24%
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: 20%
 | Phase 01-foundation P06 | 3min | 2 tasks | 4 files |
 | Phase 01-foundation P08 | 1min | 2 tasks | 2 files |
 | Phase 02-rendering P01 | 2min | 2 tasks | 2 files |
+| Phase 02-rendering P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,7 @@ Recent decisions affecting current work:
 - [Phase 01-03]: ChunkManager is single source of truth for chunk storage — Eliminated duplicate this.chunks Map in World class, World now delegates all chunk operations to ChunkManager
 - [02-01]: Detect WebGL version via gl.getParameter(gl.VERSION) with regex parsing
 - [02-01]: Dynamic shader generation based on detected WebGL version using template literals
+- [Phase 02-02]: Used p-vertex method for AABB-frustum testing (most efficient for axis-aligned boxes)
 
 ### Pending Todos
 
