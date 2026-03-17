@@ -2,7 +2,7 @@
  * Player controller and physics system for Voxx-JS voxel engine
  */
 import { logger } from '../core/logger.js';
-import { WALK_SPEED, JUMP_STRENGTH, GRAVITY, MOUSE_SENSITIVITY } from '../core/constants.js';
+import { WALK_SPEED, JUMP_STRENGTH, GRAVITY, MOUSE_SENSITIVITY, CHUNK_SIZE } from '../core/constants.js';
 
 export class Player {
     constructor() {
@@ -32,6 +32,10 @@ export class Player {
             sneak: false
         };
         
+        // Player collision box (half-extents)
+        this.collisionWidth = 0.3;  // Half of player width (0.6 total)
+        this.collisionHeight = 0.9; // Half of player height (1.8 total)
+
         // Camera settings
         this.walkSpeed = WALK_SPEED;
         this.jumpStrength = JUMP_STRENGTH;
@@ -264,6 +268,31 @@ export class Player {
         }
     }
     
+    /**
+     * Check if a world position is inside a solid voxel
+     * @param {number} x - World X coordinate
+     * @param {number} y - World Y coordinate
+     * @param {number} z - World Z coordinate
+     * @param {Object} chunkManager - Chunk manager for voxel queries
+     * @returns {boolean} True if position is inside a solid block
+     */
+    isPositionSolid(x, y, z, chunkManager) {
+        // Get chunk coordinates
+        const chunkX = Math.floor(x / CHUNK_SIZE);
+        const chunkZ = Math.floor(z / CHUNK_SIZE);
+        
+        // Get local coordinates within chunk
+        const localX = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+        const localZ = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+        const localY = Math.floor(y);
+        
+        const chunk = chunkManager.getChunk(chunkX, 0, chunkZ);
+        if (!chunk) return false;
+        
+        const voxel = chunk.getVoxel(localX, localY, localZ);
+        return voxel !== null; // Non-null is solid
+    }
+
     /**
      * Request pointer lock for mouse look
      */
