@@ -65,3 +65,62 @@ describe('World coordinate validation', () => {
     expect(world.getVoxel(0, 0, 'z')).toBeNull();
   });
 });
+
+describe('World generation determinism', () => {
+  test('world generation is deterministic with same seed', () => {
+    const seed = 42; // WORLD_SEED_DEFAULT
+    const world1 = new World();
+    const world2 = new World(); // same default seed
+    
+    // Generate chunk in first world
+    const chunk1 = world1.generateChunk(0, 0, 0);
+    expect(chunk1).toBeDefined();
+    
+    // Generate same chunk in second world
+    const chunk2 = world2.generateChunk(0, 0, 0);
+    expect(chunk2).toBeDefined();
+    
+    // Compare voxel data at multiple sample points
+    const samplePoints = [
+      [0, 0, 0],
+      [16, 16, 16],
+      [31, 31, 31],
+      [5, 10, 20],
+      [0, 31, 0],
+    ];
+    
+    for (const [x, y, z] of samplePoints) {
+      const voxel1 = chunk1.getVoxel(x, y, z);
+      const voxel2 = chunk2.getVoxel(x, y, z);
+      expect(voxel2).toEqual(voxel1);
+    }
+    
+    // Also verify that chunk's height data matches (if available)
+    // For simplex noise, height should be identical
+    // We can sample getHeightAt if World exposes it, but generateChunk already uses seeded noise.
+  });
+  
+  test('world generation differs with different seeds', () => {
+    const world1 = new World();
+    const world2 = new World();
+    world2.worldSeed = 12345; // different seed
+    
+    const chunk1 = world1.generateChunk(0, 0, 0);
+    const chunk2 = world2.generateChunk(0, 0, 0);
+    
+    // At least one sample point should differ
+    let differs = false;
+    for (let x = 0; x < 32 && !differs; x += 5) {
+      for (let y = 0; y < 32 && !differs; y += 5) {
+        for (let z = 0; z < 32 && !differs; z += 5) {
+          const voxel1 = chunk1.getVoxel(x, y, z);
+          const voxel2 = chunk2.getVoxel(x, y, z);
+          if (voxel1 !== voxel2) {
+            differs = true;
+          }
+        }
+      }
+    }
+    expect(differs).toBe(true);
+  });
+});
