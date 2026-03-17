@@ -179,18 +179,19 @@ export class Engine {
         const sin = Math.sin(playerRot.yaw);
         
         // View matrix in column-major format:
-        // Column 0: Right vector
-        // Column 1: Up vector  
-        // Column 2: Forward vector
-        // Column 3: Translation (negative eye position in rotated space)
+        // When yaw=0: looking along -Z, Right=(1,0,0), Forward=(0,0,-1)
+        // Column 0: Right vector = (cos, 0, -sin)
+        // Column 1: Up vector = (0, 1, 0)  
+        // Column 2: Forward vector = (-sin, 0, -cos)
+        // Column 3: -dot(basis, eye) for each
         return new Float32Array([
-            cos,  0,    -sin,   0,           // Column 0
-            0,    1,     0,     0,           // Column 1
-            sin,  0,     cos,   0,           // Column 2
-            -(cos * eyeX + sin * eyeZ),      // Column 3, x
-            -eyeY,                           // Column 3, y
-            -(-sin * eyeX + cos * eyeZ),     // Column 3, z
-            1                                // Column 3, w
+            cos,  0,    -sin,   0,                    // Column 0: Right
+            0,    1,     0,     0,                    // Column 1: Up
+            -sin, 0,    -cos,   0,                    // Column 2: Forward
+            -cos * eyeX + sin * eyeZ,                 // Column 3, x
+            -eyeY,                                    // Column 3, y
+            sin * eyeX + cos * eyeZ,                  // Column 3, z
+            1                                         // Column 3, w
         ]);
     }
     
