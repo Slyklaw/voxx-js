@@ -2,22 +2,25 @@
  * Main engine class for Voxx-JS voxel engine
  * Initializes the game and manages the main loop
  */
+import { logger } from './logger.js';
+import { EngineError } from './errors.js';
+
 export class Engine {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.gl = null;
         this.running = false;
-        
+
         // Set canvas size to window size
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        
+
         // Initialize WebGL context
         this.initWebGL();
-        
+
         // Initialize systems
         this.initSystems();
-        
+
         // Start the game loop
         this.start();
     }
@@ -42,9 +45,9 @@ export class Engine {
             // Enable backface culling
             this.gl.enable(this.gl.CULL_FACE);
             
-            console.log('WebGL initialized successfully');
+            logger.info('WebGL initialized successfully');
         } catch (error) {
-            console.error('Failed to initialize WebGL:', error);
+            logger.error('Failed to initialize WebGL:', error);
             throw error;
         }
     }
@@ -52,19 +55,41 @@ export class Engine {
     /**
      * Initialize all game systems
      */
-    initSystems() {
-        // Import and initialize core systems
-        import('./world.js').then((module) => {
-            this.world = new module.World();
-        });
-        
-        import('./renderer.js').then((module) => {
-            this.renderer = new module.Renderer(this.gl, this.canvas);
-        });
-        
-        import('../player/player.js').then((module) => {
-            this.player = new module.Player();
-        });
+    async initSystems() {
+        try {
+            const [worldModule, rendererModule, playerModule] = await Promise.allSettled([
+                import('./world.js'),
+                import('./renderer.js'),
+                import('../player/player.js')
+            ]);
+
+            if (worldModule.status === 'fulfilled') {
+                this.world = new worldModule.value.World();
+                logger.info('World system initialized');
+            } else {
+                logger.error('Failed to load world module:', worldModule.reason);
+                throw new EngineError('World module failed to load', 'world');
+            }
+
+            if (rendererModule.status === 'fulfilled') {
+                this.renderer = new rendererModule.value.Renderer(this.gl, this.canvas);
+                logger.info('Renderer initialized');
+            } else {
+                logger.error('Failed to load renderer module:', rendererModule.reason);
+                throw new EngineError('Renderer module failed to load', 'renderer');
+            }
+
+            if (playerModule.status === 'fulfilled') {
+                this.player = new playerModule.value.Player();
+                logger.info('Player system initialized');
+            } else {
+                logger.error('Failed to load player module:', playerModule.reason);
+                throw new EngineError('Player module failed to load', 'player');
+            }
+        } catch (error) {
+            logger.error('System initialization failed:', error);
+            throw error;
+        }
     }
     
     /**
@@ -74,7 +99,7 @@ export class Engine {
         if (this.running) return;
         
         this.running = true;
-        console.log('Game engine started');
+        logger.info('Game engine started');
         
         // Start the render loop
         this.renderLoop();
@@ -119,13 +144,13 @@ export class Engine {
 window.addEventListener('load', () => {
     try {
         const engine = new Engine();
-        console.log('Engine initialized');
-        
+        logger.info('Engine initialized');
+
         // Handle window resize
         window.addEventListener('resize', () => {
             engine.onResize();
         });
     } catch (error) {
-        console.error('Failed to initialize engine:', error);
+        logger.error('Failed to initialize engine:', error);
     }
 });
