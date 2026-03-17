@@ -154,6 +154,9 @@ export class Engine {
             this.renderer.render(chunks, viewMatrix);
         }
         
+        // Update debug overlay
+        this.updateDebugInfo(playerPos, deltaTime);
+        
         // Continue the loop
         requestAnimationFrame(() => this.renderLoop());
     }
@@ -176,6 +179,26 @@ export class Engine {
             0, 0, 1, 0,
             -eyeX, -eyeY, -eyeZ, 1
         ]);
+    }
+    
+    /**
+     * Update debug info overlay
+     */
+    updateDebugInfo(playerPos, deltaTime) {
+        const debugEl = document.getElementById('debug');
+        if (!debugEl) return;
+        
+        const chunkCount = this.world?.chunkManager?.getChunkCount() || 0;
+        const vel = this.player?.velocity || { x: 0, y: 0, z: 0 };
+        const onGround = this.player?.isOnGround() || false;
+        
+        debugEl.innerHTML = `
+            <div>Player: (${playerPos.x.toFixed(1)}, ${playerPos.y.toFixed(1)}, ${playerPos.z.toFixed(1)})</div>
+            <div>Velocity: (${vel.x.toFixed(1)}, ${vel.y.toFixed(1)}, ${vel.z.toFixed(1)})</div>
+            <div>On Ground: ${onGround}</div>
+            <div>Chunks Loaded: ${chunkCount}</div>
+            <div>FPS: ${deltaTime > 0 ? Math.round(1/deltaTime) : 0}</div>
+        `;
     }
     
     /**
