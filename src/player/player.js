@@ -273,12 +273,12 @@ export class Player {
         }
         
         // Transform camera-space velocity to world-space
-        // Camera space: +X = right, -Z = forward (view direction)
-        // World space rotation from yaw:
+        // Camera: +X = right, +Z = backward (opposite of view direction)
+        // View matrix forward: (-sin(yaw), -cos(yaw))
         const cos = Math.cos(this.rotation.yaw);
         const sin = Math.sin(this.rotation.yaw);
-        // Rotate camera velocity to world velocity
-        const finalX = this.velocity.x * cos - this.velocity.z * sin;
+        // Decompose onto camera basis vectors
+        const finalX = this.velocity.x * cos + this.velocity.z * sin;
         const finalZ = this.velocity.x * sin + this.velocity.z * cos;
         this.velocity.x = finalX;
         this.velocity.z = finalZ;
