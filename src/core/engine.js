@@ -30,7 +30,17 @@ export class Engine {
      */
     initWebGL() {
         try {
-            this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+            // Attempt WebGL 2.0 first
+            this.gl = this.canvas.getContext('webgl2');
+            if (this.gl) {
+                this.glVersion = 2;
+            } else {
+                // Fallback to WebGL 1.0
+                this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                if (this.gl) {
+                    this.glVersion = 1;
+                }
+            }
             
             if (!this.gl) {
                 throw new Error('Could not initialize WebGL');
@@ -45,7 +55,7 @@ export class Engine {
             // Enable backface culling
             this.gl.enable(this.gl.CULL_FACE);
             
-            logger.info('WebGL initialized successfully');
+            logger.info(`WebGL ${this.glVersion}.0 context obtained`);
         } catch (error) {
             logger.error('Failed to initialize WebGL:', error);
             throw error;
