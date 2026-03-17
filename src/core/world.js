@@ -6,14 +6,16 @@ import { CHUNK_SIZE, WORLD_SEED_DEFAULT } from './constants.js';
 import { ChunkManager } from '../chunks/chunk-manager.js';
 import { logger } from './logger.js';
 import { VoxelError } from './errors.js';
+import { createRNG } from './prng.js';
 
 export class World {
     constructor() {
         this.chunkManager = new ChunkManager();
         this.chunkSize = CHUNK_SIZE;
         this.worldSeed = WORLD_SEED_DEFAULT;
+        this.rng = createRNG(this.worldSeed);
 
-        logger.info('World system initialized');
+        logger.info(`World system initialized with seed: ${this.worldSeed}`);
     }
     
     /**
@@ -87,14 +89,19 @@ export class World {
         const worldX = chunkX * this.chunkSize + x;
         const worldZ = chunkZ * this.chunkSize + z;
         
+        // Use deterministic noise based on position
+        // Create seeded values from world coordinates
+        const seedX = createRNG(worldX * 1000 + worldZ);
+        const seedZ = createRNG(worldZ * 1000 + worldX);
+        
         // Combine multiple noise functions for more natural terrain
         let height = 0;
         height += Math.sin(worldX * 0.02) * Math.sin(worldZ * 0.02) * 5;
         height += Math.sin(worldX * 0.01) * Math.sin(worldZ * 0.01) * 3;
         height += Math.sin(worldX * 0.005) * Math.sin(worldZ * 0.005) * 2;
         
-        // Add some randomness
-        height += Math.random() * 2;
+        // Use deterministic random component based on position
+        height += seedX() * 2;
         
         // Set base height and clamp
         height = Math.max(1, Math.min(this.chunkSize - 1, 10 + height));
