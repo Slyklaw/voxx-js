@@ -138,3 +138,111 @@ describe('Player movement normalization', () => {
     expect(player.velocity.z).toBe(0);
   });
 });
+
+describe('Player physics', () => {
+  let player;
+
+  beforeEach(() => {
+    // Mock document methods
+    global.document = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      pointerLockElement: null,
+      exitPointerLock: jest.fn(),
+    };
+    global.document.getElementById = jest.fn(() => ({}));
+
+    player = new Player();
+    player.movement = {
+      forward: false,
+      backward: false,
+      left: false,
+      right: false,
+      jump: false,
+      sneak: false,
+    };
+  });
+
+  afterEach(() => {
+    if (player && !player.isDestroyed()) {
+      player.destroy();
+    }
+  });
+
+  test('gravity reduces y velocity when in air', () => {
+    player.onGround = false;
+    player.velocity.y = 0;
+    player.update(0.1);
+    expect(player.velocity.y).toBeLessThan(0);
+  });
+
+  test('jump sets positive y velocity', () => {
+    player.onGround = true;
+    player.movement.jump = true;
+    player.update(0.1);
+    expect(player.velocity.y).toBeGreaterThan(0);
+  });
+});
+
+describe('Collision detection', () => {
+  let player;
+  let mockChunkManager;
+
+  beforeEach(() => {
+    // Mock document methods
+    global.document = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      pointerLockElement: null,
+      exitPointerLock: jest.fn(),
+    };
+    global.document.getElementById = jest.fn(() => ({}));
+
+    player = new Player();
+    player.movement = {
+      forward: false,
+      backward: false,
+      left: false,
+      right: false,
+      jump: false,
+      sneak: false,
+    };
+
+    // Mock chunkManager with floor at y=0 and wall at x=5
+    mockChunkManager = {
+      getChunk: () => ({
+        getVoxel: (x, y, z) => {
+          // Floor at y=0
+          if (y < 0) return 1;
+          // Wall at x=5
+          if (x >= 5 && x < 6) return 1;
+          return null;
+        }
+      })
+    };
+  });
+
+  afterEach(() => {
+    if (player && !player.isDestroyed()) {
+      player.destroy();
+    }
+  });
+
+  test('player cannot fall through floor', () => {
+    player.position.y = 0.5;
+    player.velocity.y = -10;
+    player.update(0.1, mockChunkManager);
+    expect(player.position.y).toBeGreaterThanOrEqual(0);
+  });
+
+  test('player slides along wall when moving diagonally', () => {
+    player.position = { x: 4.5, y: 1, z: 0 };
+    player.movement.right = true; // Moving toward wall at x=5
+    player.movement.forward = true;
+    player.update(0.1, mockChunkManager);
+    // X should be blocked, but Z should still move
+    expect(player.position.x).toBeLessThanOrEqual(4.8);
+    // Z should have moved (forward = -z direction)
+    expect(player.position.z).toBeLessThan(0);
+  });
+});
