@@ -205,9 +205,11 @@ export class Player {
                 // If moving down, we hit ground
                 if (this.velocity.y < 0) {
                     this.onGround = true;
-                    // Snap to top of block
-                    this.position.y = Math.floor(this.position.y) + 1;
+                    // Snap to top of the block we hit
+                    this.position.y = Math.floor(newY) + 1;
                 }
+                this.velocity.y = 0;
+            }
                 this.velocity.y = 0;
             }
 

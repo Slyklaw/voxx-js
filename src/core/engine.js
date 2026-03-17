@@ -204,6 +204,7 @@ export class Engine {
         const chunkY = Math.floor(playerPos.y / 32);
         const chunkZ = Math.floor(playerPos.z / 32);
         const rot = this.player?.getRotation() || { yaw: 0, pitch: 0 };
+        const mvmt = this.player?.movement || {};
         
         // Calculate look-at vector from yaw/pitch
         const lookX = Math.sin(rot.yaw) * Math.cos(rot.pitch);
@@ -216,6 +217,7 @@ export class Engine {
             <div>Yaw: ${(rot.yaw * 180 / Math.PI).toFixed(0)}° Pitch: ${(rot.pitch * 180 / Math.PI).toFixed(0)}°</div>
             <div>Look: (${lookX.toFixed(2)}, ${lookY.toFixed(2)}, ${lookZ.toFixed(2)})</div>
             <div>Velocity: (${vel.x.toFixed(1)}, ${vel.y.toFixed(1)}, ${vel.z.toFixed(1)})</div>
+            <div>Keys: F=${mvmt.forward?1:0} B=${mvmt.backward?1:0} L=${mvmt.left?1:0} R=${mvmt.right?1:0}</div>
             <div>On Ground: ${onGround}</div>
             <div>Chunks: ${chunkCount}</div>
             <div>FPS: ${deltaTime > 0 ? Math.round(1/deltaTime) : 0}</div>
