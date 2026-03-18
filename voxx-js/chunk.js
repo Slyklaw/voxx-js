@@ -257,15 +257,15 @@ export class Chunk {
                   w, h     // v4 - top-right (repeat w*h times)
                 );
 
-                // Log UV coordinates for first few faces (debug verification)
-                if (uvLogCount < UV_LOG_MAX) {
-                  const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
-                  console.log(`[Texture] UV coords for ${blockName} (type ${blockIndex}): face size ${w}x${h}, UVs [0,0]-[${w},0]-[0,${h}]-[${w},${h}]`);
-                  uvLogCount++;
-                  if (uvLogCount === UV_LOG_MAX) {
-                    console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
-                  }
-                }
+                // UV coordinate logging (commented - verified working)
+                // if (uvLogCount < UV_LOG_MAX) {
+                //   const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
+                //   console.log(`[Texture] UV coords for ${blockName} (type ${blockIndex}): face size ${w}x${h}, UVs [0,0]-[${w},0]-[0,${h}]-[${w},${h}]`);
+                //   uvLogCount++;
+                //   if (uvLogCount === UV_LOG_MAX) {
+                //     console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
+                //   }
+                // }
 
 
               } else {
@@ -309,7 +309,8 @@ export class Chunk {
         minV = Math.min(minV, uvs[i + 1]);
         maxV = Math.max(maxV, uvs[i + 1]);
       }
-      console.log(`[Texture] Chunk (${this.chunkX},${this.chunkZ}) UV range: U[${minU.toFixed(1)},${maxU.toFixed(1)}] V[${minV.toFixed(1)},${maxV.toFixed(1)}], faces: ${indices.length / 6}`);
+      // Chunk UV range logging (commented - verified working)
+      // console.log(`[Texture] Chunk (${this.chunkX},${this.chunkZ}) UV range: U[${minU.toFixed(1)},${maxU.toFixed(1)}] V[${minV.toFixed(1)},${maxV.toFixed(1)}], faces: ${indices.length / 6}`);
     }
 
     return {

@@ -144,12 +144,12 @@ export class Renderer {
           mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
           if (this.atlasSize) {
             mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
-            // One-time verification log
-            if (!this._textureUniformLogged) {
-              console.log('[Texture] Texture atlas uniform updated successfully');
-              console.log('[Texture] Uniform atlasSize:', this.atlasSize.width, 'x', this.atlasSize.height);
-              this._textureUniformLogged = true;
-            }
+            // Uniform update logging (commented - verified working)
+            // if (!this._textureUniformLogged) {
+            //   console.log('[Texture] Texture atlas uniform updated successfully');
+            //   console.log('[Texture] Uniform atlasSize:', this.atlasSize.width, 'x', this.atlasSize.height);
+            //   this._textureUniformLogged = true;
+            // }
           }
         }
       }
@@ -272,8 +272,9 @@ export class Renderer {
 
           // Log first chunk render with texture atlas
           if (!this._firstChunkRenderLogged && this.textureAtlas) {
-            console.log(`[Texture] First chunk rendered with texture atlas (${key}), total chunks: ${this.chunkMeshes.size}`);
-            this._firstChunkRenderLogged = true;
+            // First chunk render logging (commented - verified working)
+            // console.log(`[Texture] First chunk rendered with texture atlas (${key}), total chunks: ${this.chunkMeshes.size}`);
+            // this._firstChunkRenderLogged = true;
           }
 
           // Make mesh visible after ensuring it's properly added to scene

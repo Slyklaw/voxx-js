@@ -91,11 +91,11 @@ export function getBlockAtlasPositions() {
   };
 }
 
-// Log block atlas positions at module initialization for verification
-(function logBlockAtlasPositions() {
-  console.log('[Texture] Block Atlas Positions:');
-  for (let i = 0; i < BLOCKS.length; i++) {
-    const block = BLOCKS[i];
-    console.log(`[Texture]   ${block.type} (index ${i}): top=[${block.atlasPos.top}], sides=[${block.atlasPos.sides}], bottom=[${block.atlasPos.bottom}]`);
-  }
-})();
+// Block atlas position logging (commented - verified working)
+// (function logBlockAtlasPositions() {
+//   console.log('[Texture] Block Atlas Positions:');
+//   for (let i = 0; i < BLOCKS.length; i++) {
+//     const block = BLOCKS[i];
+//     console.log(`[Texture]   ${block.type} (index ${i}): top=[${block.atlasPos.top}], sides=[${block.atlasPos.sides}], bottom=[${block.atlasPos.bottom}]`);
+//   }
+// })();
