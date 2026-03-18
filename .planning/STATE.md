@@ -1,6 +1,6 @@
 # State: Voxx-JS Block Editing
 
-**Last Updated:** 2026-03-18
+**Last Updated:** 2026-03-18 (after completing Phase 8 Plan 1)
 
 ---
 
@@ -18,10 +18,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | 7: Block Inventory |
+| **Phase** | 8: Chunk Updates & Persistence |
 | **Plan** | 1 (of 1) |
 | **Status** | Plan Complete |
-| **Progress** | 1 / 3 phases |
+| **Progress** | 1 / 1 phases |
 
 ---
 
@@ -37,6 +37,7 @@
 | Phase 06-block-targeting-interaction P01 | 1min | 3 tasks | 1 files |
 | Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
 | Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
+| Phase 08 P01 | 2min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,8 +67,8 @@
 
 ### Technical Debt
 
-- No block persistence yet (world resets on reload) — addressed by Phase 8
-- Chunk mesh rebuild not optimized (full rebuild on edit) — addressed by Phase 8
+- Chunk mesh rebuild throttled (MAX_REBUILDS_PER_FRAME=2) — ✅ addressed
+- In-memory persistence only (no localStorage) — intentional for v1.1
 - No undo/redo for block edits — deferred to v2
 
 ---
@@ -88,8 +89,10 @@
 2. ✅ Left-click break implemented (Plan 2 complete)
 3. ✅ Right-click place implemented (Plan 3 complete)
 4. ✅ Keyboard block selection (1-5) with UI feedback (Plan 1 complete)
+5. ✅ Chunk mesh update verification complete (Phase 8 Plan 1)
+6. ✅ Rebuild throttling added to prevent frame drops (Phase 8 Plan 1)
 
-**Phase 7 complete** — Phase 8 plan created (Chunk Updates & Persistence)
+**Phase 8 complete** — All v1.1 Block Editing requirements satisfied (CHUNK-01, PERSIST-01)
 
 ---
 

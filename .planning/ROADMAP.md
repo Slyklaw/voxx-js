@@ -8,7 +8,7 @@
 ## Milestones
 
 - ✅ **v1.0 WebGL2 Refactor** — Phases 1-5 (shipped 2026-03-18)
-- 🚧 **v1.1 Block Editing** — Phases 6-8 (current)
+- ✅ **v1.1 Block Editing** — Phases 6-8 (completed 2026-03-18)
 
 ---
 
@@ -32,7 +32,7 @@
 
   - [x] Phase 6: Block Targeting & Interaction (3 requirements)
 - [x] Phase 7: Block Inventory (1 requirement)
-- [ ] Phase 8: Chunk Updates & Persistence (2 requirements)
+- [x] Phase 8: Chunk Updates & Persistence (2 requirements)
 
 </details>
 
@@ -98,7 +98,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Verify and optimize chunk updates and persistence
+- [x] 08-01-PLAN.md — Verify and optimize chunk updates and persistence (completed 2026-03-18)
 
 ---
 
@@ -113,7 +113,7 @@ Plans:
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
 | 6. Block Targeting & Interaction | v1.1 | 1/1 | Complete | 2026-03-18 |
 | 7. Block Inventory | v1.1 | 1/1 | Complete | 2026-03-18 |
-| 8. Chunk Updates & Persistence | v1.1 | 1/2 | In progress | — |
+| 8. Chunk Updates & Persistence | v1.1 | 1/1 | Complete | 2026-03-18 |
 
 ---
 
