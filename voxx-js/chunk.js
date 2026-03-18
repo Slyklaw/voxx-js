@@ -293,12 +293,23 @@ export class Chunk {
                 const scaledV1 = tileV0 + h * tileSpanV;
                 
                 // Push scaled UVs (will be wrapped in shader)
-                uvs.push(
-                  scaledU0, scaledV0,  // v1 - bottom-left
-                  scaledU1, scaledV0,  // v2 - bottom-right
-                  scaledU0, scaledV1,  // v3 - top-left
-                  scaledU1, scaledV1   // v4 - top-right
-                );
+                // Rotate UVs based on face direction
+                if (normal[2] !== 0) {
+                  // ±z faces: 180 degree rotation
+                  uvs.push(
+                    scaledU1, scaledV1,  // v1 → was v4's UV
+                    scaledU0, scaledV1,  // v2 → was v3's UV
+                    scaledU1, scaledV0,  // v3 → was v2's UV
+                    scaledU0, scaledV0   // v4 → was v1's UV
+                  );
+                } else {
+                  uvs.push(
+                    scaledU0, scaledV0,  // v1 - bottom-left
+                    scaledU1, scaledV0,  // v2 - bottom-right
+                    scaledU0, scaledV1,  // v3 - top-left
+                    scaledU1, scaledV1   // v4 - top-right
+                  );
+                }
                 
                 // Push tile base coordinates (same for all 4 vertices)
                 tileBase.push(
