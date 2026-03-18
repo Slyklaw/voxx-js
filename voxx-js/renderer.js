@@ -260,33 +260,31 @@ export class Renderer {
   }
 
   updateBlockOutline(targetedBlock) {
-    // Remove existing outline
-    if (this.outlineMesh) {
-      this.scene.remove(this.outlineMesh);
-      this.outlineMesh.geometry.dispose();
-      this.outlineMesh.material.dispose();
-      this.outlineMesh = null;
+    // Create outline mesh once if it doesn't exist
+    if (!this.outlineMesh) {
+      const geometry = new THREE.BoxGeometry(1.02, 1.02, 1.02);
+      const material = new THREE.MeshBasicMaterial({
+        color: 0xff00ff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.8
+      });
+      this.outlineMesh = new THREE.Mesh(geometry, material);
+      this.scene.add(this.outlineMesh);
     }
 
-    if (!targetedBlock || !targetedBlock.hit) return;
+    // Update visibility and position based on targeted block
+    if (!targetedBlock || !targetedBlock.hit) {
+      this.outlineMesh.visible = false;
+      return;
+    }
 
-    // Create outline geometry
-    const geometry = new THREE.BoxGeometry(1.02, 1.02, 1.02);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xff00ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.8
-    });
-
-    this.outlineMesh = new THREE.Mesh(geometry, material);
+    this.outlineMesh.visible = true;
     this.outlineMesh.position.set(
       targetedBlock.worldX + 0.5,
       targetedBlock.worldY + 0.5,
       targetedBlock.worldZ + 0.5
     );
-
-    this.scene.add(this.outlineMesh);
   }
 
   resize(width, height) {
