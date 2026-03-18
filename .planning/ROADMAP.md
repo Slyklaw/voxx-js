@@ -95,7 +95,10 @@ Plans:
 2. Modified blocks persist until the page is reloaded
 3. Chunk mesh rebuilds do not cause noticeable frame drops
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 08-01-PLAN.md — Verify and optimize chunk updates and persistence
 
 ---
 
@@ -110,7 +113,7 @@ Plans:
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
 | 6. Block Targeting & Interaction | v1.1 | 1/1 | Complete | 2026-03-18 |
 | 7. Block Inventory | v1.1 | 1/1 | Complete | 2026-03-18 |
-| 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
+| 8. Chunk Updates & Persistence | v1.1 | 1/2 | In progress | — |
 
 ---
 
