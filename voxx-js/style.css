@@ -4,6 +4,14 @@ body {
   font-family: Arial, sans-serif;
 }
 
+#canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
 #instructions {
   position: absolute;
   top: 50%;

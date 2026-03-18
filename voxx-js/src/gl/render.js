@@ -4,9 +4,9 @@ import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFA
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { bindChunk, unbindChunk, VERTEX_FORMAT } from './buffers.js';
 
-let voxelProgram = null;
-let voxelUniforms = null;
-let voxelAttribs = null;
+export let voxelProgram = null;
+export let voxelUniforms = null;
+export let voxelAttribs = null;
 
 let skyProgram = null;
 let skyUniforms = null;
@@ -170,18 +170,80 @@ export function initRenderer(gl) {
   };
 }
 
-export function renderChunk(gl, chunkMesh) {
+export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix) {
   if (!chunkMesh || !chunkMesh.vao) return;
 
+  gl.useProgram(voxelProgram);
+  
+  // Use identity matrix - vertex positions are already in world space from worker
+  const identity = new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ]);
+  
+  if (voxelUniforms && viewMatrix && projectionMatrix) {
+    const mvp = new Float32Array(16);
+    multiplyMatrices(mvp, projectionMatrix, viewMatrix, identity);
+    gl.uniformMatrix4fv(voxelUniforms.uModelViewProjection, false, mvp);
+    gl.uniformMatrix4fv(voxelUniforms.uModelMatrix, false, identity);
+  }
+  
+  gl.disable(gl.CULL_FACE); // Disable culling for now to see all faces
+  
   bindChunk(gl, chunkMesh.vao);
   gl.drawArrays(gl.TRIANGLES, 0, chunkMesh.vertexCount);
   unbindChunk(gl);
 }
 
-export function renderChunks(gl, chunks) {
-  for (const chunk of chunks) {
-    renderChunk(gl, chunk);
+export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix) {
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    renderChunk(gl, chunk, null, viewMatrix, projectionMatrix);
   }
+}
+
+function createModelMatrix(x, y, z) {
+  return new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    x, y, z, 1
+  ]);
+}
+
+function multiplyMatrices(out, a, b, c) {
+  const ae = a, be = b, ce = c;
+  
+  const a00 = ae[0], a01 = ae[1], a02 = ae[2], a03 = ae[3];
+  const a10 = ae[4], a11 = ae[5], a12 = ae[6], a13 = ae[7];
+  const a20 = ae[8], a21 = ae[9], a22 = ae[10], a23 = ae[11];
+  const a30 = ae[12], a31 = ae[13], a32 = ae[14], a33 = ae[15];
+
+  let b0 = be[0], b1 = be[1], b2 = be[2], b3 = be[3];
+  out[0] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+  out[1] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+  out[2] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+  out[3] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+  b0 = be[4]; b1 = be[5]; b2 = be[6]; b3 = be[7];
+  out[4] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+  out[5] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+  out[6] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+  out[7] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+  b0 = be[8]; b1 = be[9]; b2 = be[10]; b3 = be[11];
+  out[8] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+  out[9] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+  out[10] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+  out[11] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
+
+  b0 = be[12]; b1 = be[13]; b2 = be[14]; b3 = be[15];
+  out[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30;
+  out[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31;
+  out[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32;
+  out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
 }
 
 export function clear(gl, canvas) {

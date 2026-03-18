@@ -1,7 +1,7 @@
 const CAMERA_UBO_BINDING = 0;
 const GLOBAL_UBO_BINDING = 1;
 
-const CAMERA_UBO_SIZE = 64;
+const CAMERA_UBO_SIZE = 128;
 const GLOBAL_UBO_SIZE = 16;
 
 export function createUBO(gl, size, bindingPoint) {

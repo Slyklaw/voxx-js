@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <canvas id="canvas" width="800" height="600"></canvas>
+    <canvas id="canvas"></canvas>
     <div id="instructions">
       Click to play<br />(W, A, S, D = Move, SPACE = Up, SHIFT = Down, MOUSE = Look)<br />
       Voxel Engine
@@ -95,56 +95,6 @@
         <span>Snow</span>
       </div>
     </div>
-    <script type="module" src="./main.js"></script>
-    <script type="module">
-      import { gl } from './src/gl/context.js';
-      import { createProgram, sampleVertexShader, sampleFragmentShader, getAttribLocations, getUniformLocations } from './src/gl/shaders.js';
-      
-      if (gl) {
-        const program = createProgram(gl, sampleVertexShader, sampleFragmentShader);
-        
-        const positions = new Float32Array([
-          0.0, 0.5, 0.0,
-         -0.5, -0.5, 0.0,
-          0.5, -0.5, 0.0
-        ]);
-        
-        const vbo = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-        
-        const vao = gl.createVertexArray();
-        gl.bindVertexArray(vao);
-        
-        const posLoc = gl.getAttribLocation(program, 'aPosition');
-        gl.enableVertexAttribArray(posLoc);
-        gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
-        
-        gl.clearColor(0.133, 0.133, 0.133, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        
-        gl.useProgram(program);
-        
-        const mvp = new Float32Array([
-          1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, 0,
-          0, 0, 0, 1
-        ]);
-        
-        const mvpLoc = gl.getUniformLocation(program, 'uModelViewProjection');
-        gl.uniformMatrix4fv(mvpLoc, false, mvp);
-        
-        const colorLoc = gl.getUniformLocation(program, 'uColor');
-        gl.uniform4f(colorLoc, 1.0, 1.0, 1.0, 1.0);
-        
-        gl.bindVertexArray(vao);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-        
-        console.log('WebGL2 test triangle rendered successfully');
-      } else {
-        console.error('WebGL2 context initialization failed');
-      }
-    </script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

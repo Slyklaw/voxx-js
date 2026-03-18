@@ -1,4 +1,4 @@
-import { createProgram, getUniformLocations, getAttribLocations } from './shaders.js';
+import { createProgram, getUniformLocations, getAttribLocations } from '../gl/shaders.js';
 
 const skyVertexShader = `#version 300 es
 precision highp float;

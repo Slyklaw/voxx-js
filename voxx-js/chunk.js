@@ -326,8 +326,8 @@ export class Chunk {
    */
   fromWorkerMesh(meshData) {
     this.hasVoxelData = true;
+    this.meshData = meshData;
     this._createMeshFromData(meshData);
-    // Mesh is ready for rendering after a brief delay to ensure proper initialization
     setTimeout(() => {
       if (this.mesh) {
         this.mesh.visible = true;
