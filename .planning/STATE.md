@@ -1,27 +1,59 @@
 # State: Voxx-JS
 
-**Last Updated:** 2026-03-18 (starting v1.2 milestone)
-
----
-
-## Project Reference
-
+**Project:** WebGL2 Voxel Game Engine
 **Core Value:** Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
-
-**Current Milestone:** v1.2 Texture Atlas (defining requirements)
-
-**Mode:** yolo
-
----
 
 ## Current Position
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | Defining requirements |
-| **Phase** | Not started |
+| **Status** | Not started |
+| **Phase** | 9 - Texture Loading Verification |
 | **Plan** | — |
-| **Last activity** | 2026-03-18 — Milestone v1.2 started |
+| **Last activity** | 2026-03-18 — Roadmap created |
+
+---
+
+## Project Reference
+
+**Current Milestone:** v1.2 Texture Atlas
+
+**Mode:** yolo
+
+**Goal:** Activate existing texture atlas implementation (built in v1.0, kept inactive)
+
+**Note:** This is activation/debugging work, not building from scratch. Code exists in:
+- renderer.js (texture loading)
+- shaders.js (texture sampling)
+- blocks.js (atlasPos definitions)
+- chunk.js (UV generation)
+
+---
+
+## Progress
+
+```
+v1.0 WebGL2 Refactor:    ████████████████████ 100% ✓
+v1.1 Block Editing:      ████████████████████ 100% ✓
+v1.2 Texture Atlas:      ░░░░░░░░░░░░░░░░░░░░   0%
+```
+
+**Overall v1.2 Progress:** 0/11 requirements
+
+---
+
+## Current Phase
+
+**Phase 9: Texture Loading Verification**
+
+**Goal:** Texture atlas loads successfully and is ready for rendering
+
+**Requirements:** TEX-01, TEX-02, TEX-03
+
+**Success Criteria:**
+1. Console shows no errors during texture atlas load
+2. Atlas dimensions passed to shader uniforms
+3. Console logs confirm successful load
 
 ---
 
@@ -30,14 +62,10 @@
 | Metric | Target | Current |
 |--------|--------|---------|
 | Frame Rate | 60fps | 60fps |
+| Texture Load Time | < 500ms | N/A |
 | Block Edit Latency | < 16ms | N/A |
-| Chunk Rebuild | < 50ms | N/A |
 
 ---
-| Phase 06-block-targeting-interaction P01 | 1min | 3 tasks | 1 files |
-| Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
-| Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
-| Phase 08 P01 | 2min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -48,18 +76,9 @@
 - UBO for shared globals (camera, projection, lighting)
 - glMatrix for matrix math (lightweight 6KB)
 - ES Modules with CDN loading (no build system)
-- Target outline uses wireframe cube shader (existing in v1.0)
-- Outline mesh created once, visibility toggled instead of per-frame recreation
-- Persistence uses in-memory only (no localStorage until v2)
-- Used existing destroyBlock() implementation from plan 06-01, no changes needed
-- Left-click wired via mousedown event with button check, already present
-- [Phase 06-block-targeting-interaction]: Used existing destroyBlock() implementation from plan 06-01, no changes needed
-- [Phase 06-block-targeting-interaction]: Left-click wired via mousedown event with button check, already present
-- [Phase 06-block-targeting-interaction]: Existing placeBlock() implementation verified - EDIT-02 requirement satisfied
-- [Phase 06-block-targeting-interaction]: Step-back distance of 0.2 units reliably places block in adjacent air cell
-- [Phase 07-block-inventory]: Digits 1-5 mapped directly to block type IDs (Stone=1, Dirt=2, Grass=3, Water=4, Snow=5)
-- [Phase 07-block-inventory]: Keyboard selection only active when pointer locked (isPointerLocked guard)
-- [Phase 08-chunk-updates-persistence]: Added chunk rebuild throttling to limit rebuilds per frame
+- Texture atlas exists from v1.0 but was kept inactive (vertex colors used instead)
+- Phases 9-10 chosen for activation work (code debugging, not building)
+- Quick depth setting appropriate for debugging-focused milestone
 
 ### Known Blockers
 
@@ -70,6 +89,7 @@
 - Chunk mesh rebuild throttled (MAX_REBUILDS_PER_FRAME=2) — ✅ addressed
 - In-memory persistence only (no localStorage) — intentional for v1.1
 - No undo/redo for block edits — deferred to v2
+- Texture atlas code inactive since v1.0 — addressing in v1.2
 
 ---
 
@@ -89,13 +109,11 @@
 
 ### What's Next
 
-Start next milestone with `/gsd-new-milestone`
-
-Potential v1.2 features:
-- Texture atlas for block types
+After v1.2 complete:
 - Frustum culling for performance
 - Save/load world state (localStorage)
+- Block physics (falling sand, water flow)
 
 ---
 
-*State updated: 2026-03-18 — v1.1 milestone complete*
+*State initialized: 2026-03-18 — v1.2 milestone roadmap created*
