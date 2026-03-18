@@ -57,6 +57,7 @@ export class Renderer {
     // Initialize texture loader and load texture atlas
     this.textureLoader = new THREE.TextureLoader();
     this._textureUniformLogged = false; // One-time log flag for uniform updates
+    this._firstChunkRenderLogged = false; // One-time log flag for first chunk render
     
     // Pre-load verification: check if texture file is accessible
     console.log('[Texture] Attempting to load texture atlas from: textures-atlas.png');
@@ -264,6 +265,12 @@ export class Renderer {
           // Add new mesh to scene first
           this.scene.add(chunk.mesh);
           this.chunkMeshes.set(key, chunk.mesh);
+
+          // Log first chunk render with texture atlas
+          if (!this._firstChunkRenderLogged && this.textureAtlas) {
+            console.log(`[Texture] First chunk rendered with texture atlas (${key}), total chunks: ${this.chunkMeshes.size}`);
+            this._firstChunkRenderLogged = true;
+          }
 
           // Make mesh visible after ensuring it's properly added to scene
           // Use requestAnimationFrame to ensure the material is compiled
