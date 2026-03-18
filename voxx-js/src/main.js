@@ -556,7 +556,21 @@ function updateChunks() {
   const visibleChunks = world.getVisibleChunks();
   
   for (const chunk of visibleChunks) {
-    if (!chunk._webglMesh && chunk.meshData) {
+    // Sync chunk if it has mesh data but no WebGL mesh
+    if (!chunk._webglMesh && chunk.meshData && chunk.meshData.positions && chunk.meshData.positions.length > 0) {
+      syncChunkToWebGL(chunk);
+    }
+    // Also check if chunk needs mesh regeneration after edit
+    else if (chunk.needsUpdate && chunk.meshData) {
+      chunk.needsUpdate = false;
+      // Delete old mesh and recreate
+      if (chunk._webglMesh) {
+        gl.deleteBuffer(chunk._webglMesh.vbo);
+        gl.deleteBuffer(chunk._webglMesh.ibo);
+        gl.deleteVertexArray(chunk._webglMesh.vao);
+        chunk._webglMesh = null;
+        chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
+      }
       syncChunkToWebGL(chunk);
     }
   }
