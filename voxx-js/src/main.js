@@ -50,11 +50,34 @@ function setupControls() {
 
   document.addEventListener('keydown', (event) => {
     keys[event.code] = true;
+    
+    // Block selection logging
+    const num = parseInt(event.key);
+    if (num >= 1 && num <= 9) {
+      console.log(`[BlockEdit] Key ${event.key} pressed, isPointerLocked=${isPointerLocked}`);
+    }
   });
 
   document.addEventListener('keyup', (event) => {
     keys[event.code] = false;
   });
+
+  // Block editing mouse events
+  document.addEventListener('mousedown', (event) => {
+    if (!isPointerLocked) return;
+    console.log(`[BlockEdit] mousedown: button=${event.button}, targetBlock=${targetedBlock ? 'yes' : 'no'}`);
+    
+    if (event.button === 0) {
+      // Left click - break block
+      console.log('[BlockEdit] Left click - break block requested');
+    } else if (event.button === 2) {
+      // Right click - place block
+      console.log(`[BlockEdit] Right click - place block requested, selectedBlockType=${selectedBlockType}`);
+    }
+  });
+
+  // Prevent context menu on right click
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
   document.getElementById('render-inc')?.addEventListener('click', () => {
     const el = document.getElementById('render-distance-value');
@@ -272,7 +295,7 @@ function render(currentTime) {
   if (timeEl) timeEl.textContent = `${isDaytime ? 'Day' : 'Night'}: ${timeString}`;
 
   const fpsEl = document.querySelector('.debug-fps');
-  if (fpsEl) fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()})`;
+  if (fpsEl) fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${selectedBlockType}`;
 
   const posEl = document.getElementById('camera-position');
   if (posEl) {
@@ -318,3 +341,6 @@ function render(currentTime) {
 requestAnimationFrame(render);
 
 console.log('WebGL2 voxel engine initialized');
+console.log('[BlockEdit] Block editing features loaded - logging enabled');
+console.log('[BlockEdit] Keys 1-9 for block selection (WASD movement may conflict)');
+console.log('[BlockEdit] Left-click to break, Right-click to place (NOT YET IMPLEMENTED)');
