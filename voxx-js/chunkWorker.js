@@ -1,11 +1,11 @@
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { ChunkCore, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
 import { BIOME_CONFIG } from './biomes.js';
-import { getBlockColor, BLOCK_TYPES } from './blocks.js';
+import { getBlockColor, BLOCK_TYPES, BLOCKS } from './blocks.js';
 
 self.onmessage = function (e) {
   const { chunkX, chunkZ, noiseSeed, callbackId } = e.data;
-  console.log(`[ChunkWorker] Starting generation for chunk ${chunkX},${chunkZ}`);
+  // console.log(`[ChunkWorker] Starting generation for chunk ${chunkX},${chunkZ}`);
 
   try {
     // Create separate noise functions for height and biome generation
@@ -26,7 +26,18 @@ self.onmessage = function (e) {
       meshData: meshData
     };
 
-    console.log(`[ChunkWorker] Completed generation for chunk ${chunkX},${chunkZ}, vertices: ${meshData.positions.length / 3}`);
+    // Debug: Log UV data for first few chunks with water
+    if (meshData.uvs && meshData.uvs.length >= 8) {
+      const uMin = Math.min(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===0));
+      const uMax = Math.max(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===0));
+      const vMin = Math.min(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===1));
+      const vMax = Math.max(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===1));
+      if (uMax > 0.1 || vMax > 0.1) {  // Only log if UVs seem large
+        console.log(`[ChunkWorker] Chunk ${chunkX},${chunkZ} UV range: u=[${uMin.toFixed(4)}, ${uMax.toFixed(4)}], v=[${vMin.toFixed(4)}, ${vMax.toFixed(4)}]`);
+      }
+    }
+
+    // console.log(`[ChunkWorker] Completed generation for chunk ${chunkX},${chunkZ}, vertices: ${meshData.positions.length / 3}`);
     
     self.postMessage({
       type: 'chunkGenerated',
@@ -34,7 +45,7 @@ self.onmessage = function (e) {
       callbackId
     });
   } catch (error) {
-    console.error(`[ChunkWorker] Error generating chunk ${chunkX},${chunkZ}:`, error);
+    // console.error(`[ChunkWorker] Error generating chunk ${chunkX},${chunkZ}:`, error);
     self.postMessage({
       type: 'error',
       error: error.message,
@@ -54,6 +65,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
   const indices = [];
   const colors = [];
   const blockTypes = []; // Add block types array
+  let uvDebugCount = 0; // Debug counter
   
   // World-space offsets for this chunk
   const worldOffsetX = chunkX * CHUNK_WIDTH;
@@ -129,18 +141,57 @@ function generateMeshData(chunk, chunkX, chunkZ) {
             const blockIndex = Math.abs(val);
 
             // Add UV coordinates for texture mapping
+            const block = BLOCKS[blockIndex];
+            let atlasX, atlasY;
+            let tileU0, tileV0, tileU1, tileV1;
+            
             if (blockIndex !== BLOCK_TYPES.AIR) {
-              // For all solid blocks, tile the texture based on quad dimensions
-              // This ensures the texture repeats for each block in the greedy mesh
+              // Get atlas position based on face direction (normal)
+              // Determine face type from normal direction
+              if (normal[1] > 0) {
+                // Top face
+                atlasX = block.atlasPos.top[0];
+                atlasY = block.atlasPos.top[1];
+              } else if (normal[1] < 0) {
+                // Bottom face
+                atlasX = block.atlasPos.bottom[0];
+                atlasY = block.atlasPos.bottom[1];
+              } else {
+                // Side face
+                atlasX = block.atlasPos.sides[0];
+                atlasY = block.atlasPos.sides[1];
+              }
+              
+              // Convert pixel position to normalized UV coordinates
+              // Atlas is 1024x512, each tile is 16x16 pixels
+              const ATLAS_WIDTH = 1024;
+              const ATLAS_HEIGHT = 512;
+              const TILE_SIZE = 16;
+              
+              // Calculate UV bounds for a SINGLE tile - no scaling
+              // UVs always stay within one tile's bounds
+              tileU0 = atlasX / ATLAS_WIDTH;
+              tileV0 = atlasY / ATLAS_HEIGHT;
+              tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
+              tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
+              
+              // Simple UVs - texture stretches across face but stays within one tile
               uvs.push(
-                0, 0,    // v1 - bottom-left
-                w, 0,    // v2 - bottom-right (repeat w times)
-                0, h,    // v3 - top-left (repeat h times)
-                w, h     // v4 - top-right (repeat w*h times)
+                tileU0, tileV0,    // v1 - bottom-left
+                tileU1, tileV0,    // v2 - bottom-right
+                tileU0, tileV1,    // v3 - top-left
+                tileU1, tileV1     // v4 - top-right
               );
             } else {
               // Default UVs for AIR blocks (shouldn't be rendered anyway)
+              tileU0 = tileV0 = 0;
+              tileU1 = tileV1 = 1;
               uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
+            }
+
+            // Debug: log ALL water faces to find correct position
+            if (block.type === 'WATER') {
+              console.log(`[Water Debug] atlasPos=[${atlasX},${atlasY}], UV=[${tileU0.toFixed(4)},${tileV0.toFixed(4)}]-[${tileU1.toFixed(4)},${tileV1.toFixed(4)}]`);
             }
             const blockColor = getBlockColor(blockIndex);
             // Push color and block type for each vertex (4 times)

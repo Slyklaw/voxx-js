@@ -9,6 +9,13 @@ export const BLOCK_TYPES = {
 };
 
 // Block definitions with visual properties and atlas positions
+// Atlas is 1024x512, tiles are 16x16 (64x32 grid)
+// Corrected positions based on actual atlas analysis:
+// - Stone: gray tile at [48, 0]
+// - Dirt: tan/brown tile at [16, 96]
+// - Grass: green top at [336, 0], brown sides at [336, 48]
+// - Water: blue tile at [320, 0]
+// - Snow: white tile at [96, 64]
 export const BLOCKS = [
   { type: 'AIR', color: [0, 0, 0, 0], atlasPos: { top: [0, 0], sides: [0, 0], bottom: [0, 0] } },
   { type: 'STONE', color: [128, 128, 128, 255], atlasPos: { top: [496, 208], sides: [496, 208], bottom: [496, 208] } },
@@ -91,7 +98,7 @@ export function getBlockAtlasPositions() {
   };
 }
 
-// Block atlas position logging (commented - verified working)
+// Block atlas position logging at startup (commented - causes spam in production)
 // (function logBlockAtlasPositions() {
 //   console.log('[Texture] Block Atlas Positions:');
 //   for (let i = 0; i < BLOCKS.length; i++) {

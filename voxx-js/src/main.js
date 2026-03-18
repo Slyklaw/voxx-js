@@ -1,5 +1,5 @@
 import { gl, canvas, isContextLost } from './gl/context.js';
-import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms } from './gl/render.js';
+import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
@@ -13,8 +13,8 @@ console.log('WebGL2 main initializing...');
 
 let isPointerLocked = false;
 let keys = {};
-let cameraPosition = { x: 16, y: 60, z: 16 };
-let cameraRotation = { x: -0.5, y: 0 };
+let cameraPosition = { x: 50, y: 200, z: 50 };
+let cameraRotation = { x: 0.5, y: 0 };  // Looking down at terrain
 let selectedBlockType = 1;
 let targetedBlock = null;
 
@@ -443,6 +443,9 @@ initBlockOutline();
 
 initRenderer(gl);
 
+  // Load texture atlas for block textures
+  loadTextureAtlas(gl, 'textures-atlas.png');
+
 const noiseSeed = Math.random();
 world = new World(noiseSeed);
 biomeCalculator = new BiomeCalculator(noiseSeed);
@@ -601,14 +604,30 @@ function syncChunkToWebGL(chunk) {
   }
 
   if (!chunk.meshData || !chunk.meshData.positions || chunk.meshData.positions.length === 0) {
+    // console.log(`[WebGL2] Chunk ${key} has no mesh data yet`);
     return null;
   }
 
   try {
     const webglMesh = createChunkMeshFromData(gl, chunk.meshData, voxelAttribs);
-    chunk._webglMesh = webglMesh;
-    chunkMeshes.set(key, webglMesh);
-    console.log(`[WebGL2] Created mesh for chunk ${key}: ${webglMesh.vertexCount} vertices`);
+    if (webglMesh) {
+      chunk._webglMesh = webglMesh;
+      chunkMeshes.set(key, webglMesh);
+      console.log(`[WebGL2] Created mesh for chunk ${key}: ${webglMesh.vertexCount} vertices`);
+      
+      // Debug: log first few colors from mesh data (commented - spam)
+      // if (chunk.meshData.colors && chunk.meshData.colors.length >= 6) {
+      //   console.log(`[WebGL2] First colors:`, chunk.meshData.colors.slice(0, 9));
+      // }
+      // Debug: log first few positions
+      // if (chunk.meshData.positions && chunk.meshData.positions.length >= 6) {
+      //   console.log(`[WebGL2] First positions:`, chunk.meshData.positions.slice(0, 9));
+      // }
+      // Debug: log first few UVs
+      // if (chunk.meshData.uvs && chunk.meshData.uvs.length >= 4) {
+      //   console.log(`[WebGL2] First UVs:`, chunk.meshData.uvs.slice(0, 8));
+      // }
+    }
     return webglMesh;
   } catch (e) {
     console.error(`[WebGL2] Error creating mesh for chunk ${key}:`, e);
@@ -622,10 +641,19 @@ const MAX_REBUILDS_PER_FRAME = 2;
 function updateChunks() {
   const visibleChunks = world.getVisibleChunks();
   
+  // console.log(`[WebGL2] updateChunks: ${visibleChunks.length} visible chunks`);
+  
   for (const chunk of visibleChunks) {
-    // Sync chunk if it has mesh data but no WebGL mesh
-    if (!chunk._webglMesh && chunk.meshData && chunk.meshData.positions && chunk.meshData.positions.length > 0) {
-      syncChunkToWebGL(chunk);
+    const key = `${chunk.chunkX},${chunk.chunkZ}`;
+    // Check if chunk has mesh data but no WebGL mesh
+    if (!chunk._webglMesh) {
+      if (chunk.meshData && chunk.meshData.positions && chunk.meshData.positions.length > 0) {
+        // console.log(`[WebGL2] Syncing chunk ${key}: ${chunk.meshData.positions.length/3} vertices`);
+        syncChunkToWebGL(chunk);
+      }
+      // else {
+      //   console.log(`[WebGL2] Chunk ${key}: no mesh data yet (hasVoxelData=${chunk.hasVoxelData}, meshReady=${chunk.meshReady})`);
+      // }
     }
   }
 }
@@ -694,8 +722,15 @@ function render(currentTime) {
     }
   }
 
+  // Render chunks with textures
   if (webglChunks.length > 0) {
     renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix);
+  }
+  
+  // Check for WebGL errors
+  const err = gl.getError();
+  if (err !== gl.NO_ERROR) {
+    console.error(`[Renderer] WebGL error: ${err}`);
   }
   
   // Render block outline on top of chunks

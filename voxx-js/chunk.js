@@ -2,7 +2,7 @@
  * Chunk implementation
  */
 
-import { getBlockColor, BLOCK_TYPES, getBlockAtlasPositions } from './blocks.js';
+import { getBlockColor, BLOCK_TYPES, BLOCKS, getBlockAtlasPositions } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 // Three.js removed - src/ uses raw WebGL2
 // generateMeshData() returns plain arrays compatible with src/gl/buffers.js
@@ -164,9 +164,9 @@ export class Chunk {
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
     
-    // UV coordinate logging - first 10 faces only
+    // UV coordinate logging - first 20 faces only
     let uvLogCount = 0;
-    const UV_LOG_MAX = 10;
+    const UV_LOG_MAX = 20;
 
     // Greedy meshing algorithm
     for (let d = 0; d < 3; d++) {
@@ -248,25 +248,60 @@ export class Chunk {
 
               // Add UV coordinates for texture mapping
               if (blockIndex !== BLOCK_TYPES.AIR) {
-                // For all solid blocks, create proper UV coordinates for texture tiling
-                // This ensures textures repeat correctly across greedy mesh quads
+                // Get atlas position based on face direction (normal)
+                const block = BLOCKS[blockIndex];
+                let atlasX, atlasY;
+                
+                // Determine face type from normal direction
+                if (normal[1] > 0) {
+                  // Top face
+                  atlasX = block.atlasPos.top[0];
+                  atlasY = block.atlasPos.top[1];
+                } else if (normal[1] < 0) {
+                  // Bottom face
+                  atlasX = block.atlasPos.bottom[0];
+                  atlasY = block.atlasPos.bottom[1];
+                } else {
+                  // Side face
+                  atlasX = block.atlasPos.sides[0];
+                  atlasY = block.atlasPos.sides[1];
+                }
+                
+                // Convert pixel position to normalized UV coordinates
+                // Atlas is 1024x512, each tile is 16x16 pixels
+                const ATLAS_WIDTH = 1024;
+                const ATLAS_HEIGHT = 512;
+                const TILE_SIZE = 16;
+                
+                // Calculate UV bounds for a SINGLE tile - no scaling
+                // UVs always stay within one tile's bounds
+                const tileU0 = atlasX / ATLAS_WIDTH;
+                const tileV0 = atlasY / ATLAS_HEIGHT;
+                const tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
+                const tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
+                
+                // Simple UVs - texture stretches across face but stays within one tile
                 uvs.push(
-                  0, 0,    // v1 - bottom-left
-                  w, 0,    // v2 - bottom-right (repeat w times)
-                  0, h,    // v3 - top-left (repeat h times)
-                  w, h     // v4 - top-right (repeat w*h times)
+                  tileU0, tileV0,    // v1 - bottom-left
+                  tileU1, tileV0,    // v2 - bottom-right
+                  tileU0, tileV1,    // v3 - top-left
+                  tileU1, tileV1     // v4 - top-right
                 );
 
-                // UV coordinate logging (commented - verified working)
-                // if (uvLogCount < UV_LOG_MAX) {
-                //   const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
-                //   console.log(`[Texture] UV coords for ${blockName} (type ${blockIndex}): face size ${w}x${h}, UVs [0,0]-[${w},0]-[0,${h}]-[${w},${h}]`);
-                //   uvLogCount++;
-                //   if (uvLogCount === UV_LOG_MAX) {
-                //     console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
-                //   }
-                // }
-
+                // Debug logging for first few faces
+                if (uvLogCount < UV_LOG_MAX) {
+                  const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
+                  const faceDir = normal[1] > 0 ? 'top' : (normal[1] < 0 ? 'bottom' : 'side');
+                  const tileU0 = atlasX / ATLAS_WIDTH;
+                  const tileV0 = atlasY / ATLAS_HEIGHT;
+                  const tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
+                  const tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
+                  console.log(`[Texture] ${blockName} ${faceDir}: atlas=[${atlasX},${atlasY}], size=${w}x${h}, UV=[${tileU0.toFixed(3)},${tileV0.toFixed(3)}]-[${tileU1.toFixed(3)},${tileV1.toFixed(3)}]`);
+                  uvLogCount++;
+                  if (uvLogCount === UV_LOG_MAX) {
+                    console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
+                  }
+                }
 
               } else {
                 // Default UVs for AIR blocks (shouldn't be rendered anyway)
@@ -309,7 +344,7 @@ export class Chunk {
         minV = Math.min(minV, uvs[i + 1]);
         maxV = Math.max(maxV, uvs[i + 1]);
       }
-      // Chunk UV range logging (commented - verified working)
+      // Chunk UV range logging (temporarily enabled for debugging)
       // console.log(`[Texture] Chunk (${this.chunkX},${this.chunkZ}) UV range: U[${minU.toFixed(1)},${maxU.toFixed(1)}] V[${minV.toFixed(1)},${maxV.toFixed(1)}], faces: ${indices.length / 6}`);
     }
 
@@ -353,6 +388,13 @@ export class Chunk {
    * meshData: { positions: Float32Array, normals: Float32Array, colors: Float32Array, indices: Uint32Array }
    */
   fromWorkerMesh(meshData) {
+    // console.log(`[Chunk] fromWorkerMesh for ${this.chunkX},${this.chunkZ}:`, {
+    //   hasPositions: !!meshData?.positions,
+    //   positionLength: meshData?.positions?.length,
+    //   hasColors: !!meshData?.colors,
+    //   hasNormals: !!meshData?.normals,
+    //   hasIndices: !!meshData?.indices
+    // });
     this.hasVoxelData = true;
     this.meshData = meshData;
     this._createMeshFromData(meshData);

@@ -1,5 +1,5 @@
 const FLOAT_SIZE = 4;
-const VERTEX_SIZE = 9;
+const VERTEX_SIZE = 11; // pos(3) + color(3) + normal(3) + uv(2)
 const STRIDE = VERTEX_SIZE * FLOAT_SIZE;
 
 export function createVBO(gl, data, usage = gl.STATIC_DRAW) {
@@ -22,7 +22,8 @@ export function setupVAO(gl, vao, vbo, attribs = {}) {
   const {
     position = { size: 3, type: gl.FLOAT, normalized: false, offset: 0 },
     color = { size: 3, type: gl.FLOAT, normalized: false, offset: 12 },
-    normal = { size: 3, type: gl.FLOAT, normalized: false, offset: 24 }
+    normal = { size: 3, type: gl.FLOAT, normalized: false, offset: 24 },
+    uv = { size: 2, type: gl.FLOAT, normalized: false, offset: 36 }
   } = attribs;
 
   if (position.size > 0) {
@@ -46,6 +47,14 @@ export function setupVAO(gl, vao, vbo, attribs = {}) {
     if (normLoc >= 0) {
       gl.enableVertexAttribArray(normLoc);
       gl.vertexAttribPointer(normLoc, normal.size, normal.type, normal.normalized, STRIDE, normal.offset);
+    }
+  }
+
+  if (uv.size > 0) {
+    const uvLoc = gl.getAttribLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'aUV');
+    if (uvLoc >= 0) {
+      gl.enableVertexAttribArray(uvLoc);
+      gl.vertexAttribPointer(uvLoc, uv.size, uv.type, uv.normalized, STRIDE, uv.offset);
     }
   }
 
@@ -105,9 +114,11 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   const positions = meshData.positions;
   const colors = meshData.colors || new Float32Array(positions.length);
   const normals = meshData.normals || new Float32Array(positions.length);
+  const uvs = meshData.uvs || new Float32Array((positions.length / 3) * 2);
   const indices = meshData.indices;
 
   const vertexCount = positions.length / 3;
+  
   const data = new Float32Array(vertexCount * VERTEX_SIZE);
 
   for (let i = 0; i < vertexCount; i++) {
@@ -135,6 +146,10 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
       data[base + 7] = 1;
       data[base + 8] = 0;
     }
+
+    // UV coordinates (new)
+    data[base + 9] = uvs[i * 2 + 0] || 0;
+    data[base + 10] = uvs[i * 2 + 1] || 0;
   }
 
   const vbo = gl.createBuffer();
@@ -148,6 +163,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   const posLoc = attribs?.aPosition ?? 0;
   const colLoc = attribs?.aColor ?? 1;
   const normLoc = attribs?.aNormal ?? 2;
+  const uvLoc = attribs?.aUV ?? 3;
 
   gl.enableVertexAttribArray(posLoc);
   gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, STRIDE, 0);
@@ -157,6 +173,9 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
 
   gl.enableVertexAttribArray(normLoc);
   gl.vertexAttribPointer(normLoc, 3, gl.FLOAT, false, STRIDE, 24);
+
+  gl.enableVertexAttribArray(uvLoc);
+  gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, STRIDE, 36);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -172,7 +191,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
   }
 
-  return { vbo, vao, ibo, indexCount };
+  return { vbo, vao, ibo, indexCount, vertexCount };
 }
 
 export const VERTEX_FORMAT = {
@@ -180,5 +199,6 @@ export const VERTEX_FORMAT = {
   POSITION_OFFSET: 0,
   COLOR_OFFSET: 12,
   NORMAL_OFFSET: 24,
+  UV_OFFSET: 36,
   FLOATS_PER_VERTEX: VERTEX_SIZE
 };

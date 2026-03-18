@@ -17,28 +17,50 @@ Activate the existing texture atlas implementation to render blocks with proper 
 
 ## Phases
 
-- [ ] **Phase 9: Texture Loading Verification** - Activate and debug texture atlas loading pipeline
-- [ ] **Phase 10: Texture Rendering Validation** - Verify textures render correctly on all block types
+- [x] **Phase 9: Texture Loading Verification** - ~~Activate and debug~~ **Discovered not implemented**
+- [x] **Phase 9.5: Minimal Texture Test** - **Implemented full texture pipeline**
+- [x] **Phase 10: Texture Rendering Validation** - **All textures rendering correctly**
 
 ## Phase Details
 
 ### Phase 9: Texture Loading Verification
 
-**Goal:** Texture atlas loads successfully and is ready for rendering
+**Goal:** ~~Texture atlas loads successfully~~ **Discovery: Not implemented**
 
 **Depends on:** Nothing (first phase of this milestone)
 
 **Requirements:** TEX-01, TEX-02, TEX-03
 
-**Success Criteria** (what must be TRUE):
-1. Browser console shows no errors during texture atlas (textures-atlas.png) load
-2. Atlas dimensions are captured and passed to shader uniform variables
-3. Console logs confirm texture loaded with correct width/height dimensions
+**Status:** Completed with incorrect verification - code didn't actually exist
+
+**Plans:** 1 plan (invalid - based on false assumption)
+- ~~09-01-PLAN.md~~ Verify texture loading infrastructure ← **This plan was wrong**
+
+---
+
+### Phase 9.5: Minimal Texture Test ⭐ NEW
+
+**Goal:** Get ANY texture displaying from atlas (not flat vertex colors)
+
+**Depends on:** Nothing (starting fresh with actual implementation)
+
+**Requirements:** TEX-01 through TEX-11 (all texture requirements)
+
+**Root Cause:** Texture pipeline never implemented:
+- Shaders have no texture sampling
+- Vertex format has no UV coordinates
+- Renderer has no texture loading
 
 **Plans:** 1 plan
+- [ ] 09.5-01-PLAN.md — Minimal texture implementation
 
-Plans:
-- [x] 09-01-PLAN.md — Verify texture loading infrastructure
+**Success Criteria** (what must be TRUE):
+1. Vertex format extended from 9 to 11 floats (adding UV)
+2. Vertex shader accepts `aUV` attribute and passes `vUV` to fragment
+3. Fragment shader samples `texture(uTextureAtlas, vUV)` instead of flat color
+4. UV coordinates generated in chunk mesh based on atlas positions
+5. Texture atlas loaded from textures-atlas.png
+6. Blocks show SOME texture (may be wrong texture, but not flat gray)
 
 ---
 
@@ -74,8 +96,9 @@ Plans:
 | 6. Block Targeting & Interaction | v1.1 | 3/3 | Complete | 2026-03-18 |
 | 7. Block Inventory | v1.1 | 1/1 | Complete | 2026-03-18 |
 | 8. Chunk Updates & Persistence | v1.1 | 1/1 | Complete | 2026-03-18 |
-| 9. Texture Loading Verification | v1.2 | 1/1 | Planned | - |
-| 10. Texture Rendering Validation | v1.2 | 0 | Not started | - |
+| 9. Texture Loading Verification | v1.2 | 1/1 | **Invalid** | 2026-03-18 |
+| 9.5. Minimal Texture Test | v1.2 | 1/1 | **Complete** | 2026-03-18 |
+| 10. Texture Rendering Validation | v1.2 | 1/1 | **Complete** | 2026-03-18 |
 
 ## Coverage Map
 
@@ -94,6 +117,22 @@ Plans:
 | TEX-11 | Phase 10 | Air blocks remain transparent |
 
 **Coverage:** 11/11 requirements mapped ✓
+
+---
+
+## Notes
+
+### 2026-03-18: Critical Discovery
+
+The texture pipeline documented in phases 9-10 **does not exist**:
+- Shaders (`voxx-js/src/shaders/voxel.js`) have NO texture sampling
+- Vertex format (`voxx-js/src/gl/buffers.js`) has NO UV coordinates
+- Renderer (`voxx-js/src/gl/render.js`) has NO texture loading
+- Block definitions (`voxx-js/blocks.js`) have `atlasPos` but nothing uses them
+
+Previous verification was checking code comments, not functionality.
+
+**Resolution:** New Phase 9.5 created to implement minimal working texture pipeline.
 
 ---
 

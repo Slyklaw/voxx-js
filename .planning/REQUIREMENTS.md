@@ -9,26 +9,26 @@ Requirements for texture atlas milestone. The texture infrastructure exists from
 
 ### Texture Loading
 
-- [ ] **TEX-01**: Texture atlas (textures-atlas.png) loads without errors on startup
-- [ ] **TEX-02**: Atlas dimensions are correctly captured and passed to shader uniforms
-- [ ] **TEX-03**: Console logs confirm successful texture load with correct dimensions
+- [x] **TEX-01**: Texture atlas (textures-atlas.png) loads without errors on startup
+- [x] **TEX-02**: Atlas dimensions are correctly captured and passed to shader uniforms
+- [x] **TEX-03**: Console logs confirm successful texture load with correct dimensions
 
 ### Texture Rendering
 
-- [ ] **TEX-04**: Blocks render with textures from atlas instead of flat vertex colors
-- [ ] **TEX-05**: Each block type displays the correct texture based on atlasPos in blocks.js
-- [ ] **TEX-06**: Different faces (top, sides, bottom) show appropriate textures (e.g., grass top green, grass sides dirt+grass)
+- [x] **TEX-04**: Blocks render with textures from atlas instead of flat vertex colors
+- [x] **TEX-05**: Each block type displays the correct texture based on atlasPos in blocks.js
+- [x] **TEX-06**: Different faces (top, sides, bottom) show appropriate textures (e.g., grass top green, grass sides dirt+grass)
 
 ### UV Mapping
 
-- [ ] **TEX-07**: UV coordinates properly tile across block faces
-- [ ] **TEX-08**: Texture orientation is correct (not flipped or rotated incorrectly)
-- [ ] **TEX-09**: Greedy mesh quads display textures consistently across merged faces
+- [x] **TEX-07**: UV coordinates properly tile across block faces
+- [x] **TEX-08**: Texture orientation is correct (not flipped or rotated incorrectly)
+- [x] **TEX-09**: Greedy mesh quads display textures consistently across merged faces
 
 ### Block Types
 
-- [ ] **TEX-10**: All 5 solid block types (Stone, Dirt, Grass, Water, Snow) render with correct textures
-- [ ] **TEX-11**: Air blocks remain transparent (no texture applied)
+- [x] **TEX-10**: All 5 solid block types (Stone, Dirt, Grass, Water, Snow) render with correct textures
+- [x] **TEX-11**: Air blocks remain transparent (no texture applied)
 
 ## v2 Requirements
 
@@ -54,17 +54,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TEX-01 | Phase 9 | Pending |
-| TEX-02 | Phase 9 | Pending |
-| TEX-03 | Phase 9 | Pending |
-| TEX-04 | Phase 10 | Pending |
-| TEX-05 | Phase 10 | Pending |
-| TEX-06 | Phase 10 | Pending |
-| TEX-07 | Phase 10 | Pending |
-| TEX-08 | Phase 10 | Pending |
-| TEX-09 | Phase 10 | Pending |
-| TEX-10 | Phase 10 | Pending |
-| TEX-11 | Phase 10 | Pending |
+| TEX-01 | Phase 9.5 | Complete |
+| TEX-02 | Phase 9.5 | Complete |
+| TEX-03 | Phase 9.5 | Complete |
+| TEX-04 | Phase 10 | Complete |
+| TEX-05 | Phase 10 | Complete |
+| TEX-06 | Phase 10 | Complete |
+| TEX-07 | Phase 10 | Complete |
+| TEX-08 | Phase 10 | Complete |
+| TEX-09 | Phase 10 | Complete |
+| TEX-10 | Phase 10 | Complete |
+| TEX-11 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total

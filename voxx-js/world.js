@@ -37,7 +37,7 @@ export class World {
       if (!this.pendingChunks.has(key)) {
         const payload = { chunkX, chunkZ, noiseSeed: this.noiseSeed };
         const onComplete = (chunkData) => {
-          console.log(`[World] Chunk ${chunkX},${chunkZ} generation completed:`, chunkData ? 'success' : 'failed');
+          // console.log(`[World] Chunk ${chunkX},${chunkZ} generation completed:`, chunkData ? 'success' : 'failed');
           
           // Guard if chunk was unloaded while job ran
           if (!this.chunks[key]) {
@@ -185,7 +185,8 @@ export class World {
   }
 
   getVisibleChunks() {
-    return Object.values(this.chunks).filter(chunk => chunk.mesh && chunk.meshReady);
+    // WebGL2: check for meshData (not Three.js chunk.mesh)
+    return Object.values(this.chunks).filter(chunk => chunk.meshData && chunk.meshReady);
   }
 
   dispose() {
