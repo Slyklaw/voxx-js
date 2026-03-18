@@ -492,9 +492,11 @@ function destroyBlock() {
   const chunk = world.getChunk(targetedBlock.chunkX, targetedBlock.chunkZ);
   if (chunk) {
     chunk.setVoxel(targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ, 0);
-    chunk.updateMesh(true);
     
-    // Recreate WebGL mesh (Three.js updateMesh doesn't handle WebGL2 meshes)
+    // Regenerate mesh data for WebGL2 (updateMesh doesn't update meshData for WebGL2)
+    chunk.meshData = chunk.generateMeshData();
+    
+    // Delete old WebGL mesh so it gets recreated with new data
     if (chunk._webglMesh) {
       gl.deleteBuffer(chunk._webglMesh.vbo);
       gl.deleteBuffer(chunk._webglMesh.ibo);
@@ -535,9 +537,11 @@ function placeBlock() {
       const existing = chunk.getVoxel(localX, placeY, localZ);
       if (existing === 0) {
         chunk.setVoxel(localX, placeY, localZ, selectedBlockType);
-        chunk.updateMesh(true);
         
-        // Recreate WebGL mesh (Three.js updateMesh doesn't handle WebGL2 meshes)
+        // Regenerate mesh data for WebGL2
+        chunk.meshData = chunk.generateMeshData();
+        
+        // Delete old WebGL mesh so it gets recreated with new data
         if (chunk._webglMesh) {
           gl.deleteBuffer(chunk._webglMesh.vbo);
           gl.deleteBuffer(chunk._webglMesh.ibo);
