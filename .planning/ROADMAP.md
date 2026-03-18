@@ -8,6 +8,7 @@
 ## Milestones
 
 - ✅ **v1.0 WebGL2 Refactor** — Phases 1-5 (shipped 2026-03-18)
+- 🚧 **v1.1 Block Editing** — Phases 6-8 (current)
 
 ---
 
@@ -26,6 +27,68 @@
 
 </details>
 
+<details>
+<summary>🚧 v1.1 Block Editing (Phases 6-8)</summary>
+
+- [ ] Phase 6: Block Targeting & Interaction (3 requirements)
+- [ ] Phase 7: Block Inventory (1 requirement)
+- [ ] Phase 8: Chunk Updates & Persistence (2 requirements)
+
+</details>
+
+---
+
+## Phase Details
+
+### Phase 6: Block Targeting & Interaction
+
+**Goal**: Users can target, break, and place blocks in the world
+
+**Depends on**: Phase 5 (v1.0 complete with camera/controls)
+
+**Requirements**: EDIT-01, EDIT-02, EDIT-03
+
+**Success Criteria** (what must be TRUE):
+1. When player looks at a block, a visible outline appears around that block
+2. Left-clicking removes the targeted block and opens a space
+3. Right-clicking places the selected block type on the face adjacent to the targeted block
+
+**Plans**: TBD
+
+---
+
+### Phase 7: Block Inventory
+
+**Goal**: Users can select which block type to place
+
+**Depends on**: Phase 6
+
+**Requirements**: INV-01
+
+**Success Criteria** (what must be TRUE):
+1. Pressing keys 1-9 selects the corresponding block type
+2. A UI element shows which block type is currently selected
+3. Right-clicking places the currently selected block type
+
+**Plans**: TBD
+
+---
+
+### Phase 8: Chunk Updates & Persistence
+
+**Goal**: Block changes are visible and survive within the session
+
+**Depends on**: Phase 6, Phase 7
+
+**Requirements**: CHUNK-01, PERSIST-01
+
+**Success Criteria** (what must be TRUE):
+1. Breaking or placing a block immediately updates the chunk mesh to show the change
+2. Modified blocks persist until the page is reloaded
+3. Chunk mesh rebuilds do not cause noticeable frame drops
+
+**Plans**: TBD
+
 ---
 
 ## Progress
@@ -37,7 +100,10 @@
 | 3. Chunk Mesh Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 4. Camera & Controls Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
+| 6. Block Targeting & Interaction | v1.1 | 0/3 | Not started | — |
+| 7. Block Inventory | v1.1 | 0/1 | Not started | — |
+| 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
 
 ---
 
-*Roadmap archived: 2026-03-18*
+*Roadmap created: 2026-03-18 for v1.1 Block Editing milestone*

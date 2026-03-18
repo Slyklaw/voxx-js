@@ -55,17 +55,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EDIT-01 | — | Pending |
-| EDIT-02 | — | Pending |
-| EDIT-03 | — | Pending |
-| INV-01 | — | Pending |
-| CHUNK-01 | — | Pending |
-| PERSIST-01 | — | Pending |
+| EDIT-01 | Phase 6: Block Targeting & Interaction | Pending |
+| EDIT-02 | Phase 6: Block Targeting & Interaction | Pending |
+| EDIT-03 | Phase 6: Block Targeting & Interaction | Pending |
+| INV-01 | Phase 7: Block Inventory | Pending |
+| CHUNK-01 | Phase 8: Chunk Updates & Persistence | Pending |
+| PERSIST-01 | Phase 8: Chunk Updates & Persistence | Pending |
 
 **Coverage:**
 - v1 requirements: 6 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 6
+- Mapped to phases: 6 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*

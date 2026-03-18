@@ -18,10 +18,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | Not started (defining requirements) |
+| **Phase** | 6: Block Targeting & Interaction |
 | **Plan** | — |
-| **Status** | Defining requirements |
-| **Progress** | 0 / ? phases |
+| **Status** | Not started |
+| **Progress** | 0 / 3 phases |
 
 ---
 
@@ -44,16 +44,18 @@
 - UBO for shared globals (camera, projection, lighting)
 - glMatrix for matrix math (lightweight 6KB)
 - ES Modules with CDN loading (no build system)
+- Target outline uses wireframe cube shader (existing in v1.0)
+- Persistence uses in-memory only (no localStorage until v2)
 
 ### Known Blockers
 
-- None yet (pristine refactor)
+- None yet
 
 ### Technical Debt
 
-- No block persistence yet (world resets on reload)
-- Chunk mesh rebuild not optimized (full rebuild on edit)
-- No undo/redo for block edits
+- No block persistence yet (world resets on reload) — addressed by Phase 8
+- Chunk mesh rebuild not optimized (full rebuild on edit) — addressed by Phase 8
+- No undo/redo for block edits — deferred to v2
 
 ---
 
@@ -64,13 +66,25 @@
 1. v1.0 milestone completed — WebGL2 refactor shipped (2026-03-18)
 2. Core rendering pipeline functional with 60fps performance
 3. Procedural terrain, controls, day/night cycle, debug UI
+4. v1.1 requirements defined (6 requirements)
+5. Roadmap created with 3 phases (6-8)
 
 ### What's Next
 
-1. Define requirements for block editing features
-2. Create roadmap with phases
-3. Plan Phase 1: Core block operations
+1. Plan Phase 6: Block Targeting & Interaction
+2. Implement block outline targeting (leverage existing wireframe shader)
+3. Implement left-click break and right-click place
 
 ---
 
-*State updated: 2026-03-18*
+## v1.1 Phase Map
+
+| Phase | Goal | Requirements |
+|-------|------|--------------|
+| 6 | Target, break, and place blocks | EDIT-01, EDIT-02, EDIT-03 |
+| 7 | Select block type to place | INV-01 |
+| 8 | Visual updates and session persistence | CHUNK-01, PERSIST-01 |
+
+---
+
+*State updated: 2026-03-18 after roadmap creation*
