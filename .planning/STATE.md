@@ -58,6 +58,7 @@
 - [Phase 06-block-targeting-interaction]: Step-back distance of 0.2 units reliably places block in adjacent air cell
 - [Phase 07-block-inventory]: Digits 1-5 mapped directly to block type IDs (Stone=1, Dirt=2, Grass=3, Water=4, Snow=5)
 - [Phase 07-block-inventory]: Keyboard selection only active when pointer locked (isPointerLocked guard)
+- [Phase 08-chunk-updates-persistence]: Added chunk rebuild throttling to limit rebuilds per frame
 
 ### Known Blockers
 
@@ -88,7 +89,7 @@
 3. ✅ Right-click place implemented (Plan 3 complete)
 4. ✅ Keyboard block selection (1-5) with UI feedback (Plan 1 complete)
 
-**Phase 7 complete** — Ready for Phase 8 (Chunk Updates & Persistence)
+**Phase 7 complete** — Phase 8 plan created (Chunk Updates & Persistence)
 
 ---
 
