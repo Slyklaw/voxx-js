@@ -1,0 +1,383 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+#instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  z-index: 100;
+}
+
+#camera-position {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+#time-display {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 100;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+#compass-display {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.compass-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.compass-face {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+.compass-needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, red 0%, red 50%, white 50%, white 100%);
+  transform-origin: bottom center;
+  transform: translate(-50%, -100%);
+}
+
+.compass-direction {
+  position: absolute;
+  color: white;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.compass-direction.n {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-direction.e {
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-direction.s {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-direction.w {
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-text {
+  color: white;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#biome-display {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  color: white;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px;
+  border-radius: 6px;
+  min-width: 180px;
+}
+
+#debug-ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  z-index: 100;
+  min-width: 200px;
+}
+
+.debug-fps {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.debug-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.debug-control button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.debug-control button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#render-distance-value {
+  min-width: 20px;
+  text-align: center;
+}
+
+.biome-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.biome-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.biome-name {
+  min-width: 70px;
+  font-size: 11px;
+}
+
+.biome-bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.biome-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 6px;
+}
+
+.biome-fill.lowland {
+  background: linear-gradient(90deg, #4a7c59, #6b9b7a);
+}
+
+.biome-fill.mountains {
+  background: linear-gradient(90deg, #8b7355, #a0845c);
+}
+
+.biome-percent {
+  min-width: 30px;
+  text-align: right;
+  font-size: 10px;
+}
+
+#crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+}
+
+.crosshair-line {
+  position: absolute;
+  background: white;
+}
+
+.crosshair-line.horizontal {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.crosshair-line.vertical {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+#block-selector {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 100;
+}
+
+.block-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  min-width: 60px;
+}
+
+.block-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.block-item.selected {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.block-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.block-icon.stone {
+  background-color: rgb(128, 128, 128);
+}
+
+.block-icon.dirt {
+  background-color: rgb(139, 69, 19);
+}
+
+.block-icon.grass {
+  background-color: rgb(95, 159, 53);
+}
+
+.block-icon.water {
+  background-color: rgb(30, 144, 255);
+}
+
+.block-icon.snow {
+  background-color: rgb(255, 255, 255);
+}
+
+.block-item span {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: rgba(100, 200, 100, 0.5);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
