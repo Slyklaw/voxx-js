@@ -51,10 +51,11 @@ function setupControls() {
   document.addEventListener('keydown', (event) => {
     keys[event.code] = true;
     
-    // Block selection logging
+    // Block selection - update selectedBlockType for keys 1-9
     const num = parseInt(event.key);
-    if (num >= 1 && num <= 9) {
-      console.log(`[BlockEdit] Key ${event.key} pressed, isPointerLocked=${isPointerLocked}`);
+    if (num >= 1 && num <= 9 && isPointerLocked) {
+      selectedBlockType = num;
+      console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
     }
   });
 
@@ -65,14 +66,14 @@ function setupControls() {
   // Block editing mouse events
   document.addEventListener('mousedown', (event) => {
     if (!isPointerLocked) return;
-    console.log(`[BlockEdit] mousedown: button=${event.button}, targetBlock=${targetedBlock ? 'yes' : 'no'}`);
+    console.log(`[BlockEdit] mousedown: button=${event.button}, target=${targetedBlock ? `(${targetedBlock.x},${targetedBlock.y},${targetedBlock.z})` : 'none'}`);
     
     if (event.button === 0) {
       // Left click - break block
-      console.log('[BlockEdit] Left click - break block requested');
+      destroyBlock();
     } else if (event.button === 2) {
       // Right click - place block
-      console.log(`[BlockEdit] Right click - place block requested, selectedBlockType=${selectedBlockType}`);
+      placeBlock();
     }
   });
 
@@ -196,6 +197,86 @@ function dot(a, b) {
   return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 }
 
+// Simple voxel raycast using DDA algorithm
+function raycastBlock(origin, direction, maxDistance = 8) {
+  const x = Math.floor(origin[0]);
+  const y = Math.floor(origin[1]);
+  const z = Math.floor(origin[2]);
+  
+  const stepX = direction[0] >= 0 ? 1 : -1;
+  const stepY = direction[1] >= 0 ? 1 : -1;
+  const stepZ = direction[2] >= 0 ? 1 : -1;
+  
+  const tDeltaX = direction[0] !== 0 ? Math.abs(1 / direction[0]) : Infinity;
+  const tDeltaY = direction[1] !== 0 ? Math.abs(1 / direction[1]) : Infinity;
+  const tDeltaZ = direction[2] !== 0 ? Math.abs(1 / direction[2]) : Infinity;
+  
+  let tMaxX = direction[0] !== 0 ? ((stepX > 0 ? x + 1 : x) - origin[0]) / direction[0] : Infinity;
+  let tMaxY = direction[1] !== 0 ? ((stepY > 0 ? y + 1 : y) - origin[1]) / direction[1] : Infinity;
+  let tMaxZ = direction[2] !== 0 ? ((stepZ > 0 ? z + 1 : z) - origin[2]) / direction[2] : Infinity;
+  
+  let currentX = x, currentY = y, currentZ = z;
+  let lastX = currentX, lastY = currentY, lastZ = currentZ;
+  
+  for (let i = 0; i < maxDistance * 3; i++) {
+    // Get voxel at current position
+    const chunkX = Math.floor(currentX / CHUNK_WIDTH);
+    const chunkZ = Math.floor(currentZ / CHUNK_WIDTH);
+    const chunk = world.getChunk(chunkX, chunkZ);
+    
+    if (chunk) {
+      const localX = ((currentX % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
+      const localZ = ((currentZ % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
+      const localY = currentY;
+      
+      if (localY >= 0 && localY < 256) {
+        const voxel = chunk.getVoxel(localX, localY, localZ);
+        if (voxel !== 0) {
+          // Found a solid block - return hit info
+          return {
+            hit: true,
+            x: currentX, y: currentY, z: currentZ,
+            chunkX, chunkZ,
+            localX, localY, localZ,
+            // The face that was hit (normal pointing back to origin)
+            normalX: lastX - currentX,
+            normalY: lastY - currentY,
+            normalZ: lastZ - currentZ,
+            voxel
+          };
+        }
+      }
+    }
+    
+    lastX = currentX; lastY = currentY; lastZ = currentZ;
+    
+    // Step to next voxel boundary
+    if (tMaxX < tMaxY) {
+      if (tMaxX < tMaxZ) {
+        currentX += stepX;
+        tMaxX += tDeltaX;
+      } else {
+        currentZ += stepZ;
+        tMaxZ += tDeltaZ;
+      }
+    } else {
+      if (tMaxY < tMaxZ) {
+        currentY += stepY;
+        tMaxY += tDeltaY;
+      } else {
+        currentZ += stepZ;
+        tMaxZ += tDeltaZ;
+      }
+    }
+    
+    if (tMaxX > maxDistance && tMaxY > maxDistance && tMaxZ > maxDistance) {
+      break;
+    }
+  }
+  
+  return { hit: false };
+}
+
 function createProjectionMatrix() {
   const fov = RENDER_CONFIG.FOV * Math.PI / 180;
   const aspect = canvas.width / canvas.height;
@@ -234,6 +315,81 @@ biomeCalculator = new BiomeCalculator(noiseSeed);
 
 let lastTime = 0;
 let sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8/24);
+
+// Update targeted block based on camera direction
+function updateTargetedBlock() {
+  if (!isPointerLocked) {
+    targetedBlock = null;
+    return;
+  }
+  
+  const yaw = cameraRotation.y;
+  const pitch = cameraRotation.x;
+  
+  const direction = [
+    -Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
+    -Math.cos(yaw) * Math.cos(pitch)
+  ];
+  
+  const origin = [cameraPosition.x, cameraPosition.y, cameraPosition.z];
+  const result = raycastBlock(origin, direction, 8);
+  
+  if (result.hit) {
+    targetedBlock = result;
+  } else {
+    targetedBlock = null;
+  }
+}
+
+// Destroy block at targeted position
+function destroyBlock() {
+  if (!targetedBlock || !targetedBlock.hit) {
+    console.log('[BlockEdit] destroyBlock: no target');
+    return;
+  }
+  
+  const chunk = world.getChunk(targetedBlock.chunkX, targetedBlock.chunkZ);
+  if (chunk) {
+    chunk.setVoxel(targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ, 0);
+    chunk.updateMesh(true);
+    console.log(`[BlockEdit] Destroyed block at ${targetedBlock.x},${targetedBlock.y},${targetedBlock.z}`);
+  }
+}
+
+// Place block at targeted position
+function placeBlock() {
+  if (!targetedBlock || !targetedBlock.hit) {
+    console.log('[BlockEdit] placeBlock: no target');
+    return;
+  }
+  
+  // Place on the face we hit (step back from hit)
+  const placeX = targetedBlock.x + targetedBlock.normalX;
+  const placeY = targetedBlock.y + targetedBlock.normalY;
+  const placeZ = targetedBlock.z + targetedBlock.normalZ;
+  
+  const chunkX = Math.floor(placeX / CHUNK_WIDTH);
+  const chunkZ = Math.floor(placeZ / CHUNK_WIDTH);
+  const chunk = world.getChunk(chunkX, chunkZ);
+  
+  if (chunk) {
+    const localX = ((placeX % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
+    const localZ = ((placeZ % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
+    
+    if (placeY >= 0 && placeY < 256) {
+      // Check if position is empty
+      const existing = chunk.getVoxel(localX, placeY, localZ);
+      if (existing === 0) {
+        chunk.setVoxel(localX, placeY, localZ, selectedBlockType);
+        chunk.updateMesh(true);
+        console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
+      } else {
+        console.log('[BlockEdit] placeBlock: position occupied');
+      }
+    }
+  }
+}
 
 function syncChunkToWebGL(chunk) {
   const key = `${chunk.chunkX},${chunk.chunkZ}`;
@@ -280,6 +436,9 @@ function render(currentTime) {
   lastTime = currentTime;
 
   updateMovement(deltaTime);
+  
+  // Update block targeting each frame
+  updateTargetedBlock();
 
   sunCycleTime += deltaTime * SUN_CYCLE_CONFIG.TIME_SCALE;
   if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
@@ -341,6 +500,6 @@ function render(currentTime) {
 requestAnimationFrame(render);
 
 console.log('WebGL2 voxel engine initialized');
-console.log('[BlockEdit] Block editing features loaded - logging enabled');
-console.log('[BlockEdit] Keys 1-9 for block selection (WASD movement may conflict)');
-console.log('[BlockEdit] Left-click to break, Right-click to place (NOT YET IMPLEMENTED)');
+console.log('[BlockEdit] Block editing features loaded');
+console.log('[BlockEdit] Keys 1-9: select block type');
+console.log('[BlockEdit] Left-click: break block | Right-click: place block');
