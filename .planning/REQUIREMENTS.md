@@ -11,7 +11,7 @@ Requirements for v1.1 Block Editing milestone.
 
 - [ ] **EDIT-01**: User can left-click to remove the targeted block
 - [ ] **EDIT-02**: User can right-click to place a block on adjacent face
-- [ ] **EDIT-03**: Block outline highlights targeted block for editing
+- [x] **EDIT-03**: Block outline highlights targeted block for editing
 
 ### Block Inventory
 
@@ -57,7 +57,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | EDIT-01 | Phase 6: Block Targeting & Interaction | Pending |
 | EDIT-02 | Phase 6: Block Targeting & Interaction | Pending |
-| EDIT-03 | Phase 6: Block Targeting & Interaction | Pending |
+| EDIT-03 | Phase 6: Block Targeting & Interaction | Complete |
 | INV-01 | Phase 7: Block Inventory | Pending |
 | CHUNK-01 | Phase 8: Chunk Updates & Persistence | Pending |
 | PERSIST-01 | Phase 8: Chunk Updates & Persistence | Pending |

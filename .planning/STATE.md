@@ -19,9 +19,9 @@
 | Attribute | Value |
 |-----------|-------|
 | **Phase** | 6: Block Targeting & Interaction |
-| **Plan** | — |
-| **Status** | Not started |
-| **Progress** | 0 / 3 phases |
+| **Plan** | 1 (of 3) |
+| **Status** | In Progress |
+| **Progress** | 1 / 3 phases |
 
 ---
 
@@ -34,6 +34,7 @@
 | Chunk Rebuild | < 50ms | N/A |
 
 ---
+| Phase 06-block-targeting-interaction P01 | 1min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -45,6 +46,7 @@
 - glMatrix for matrix math (lightweight 6KB)
 - ES Modules with CDN loading (no build system)
 - Target outline uses wireframe cube shader (existing in v1.0)
+- Outline mesh created once, visibility toggled instead of per-frame recreation
 - Persistence uses in-memory only (no localStorage until v2)
 
 ### Known Blockers
@@ -71,9 +73,9 @@
 
 ### What's Next
 
-1. Plan Phase 6: Block Targeting & Interaction
-2. Implement block outline targeting (leverage existing wireframe shader)
-3. Implement left-click break and right-click place
+1. ✅ Block targeting implemented (Plan 1 complete)
+2. Implement left-click break (Plan 2)
+3. Implement right-click place (Plan 3)
 
 ---
 
@@ -87,4 +89,4 @@
 
 ---
 
-*State updated: 2026-03-18 after roadmap creation*
+*State updated: 2026-03-18 after completing Plan 01 (block targeting)*
