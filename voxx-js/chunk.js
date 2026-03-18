@@ -4,8 +4,8 @@
 
 import { getBlockColor, BLOCK_TYPES, getBlockAtlasPositions } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
-import * as THREE from 'https://unpkg.com/three@0.179.0/build/three.module.js';
-import { CHUNK_VERTEX_SHADER, CHUNK_FRAGMENT_SHADER } from './shaders.js';
+// Three.js removed - src/ uses raw WebGL2
+// generateMeshData() returns plain arrays compatible with src/gl/buffers.js
 
 // Chunk constants
 export const CHUNK_WIDTH = 32;
@@ -332,142 +332,26 @@ export class Chunk {
     }
 
     const meshData = this.generateMeshData();
-
-    // For forced updates (block placement/destruction), update in place to avoid flash
-    if (forceUpdate && this.mesh && this.meshReady) {
-      this._updateMeshInPlace(meshData);
-    } else {
-      this._createMeshFromData(meshData);
-
-      // Make mesh visible after a brief delay to ensure proper initialization
-      setTimeout(() => {
-        if (this.mesh) {
-          this.mesh.visible = true;
-        }
-      }, 0);
-    }
+    this.meshData = meshData;
+    this.meshReady = true;
+    this.needsUpdate = false;
   }
 
   /**
-   * Build Three.js mesh from worker-provided mesh payload
+   * Build mesh from worker-provided mesh payload (WebGL2 compatible)
    * meshData: { positions: Float32Array, normals: Float32Array, colors: Float32Array, indices: Uint32Array }
    */
   fromWorkerMesh(meshData) {
     this.hasVoxelData = true;
     this.meshData = meshData;
     this._createMeshFromData(meshData);
-    setTimeout(() => {
-      if (this.mesh) {
-        this.mesh.visible = true;
-      }
-    }, 0);
-  }
-
-  _updateMeshInPlace(meshData) {
-    if (!meshData || meshData.positions.length === 0) {
-      // Empty chunk - hide the mesh but don't dispose it to avoid flash
-      if (this.mesh) {
-        this.mesh.visible = false;
-      }
-      this.needsUpdate = false;
-      return;
-    }
-
-    if (!this.mesh) {
-      // Fallback to creating new mesh if none exists
-      this._createMeshFromData(meshData);
-      return;
-    }
-
-    // Store current visibility state
-    const wasVisible = this.mesh.visible;
-
-    // Create new geometry
-    const newGeometry = new THREE.BufferGeometry();
-    newGeometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
-    newGeometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
-    newGeometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
-    newGeometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
-    newGeometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
-    newGeometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
-
-    // Replace geometry while keeping the mesh and material
-    const oldGeometry = this.mesh.geometry;
-    this.mesh.geometry = newGeometry;
-
-    // Dispose old geometry
-    if (oldGeometry) {
-      oldGeometry.dispose();
-    }
-
-    // Restore visibility state
-    this.mesh.visible = wasVisible;
-    this.needsUpdate = false;
-  }
-
-  _createMeshFromData(meshData) {
-    if (!meshData || meshData.positions.length === 0) {
-      // Empty chunk
-      if (this.mesh) {
-        this.mesh.geometry.dispose();
-        this.mesh.material.dispose();
-        this.mesh = null;
-      }
-      this.needsUpdate = false;
-      return;
-    }
-
-    // Create geometry
-    const geometry = new THREE.BufferGeometry();
-
-    // Set attributes
-    geometry.setAttribute('position', new THREE.BufferAttribute(meshData.positions, 3));
-    geometry.setAttribute('normal', new THREE.BufferAttribute(meshData.normals, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(meshData.colors, 3));
-    geometry.setAttribute('uv', new THREE.BufferAttribute(meshData.uvs, 2));
-    geometry.setAttribute('blockType', new THREE.BufferAttribute(meshData.blockTypes, 1));
-    geometry.setIndex(new THREE.BufferAttribute(meshData.indices, 1));
-
-    // Create shader material with texture support
-    const blockAtlasPositions = getBlockAtlasPositions();
-    const material = new THREE.ShaderMaterial({
-      vertexShader: CHUNK_VERTEX_SHADER,
-      fragmentShader: CHUNK_FRAGMENT_SHADER,
-      uniforms: {
-        lightDirection: { value: new THREE.Vector3(0.5, -1.0, 0.5) },
-        lightColor: { value: new THREE.Color(0xffffff) },
-        ambientColor: { value: new THREE.Color(0x404040) },
-        textureAtlas: { value: null }, // Will be set by renderer
-        atlasSize: { value: new THREE.Vector2(256, 256) }, // Default, will be updated by renderer
-        blockAtlasTopX: { value: blockAtlasPositions.topXPositions },
-        blockAtlasTopY: { value: blockAtlasPositions.topYPositions },
-        blockAtlasSidesX: { value: blockAtlasPositions.sidesXPositions },
-        blockAtlasSidesY: { value: blockAtlasPositions.sidesYPositions },
-        blockAtlasBottomX: { value: blockAtlasPositions.bottomXPositions },
-        blockAtlasBottomY: { value: blockAtlasPositions.bottomYPositions }
-      }
-    });
-
-    // Dispose of old mesh if it exists
-    if (this.mesh) {
-      this.mesh.geometry.dispose();
-      this.mesh.material.dispose();
-    }
-
-    // Create mesh but don't make it visible until it's properly initialized
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.mesh.visible = false; // Hide initially to prevent flash
-    this.needsUpdate = false;
-
-    // Mark that mesh is ready for rendering (but keep it hidden initially)
     this.meshReady = true;
+    this.needsUpdate = false;
   }
 
   dispose() {
-    if (this.mesh) {
-      this.mesh.geometry.dispose();
-      this.mesh.material.dispose();
-      this.mesh = null;
-    }
+    // Cleanup - mesh handled by src/gl/buffers.js
+    this.meshData = null;
+    this.meshReady = false;
   }
 }
