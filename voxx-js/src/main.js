@@ -64,6 +64,18 @@ function setupControls() {
     const el = document.getElementById('render-distance-value');
     if (el) el.textContent = Math.max(1, parseInt(el.textContent) - 1);
   });
+
+  document.getElementById('speed-inc')?.addEventListener('click', () => {
+    const el = document.getElementById('move-speed-value');
+    if (el) PLAYER_CONFIG.MOVE_SPEED = Math.min(200, parseInt(el.textContent) + 10);
+    el.textContent = PLAYER_CONFIG.MOVE_SPEED;
+  });
+
+  document.getElementById('speed-dec')?.addEventListener('click', () => {
+    const el = document.getElementById('move-speed-value');
+    if (el) PLAYER_CONFIG.MOVE_SPEED = Math.max(1, parseInt(el.textContent) - 10);
+    el.textContent = PLAYER_CONFIG.MOVE_SPEED;
+  });
 }
 
 function updateMovement(deltaTime) {
