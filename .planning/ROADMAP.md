@@ -75,7 +75,10 @@ Plans:
 2. A UI element shows which block type is currently selected
 3. Right-clicking places the currently selected block type
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 07-01-PLAN.md — Keyboard block selection (1-9) with UI feedback
 
 ---
 
