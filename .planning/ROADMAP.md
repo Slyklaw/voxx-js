@@ -113,7 +113,7 @@ Plans:
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
 | 6. Block Targeting & Interaction | v1.1 | 1/1 | Complete | 2026-03-18 |
 | 7. Block Inventory | v1.1 | 1/1 | Complete | 2026-03-18 |
-| 8. Chunk Updates & Persistence | v1.1 | 1/1 | Complete | 2026-03-18 |
+| 8. Chunk Updates & Persistence | v1.1 | Complete    | 2026-03-18 | 2026-03-18 |
 
 ---
 

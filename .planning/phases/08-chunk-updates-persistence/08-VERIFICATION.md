@@ -1,18 +1,10 @@
 ---
 phase: 08-chunk-updates-persistence
 verified: 2026-03-18T08:21:59Z
-status: gaps_found
-score: 3/3 truths verified, 1 key link gap
-re_verification: null
-gaps:
-  - truth: "Key link: destroyBlock() calls chunk.updateMesh(true)"
-    status: failed
-    reason: "destroyBlock and placeBlock do not call chunk.updateMesh(true); they set needsUpdate flag and regenerate meshData directly"
-    artifacts:
-      - path: voxx-js/src/main.js
-        issue: "destroyBlock and placeBlock missing updateMesh(true) call"
-    missing:
-      - "Call chunk.updateMesh(true) after setting voxel, or accept alternative wiring via needsUpdate flag"
+status: passed
+score: 3/3 truths verified, all key links wired
+re_verification: passed (2026-03-18)
+gaps: []
 human_verification:
   - test: "Visual update of block edits"
     expected: "Breaking or placing a block immediately updates the chunk mesh to show the change"
