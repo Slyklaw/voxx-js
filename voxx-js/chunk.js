@@ -337,6 +337,17 @@ export class Chunk {
     this.needsUpdate = false;
   }
 
+  // Store mesh data for WebGL rendering (src/gl/buffers.js handles actual GL buffers)
+  _createMeshFromData(meshData) {
+    this.meshData = meshData;
+    this.needsUpdate = false;
+  }
+
+  _updateMeshInPlace(meshData) {
+    this.meshData = meshData;
+    this.needsUpdate = false;
+  }
+
   /**
    * Build mesh from worker-provided mesh payload (WebGL2 compatible)
    * meshData: { positions: Float32Array, normals: Float32Array, colors: Float32Array, indices: Uint32Array }
