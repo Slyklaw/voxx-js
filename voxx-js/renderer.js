@@ -56,6 +56,17 @@ export class Renderer {
 
     // Initialize texture loader and load texture atlas
     this.textureLoader = new THREE.TextureLoader();
+    this._textureUniformLogged = false; // One-time log flag for uniform updates
+    
+    // Pre-load verification: check if texture file is accessible
+    console.log('[Texture] Attempting to load texture atlas from: textures-atlas.png');
+    try {
+      const fetchResponse = await fetch('textures-atlas.png', { method: 'HEAD' });
+      console.log('[Texture] Texture file accessible via fetch:', fetchResponse.ok);
+    } catch (fetchErr) {
+      console.warn('[Texture] Could not pre-check texture file accessibility:', fetchErr.message);
+    }
+    
     this.textureAtlas = await new Promise((resolve) => {
       this.textureLoader.load(
         'textures-atlas.png',
@@ -71,16 +82,17 @@ export class Renderer {
           // Get block atlas positions
           this.blockAtlasPositions = getBlockAtlasPositions();
           
-          console.log('Texture atlas loaded successfully:', texture);
-          console.log('Atlas size:', texture.image.width, 'x', texture.image.height);
+          console.log('[Texture] Texture atlas loaded successfully');
+          console.log('[Texture] Atlas size:', texture.image.width, 'x', texture.image.height);
+          console.log('[Texture] Atlas dimensions verified:', this.atlasSize.width, 'x', this.atlasSize.height);
           resolve(texture);
         },
         (progress) => {
-          console.log('Loading texture atlas...', progress);
+          console.log('[Texture] Loading texture atlas...', progress);
         },
         (error) => {
-          console.error('Error loading texture atlas:', error);
-          console.warn('Blocks will render with flat color instead of texture');
+          console.error('[Texture] Error loading texture atlas:', error);
+          console.warn('[Texture] Blocks will render with flat color instead of texture');
           resolve(null); // Continue without texture if loading fails
         }
       );
@@ -127,6 +139,12 @@ export class Renderer {
           mesh.material.uniforms.textureAtlas.value = this.textureAtlas;
           if (this.atlasSize) {
             mesh.material.uniforms.atlasSize.value.set(this.atlasSize.width, this.atlasSize.height);
+            // One-time verification log
+            if (!this._textureUniformLogged) {
+              console.log('[Texture] Texture atlas uniform updated successfully');
+              console.log('[Texture] Uniform atlasSize:', this.atlasSize.width, 'x', this.atlasSize.height);
+              this._textureUniformLogged = true;
+            }
           }
         }
       }
