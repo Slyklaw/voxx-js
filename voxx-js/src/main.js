@@ -56,6 +56,12 @@ function setupControls() {
     if (num >= 1 && num <= 9 && isPointerLocked) {
       selectedBlockType = num;
       console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
+      
+      // Update UI to show selected block
+      document.querySelectorAll('.block-item').forEach(item => {
+        const blockNum = parseInt(item.dataset.block);
+        item.classList.toggle('selected', blockNum === selectedBlockType);
+      });
     }
   });
 
