@@ -19,7 +19,7 @@
 | Attribute | Value |
 |-----------|-------|
 | **Phase** | 6: Block Targeting & Interaction |
-| **Plan** | 1 (of 3) |
+| **Plan** | 2 (of 3) |
 | **Status** | In Progress |
 | **Progress** | 1 / 3 phases |
 
@@ -35,6 +35,8 @@
 
 ---
 | Phase 06-block-targeting-interaction P01 | 1min | 3 tasks | 1 files |
+| Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
+| Phase 06-block-targeting-interaction P02 | 0min | 3 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -48,6 +50,10 @@
 - Target outline uses wireframe cube shader (existing in v1.0)
 - Outline mesh created once, visibility toggled instead of per-frame recreation
 - Persistence uses in-memory only (no localStorage until v2)
+- Used existing destroyBlock() implementation from plan 06-01, no changes needed
+- Left-click wired via mousedown event with button check, already present
+- [Phase 06-block-targeting-interaction]: Used existing destroyBlock() implementation from plan 06-01, no changes needed
+- [Phase 06-block-targeting-interaction]: Left-click wired via mousedown event with button check, already present
 
 ### Known Blockers
 
@@ -74,7 +80,7 @@
 ### What's Next
 
 1. ✅ Block targeting implemented (Plan 1 complete)
-2. Implement left-click break (Plan 2)
+2. ✅ Left-click break implemented (Plan 2 complete)
 3. Implement right-click place (Plan 3)
 
 ---
@@ -89,4 +95,4 @@
 
 ---
 
-*State updated: 2026-03-18 after completing Plan 01 (block targeting)*
+*State updated: 2026-03-18 after completing Plan 02 (left-click break)*

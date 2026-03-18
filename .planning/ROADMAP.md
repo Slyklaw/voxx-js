@@ -57,7 +57,7 @@
 
 Plans:
 - [x] 06-01-PLAN.md — Block targeting with raycast and selection outline (completed 2026-03-18)
-- [ ] 06-02-PLAN.md — Left-click block breaking (EDIT-01)
+- [x] 06-02-PLAN.md — Left-click block breaking (EDIT-01)
 - [ ] 06-03-PLAN.md — Right-click block placement (EDIT-02)
 
 ---
@@ -105,7 +105,7 @@ Plans:
 | 3. Chunk Mesh Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 4. Camera & Controls Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
-| 6. Block Targeting & Interaction | v1.1 | 1/3 | In Progress | — |
+| 6. Block Targeting & Interaction | 2/3 | In Progress|  | — |
 | 7. Block Inventory | v1.1 | 0/1 | Not started | — |
 | 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
 
