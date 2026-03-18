@@ -121,6 +121,16 @@ function setupControls() {
       const debugUI = document.getElementById('debug-ui');
       debugUI.style.display = debugUI.style.display === 'none' ? 'block' : 'none';
     }
+
+    // Block selection with number keys (1-5 for available blocks, 6-9 reserved)
+    if (event.code.startsWith('Digit') && isPointerLocked) {
+      const digit = parseInt(event.code.replace('Digit', ''));
+      if (digit >= 1 && digit <= 5) {
+        selectedBlockType = digit;
+        updateBlockSelectionUI();
+      }
+      // Digits 6-9 are reserved for future block types (no action)
+    }
   });
 
   document.addEventListener('keyup', (event) => {
@@ -222,6 +232,21 @@ function setupUI() {
       item.classList.add('selected');
       selectedBlockType = parseInt(item.dataset.block);
     });
+  });
+}
+
+/**
+ * Update block selection UI to reflect the current selectedBlockType
+ */
+function updateBlockSelectionUI() {
+  const blockItems = document.querySelectorAll('.block-item');
+  blockItems.forEach(item => {
+    const blockType = parseInt(item.dataset.block);
+    if (blockType === selectedBlockType) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
   });
 }
 
