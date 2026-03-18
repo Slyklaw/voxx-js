@@ -53,7 +53,12 @@
 2. Left-clicking removes the targeted block and opens a space
 3. Right-clicking places the selected block type on the face adjacent to the targeted block
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Block targeting with raycast and selection outline
+- [ ] 06-02-PLAN.md — Left-click block breaking (EDIT-01)
+- [ ] 06-03-PLAN.md — Right-click block placement (EDIT-02)
 
 ---
 
@@ -100,7 +105,7 @@
 | 3. Chunk Mesh Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 4. Camera & Controls Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
-| 6. Block Targeting & Interaction | v1.1 | 0/3 | Not started | — |
+| 6. Block Targeting & Interaction | v1.1 | 0/3 | Planning | — |
 | 7. Block Inventory | v1.1 | 0/1 | Not started | — |
 | 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
 
