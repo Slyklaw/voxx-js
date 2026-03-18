@@ -625,28 +625,6 @@ function updateChunks() {
     }
   }
 }
-    // Also check if chunk needs mesh regeneration after edit
-    else if (chunk.needsUpdate && chunk.meshData) {
-      // Throttle rebuilds to prevent frame spikes
-      if (rebuildCount >= MAX_REBUILDS_PER_FRAME) {
-        continue; // Skip remaining rebuilds this frame, will be processed next frame
-      }
-      
-      chunk.needsUpdate = false;
-      rebuildCount++;
-      
-      // Delete old mesh and recreate
-      if (chunk._webglMesh) {
-        gl.deleteBuffer(chunk._webglMesh.vbo);
-        gl.deleteBuffer(chunk._webglMesh.ibo);
-        gl.deleteVertexArray(chunk._webglMesh.vao);
-        chunk._webglMesh = null;
-        chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
-      }
-      syncChunkToWebGL(chunk);
-    }
-  }
-}
 
 function render(currentTime) {
   if (isContextLost()) {
