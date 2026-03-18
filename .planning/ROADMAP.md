@@ -113,7 +113,10 @@ Plans:
 3. No visible seams between chunks (boundary gaps resolved)
 4. Resource disposal verified—no memory growth over 10+ minutes of play
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Implement performance optimization (FPS monitoring, chunk dirty tracking, render loop integration)
 
 ---
 
@@ -125,7 +128,7 @@ Plans:
 | 2. Core Rendering Pipeline | 0/2 | Not started | - |
 | 3. Chunk Mesh Integration | 0/1 | Not started | - |
 | 4. Camera & Controls Integration | 0/1 | Not started | - |
-| 5. Polish & Performance | 0/1 | Not started | - |
+| 5. Polish & Performance | 1/1 | Planned | - |
 
 ---
 
