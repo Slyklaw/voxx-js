@@ -15,12 +15,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Rendering Pipeline
 
-- [ ] **RENDER-01**: Vertex buffer (VBO) infrastructure for chunk geometry
-- [ ] **RENDER-02**: Vertex array object (VAO) per chunk for efficient binding
-- [ ] **RENDER-03**: Uniform buffer objects (UBO) for shared globals (camera, projection, light)
-- [ ] **RENDER-04**: Colored block rendering using vertex colors
-- [ ] **RENDER-05**: Sky dome rendering with day/night cycle colors
-- [ ] **RENDER-06**: Block selection outline rendering
+- [x] **RENDER-01**: Vertex buffer (VBO) infrastructure for chunk geometry
+- [x] **RENDER-02**: Vertex array object (VAO) per chunk for efficient binding
+- [x] **RENDER-03**: Uniform buffer objects (UBO) for shared globals (camera, projection, light)
+- [x] **RENDER-04**: Colored block rendering using vertex colors
+- [x] **RENDER-05**: Sky dome rendering with day/night cycle colors
+- [x] **RENDER-06**: Block selection outline rendering
 
 ### Chunk Integration
 
@@ -76,12 +76,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WEBGL-01 | Phase 1 | Pending |
 | WEBGL-02 | Phase 1 | Pending |
 | WEBGL-03 | Phase 1 | Pending |
-| RENDER-01 | Phase 2 | Pending |
-| RENDER-02 | Phase 2 | Pending |
-| RENDER-03 | Phase 2 | Pending |
-| RENDER-04 | Phase 2 | Pending |
-| RENDER-05 | Phase 2 | Pending |
-| RENDER-06 | Phase 2 | Pending |
+| RENDER-01 | Phase 2 | Complete |
+| RENDER-02 | Phase 2 | Complete |
+| RENDER-03 | Phase 2 | Complete |
+| RENDER-04 | Phase 2 | Complete |
+| RENDER-05 | Phase 2 | Complete |
+| RENDER-06 | Phase 2 | Complete |
 | CHUNK-01 | Phase 3 | Pending |
 | CHUNK-02 | Phase 3 | Pending |
 | CHUNK-03 | Phase 3 | Pending |
