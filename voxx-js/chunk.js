@@ -163,6 +163,10 @@ export class Chunk {
     const blockTypes = []; // Add block type attribute
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
+    
+    // UV coordinate logging - first 10 faces only
+    let uvLogCount = 0;
+    const UV_LOG_MAX = 10;
 
     // Greedy meshing algorithm
     for (let d = 0; d < 3; d++) {
@@ -253,6 +257,16 @@ export class Chunk {
                   w, h     // v4 - top-right (repeat w*h times)
                 );
 
+                // Log UV coordinates for first few faces (debug verification)
+                if (uvLogCount < UV_LOG_MAX) {
+                  const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
+                  console.log(`[Texture] UV coords for ${blockName} (type ${blockIndex}): face size ${w}x${h}, UVs [0,0]-[${w},0]-[0,${h}]-[${w},${h}]`);
+                  uvLogCount++;
+                  if (uvLogCount === UV_LOG_MAX) {
+                    console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
+                  }
+                }
+
 
               } else {
                 // Default UVs for AIR blocks (shouldn't be rendered anyway)
@@ -283,6 +297,19 @@ export class Chunk {
           }
         }
       }
+    }
+
+    // Log UV coordinate range for this chunk mesh
+    if (uvs.length > 0) {
+      let minU = Infinity, maxU = -Infinity;
+      let minV = Infinity, maxV = -Infinity;
+      for (let i = 0; i < uvs.length; i += 2) {
+        minU = Math.min(minU, uvs[i]);
+        maxU = Math.max(maxU, uvs[i]);
+        minV = Math.min(minV, uvs[i + 1]);
+        maxV = Math.max(maxV, uvs[i + 1]);
+      }
+      console.log(`[Texture] Chunk (${this.chunkX},${this.chunkZ}) UV range: U[${minU.toFixed(1)},${maxU.toFixed(1)}] V[${minV.toFixed(1)},${maxV.toFixed(1)}], faces: ${indices.length / 6}`);
     }
 
     return {
