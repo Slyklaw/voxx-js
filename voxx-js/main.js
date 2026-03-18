@@ -17,6 +17,9 @@ import {
   UI_CONFIG
 } from './config.js';
 
+// Timestamp to verify file is being served (updated: 2026-03-18T03:00)
+console.log('[DEBUG] main.js loaded at:', new Date().toISOString(), 'build=2026-03-18-0300');
+
 // Global variables
 let renderer, camera, world, biomeCalculator;
 let canvas, stats;
