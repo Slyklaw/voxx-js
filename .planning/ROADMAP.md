@@ -32,7 +32,10 @@
 3. Application handles WebGL2 context loss and recovers rendering state
 4. At least one test triangle renders to verify pipeline works
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md — Set up WebGL2 rendering context with working shader pipeline
 
 ---
 
@@ -114,7 +117,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. WebGL2 Context & Shaders | 0/1 | Not started | - |
+| 1. WebGL2 Context & Shaders | 1/1 | Planned | - |
 | 2. Core Rendering Pipeline | 0/1 | Not started | - |
 | 3. Chunk Mesh Integration | 0/1 | Not started | - |
 | 4. Camera & Controls Integration | 0/1 | Not started | - |
