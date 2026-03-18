@@ -18,6 +18,14 @@ let cameraRotation = { x: -0.5, y: 0 };
 let selectedBlockType = 1;
 let targetedBlock = null;
 
+// Update block selection UI to highlight current selection
+function updateBlockSelectionUI() {
+  document.querySelectorAll('.block-item').forEach(item => {
+    const blockNum = parseInt(item.dataset.block);
+    item.classList.toggle('selected', blockNum === selectedBlockType);
+  });
+}
+
 let world;
 let biomeCalculator;
 let chunkMeshes = new Map();
@@ -161,13 +169,26 @@ function setupControls() {
     if (num >= 1 && num <= 9 && isPointerLocked) {
       selectedBlockType = num;
       console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
-      
-      // Update UI to show selected block
-      document.querySelectorAll('.block-item').forEach(item => {
-        const blockNum = parseInt(item.dataset.block);
-        item.classList.toggle('selected', blockNum === selectedBlockType);
-      });
+      updateBlockSelectionUI();
     }
+  });
+
+  // Mousewheel for block selection
+  document.addEventListener('wheel', (event) => {
+    if (!isPointerLocked) return;
+    
+    const blockCount = 5; // Currently 5 block types (1-5)
+    
+    if (event.deltaY > 0) {
+      // Scroll down - next block
+      selectedBlockType = (selectedBlockType % blockCount) + 1;
+    } else if (event.deltaY < 0) {
+      // Scroll up - previous block
+      selectedBlockType = ((selectedBlockType - 2 + blockCount) % blockCount) + 1;
+    }
+    
+    console.log(`[BlockEdit] Wheel -> selectedBlockType = ${selectedBlockType}`);
+    updateBlockSelectionUI();
   });
 
   document.addEventListener('keyup', (event) => {
@@ -415,6 +436,7 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 setupControls();
+updateBlockSelectionUI(); // Initialize block selector UI
 setupRenderState(gl);
 initPerformance();
 initBlockOutline();
