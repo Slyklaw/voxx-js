@@ -105,7 +105,7 @@ Plans:
 | 3. Chunk Mesh Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 4. Camera & Controls Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
-| 6. Block Targeting & Interaction | v1.1 | 3/3 | Complete | 2026-03-18 |
+| 6. Block Targeting & Interaction | v1.1 | Complete    | 2026-03-18 | 2026-03-18 |
 | 7. Block Inventory | v1.1 | 0/1 | Not started | — |
 | 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
 
