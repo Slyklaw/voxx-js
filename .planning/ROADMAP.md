@@ -55,7 +55,11 @@ Plans:
 5. Sky dome renders with day/night cycle colors
 6. Block selection outline renders as wireframe around targeted block
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — VBO/VAO buffer infrastructure and colored block rendering
+- [ ] 02-02-PLAN.md — UBO for shared globals, sky dome, and block selection outline
 
 ---
 
@@ -118,7 +122,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. WebGL2 Context & Shaders | 1/1 | Planned | - |
-| 2. Core Rendering Pipeline | 0/1 | Not started | - |
+| 2. Core Rendering Pipeline | 0/2 | Not started | - |
 | 3. Chunk Mesh Integration | 0/1 | Not started | - |
 | 4. Camera & Controls Integration | 0/1 | Not started | - |
 | 5. Polish & Performance | 0/1 | Not started | - |
