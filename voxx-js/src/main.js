@@ -465,18 +465,13 @@ function destroyBlock() {
   if (chunk) {
     chunk.setVoxel(targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ, 0);
     
-    // Regenerate mesh data and update WebGL mesh
+    // Regenerate mesh data
     chunk.meshData = chunk.generateMeshData();
     chunk.needsUpdate = true;
     
-    // Dispose old WebGL mesh and recreate
-    if (chunk._webglMesh) {
-      gl.deleteBuffer(chunk._webglMesh.vbo);
-      gl.deleteBuffer(chunk._webglMesh.ibo);
-      gl.deleteVertexArray(chunk._webglMesh.vao);
-      chunk._webglMesh = null;
-      chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
-    }
+    // Mark neighbor chunks for update if block is on boundary
+    markNeighborChunksForUpdate(targetedBlock.chunkX, targetedBlock.chunkZ, 
+                                  targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ);
     
     console.log(`[BlockEdit] Destroyed block at ${targetedBlock.x},${targetedBlock.y},${targetedBlock.z}`);
   }
@@ -503,28 +498,53 @@ function placeBlock() {
     const localZ = ((placeZ % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
     
     if (placeY >= 0 && placeY < CHUNK_HEIGHT) {
-      // Check if position is empty
       const existing = chunk.getVoxel(localX, placeY, localZ);
       if (existing === 0) {
         chunk.setVoxel(localX, placeY, localZ, selectedBlockType);
         
-        // Regenerate mesh data and update WebGL mesh
+        // Regenerate mesh data
         chunk.meshData = chunk.generateMeshData();
         chunk.needsUpdate = true;
         
-        // Dispose old WebGL mesh and recreate
-        if (chunk._webglMesh) {
-          gl.deleteBuffer(chunk._webglMesh.vbo);
-          gl.deleteBuffer(chunk._webglMesh.ibo);
-          gl.deleteVertexArray(chunk._webglMesh.vao);
-          chunk._webglMesh = null;
-          chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
-        }
+        // Mark neighbor chunks for update if block is on boundary
+        markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
         
         console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
       } else {
         console.log('[BlockEdit] placeBlock: position occupied');
       }
+    }
+  }
+}
+
+// Mark neighboring chunks for update when block changes near boundary
+function markNeighborChunksForUpdate(chunkX, chunkZ, localX, localY, localZ) {
+  // Check each axis - if on boundary, mark neighbor
+  const neighbors = [];
+  
+  // West neighbor (localX == 0)
+  if (localX === 0) {
+    neighbors.push({ x: chunkX - 1, z: chunkZ });
+  }
+  // East neighbor (localX == CHUNK_WIDTH - 1)
+  if (localX === CHUNK_WIDTH - 1) {
+    neighbors.push({ x: chunkX + 1, z: chunkZ });
+  }
+  // North neighbor (localZ == 0)
+  if (localZ === 0) {
+    neighbors.push({ x: chunkX, z: chunkZ - 1 });
+  }
+  // South neighbor (localZ == CHUNK_DEPTH - 1)
+  if (localZ === CHUNK_DEPTH - 1) {
+    neighbors.push({ x: chunkX, z: chunkZ + 1 });
+  }
+  
+  for (const n of neighbors) {
+    const neighborChunk = world.getChunk(n.x, n.z);
+    if (neighborChunk && neighborChunk.hasVoxelData) {
+      neighborChunk.meshData = neighborChunk.generateMeshData();
+      neighborChunk.needsUpdate = true;
+      console.log(`[BlockEdit] Marked neighbor chunk ${n.x},${n.z} for update`);
     }
   }
 }
