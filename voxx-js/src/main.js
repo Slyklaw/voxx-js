@@ -1,6 +1,7 @@
 import { gl, canvas, isContextLost } from './gl/context.js';
 import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
+import { initPerformance, beginFrame, getFPS } from './gl/performance.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG } from '../config.js';
@@ -200,6 +201,7 @@ resizeCanvas();
 
 setupControls();
 setupRenderState(gl);
+initPerformance();
 
 initRenderer(gl);
 
@@ -249,6 +251,8 @@ function render(currentTime) {
     return;
   }
 
+  beginFrame(currentTime);
+
   const deltaTime = (currentTime - lastTime) / 1000;
   lastTime = currentTime;
 
@@ -266,6 +270,9 @@ function render(currentTime) {
   
   const timeEl = document.getElementById('time-display');
   if (timeEl) timeEl.textContent = `${isDaytime ? 'Day' : 'Night'}: ${timeString}`;
+
+  const fpsEl = document.querySelector('.debug-fps');
+  if (fpsEl) fpsEl.textContent = `FPS: ${getFPS()}`;
 
   const posEl = document.getElementById('camera-position');
   if (posEl) {
