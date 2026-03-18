@@ -15,7 +15,7 @@ Requirements for v1.1 Block Editing milestone.
 
 ### Block Inventory
 
-- [ ] **INV-01**: Pressing 1-9 selects block type, UI shows current selection
+- [x] **INV-01**: Pressing 1-9 selects block type, UI shows current selection
 
 ### Chunk Updates
 
@@ -58,7 +58,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EDIT-01 | Phase 6: Block Targeting & Interaction | Complete |
 | EDIT-02 | Phase 6: Block Targeting & Interaction | Pending |
 | EDIT-03 | Phase 6: Block Targeting & Interaction | Complete |
-| INV-01 | Phase 7: Block Inventory | Pending |
+| INV-01 | Phase 7: Block Inventory | Complete |
 | CHUNK-01 | Phase 8: Chunk Updates & Persistence | Pending |
 | PERSIST-01 | Phase 8: Chunk Updates & Persistence | Pending |
 

@@ -31,7 +31,7 @@
 <summary>🚧 v1.1 Block Editing (Phases 6-8)</summary>
 
   - [x] Phase 6: Block Targeting & Interaction (3 requirements)
-- [ ] Phase 7: Block Inventory (1 requirement)
+- [x] Phase 7: Block Inventory (1 requirement)
 - [ ] Phase 8: Chunk Updates & Persistence (2 requirements)
 
 </details>
@@ -78,7 +78,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 07-01-PLAN.md — Keyboard block selection (1-9) with UI feedback
+- [x] 07-01-PLAN.md — Keyboard block selection (1-9) with UI feedback (completed 2026-03-18)
 
 ---
 
@@ -108,8 +108,8 @@ Plans:
 | 3. Chunk Mesh Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 4. Camera & Controls Integration | v1.0 | 1/1 | Complete | 2026-03-17 |
 | 5. Polish & Performance | v1.0 | 1/1 | Complete | 2026-03-18 |
-| 6. Block Targeting & Interaction | v1.1 | Complete    | 2026-03-18 | 2026-03-18 |
-| 7. Block Inventory | v1.1 | 0/1 | Not started | — |
+| 6. Block Targeting & Interaction | v1.1 | 1/1 | Complete | 2026-03-18 |
+| 7. Block Inventory | v1.1 | 1/1 | Complete | 2026-03-18 |
 | 8. Chunk Updates & Persistence | v1.1 | 0/2 | Not started | — |
 
 ---

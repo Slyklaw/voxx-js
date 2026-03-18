@@ -18,9 +18,9 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | 6: Block Targeting & Interaction |
-| **Plan** | 3 (of 3) |
-| **Status** | Phase Complete |
+| **Phase** | 7: Block Inventory |
+| **Plan** | 1 (of 1) |
+| **Status** | Plan Complete |
 | **Progress** | 1 / 3 phases |
 
 ---
@@ -56,6 +56,8 @@
 - [Phase 06-block-targeting-interaction]: Left-click wired via mousedown event with button check, already present
 - [Phase 06-block-targeting-interaction]: Existing placeBlock() implementation verified - EDIT-02 requirement satisfied
 - [Phase 06-block-targeting-interaction]: Step-back distance of 0.2 units reliably places block in adjacent air cell
+- [Phase 07-block-inventory]: Digits 1-5 mapped directly to block type IDs (Stone=1, Dirt=2, Grass=3, Water=4, Snow=5)
+- [Phase 07-block-inventory]: Keyboard selection only active when pointer locked (isPointerLocked guard)
 
 ### Known Blockers
 
@@ -84,8 +86,9 @@
 1. ✅ Block targeting implemented (Plan 1 complete)
 2. ✅ Left-click break implemented (Plan 2 complete)
 3. ✅ Right-click place implemented (Plan 3 complete)
+4. ✅ Keyboard block selection (1-5) with UI feedback (Plan 1 complete)
 
-**Phase 6 complete** — Ready for Phase 7 (Block Inventory)
+**Phase 7 complete** — Ready for Phase 8 (Chunk Updates & Persistence)
 
 ---
 
