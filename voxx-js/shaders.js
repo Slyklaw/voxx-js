@@ -160,6 +160,7 @@ uniform float blockAtlasSidesX[6];
 uniform float blockAtlasSidesY[6];
 uniform float blockAtlasBottomX[6];
 uniform float blockAtlasBottomY[6];
+uniform bool debugTexture;
 
 // Function to get atlas position for each block type based on face direction
 vec2 getBlockAtlasPos(float blockType, vec3 normal) {
@@ -241,6 +242,28 @@ void main() {
     );
     
     vec4 texColor = texture2D(textureAtlas, finalUV);
+    
+    // Debug mode: tint textures based on block type for visual verification
+    if (debugTexture) {
+      // Create distinct tint colors based on block index
+      float blockIndex = mod(vBlockType, 6.0);
+      vec3 debugTint;
+      if (blockIndex < 0.5) {
+        debugTint = vec3(1.0, 0.5, 0.5); // AIR - red tint (shouldn't appear)
+      } else if (blockIndex < 1.5) {
+        debugTint = vec3(0.7, 0.7, 0.7); // STONE - gray tint
+      } else if (blockIndex < 2.5) {
+        debugTint = vec3(0.8, 0.5, 0.3); // DIRT - brown tint
+      } else if (blockIndex < 3.5) {
+        debugTint = vec3(0.5, 1.0, 0.5); // GRASS - green tint
+      } else if (blockIndex < 4.5) {
+        debugTint = vec3(0.5, 0.5, 1.0); // WATER - blue tint
+      } else {
+        debugTint = vec3(1.0, 1.0, 1.0); // SNOW - white tint
+      }
+      texColor.rgb *= debugTint;
+    }
+    
     // Apply texture to blocks with lighting
     finalColor = texColor.rgb * lighting;
   } else {
