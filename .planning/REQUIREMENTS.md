@@ -1,53 +1,52 @@
-# Requirements: Voxx-JS Block Editing
+# Requirements: Voxx-JS
 
 **Defined:** 2026-03-18
 **Core Value:** Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
-## v1 Requirements
+## v1.2 Requirements
 
-Requirements for v1.1 Block Editing milestone.
+Requirements for texture atlas milestone. The texture infrastructure exists from v1.0 but was kept inactive.
 
-### Block Operations
+### Texture Loading
 
-- [x] **EDIT-01**: User can left-click to remove the targeted block
-- [ ] **EDIT-02**: User can right-click to place a block on adjacent face
-- [x] **EDIT-03**: Block outline highlights targeted block for editing
+- [ ] **TEX-01**: Texture atlas (textures-atlas.png) loads without errors on startup
+- [ ] **TEX-02**: Atlas dimensions are correctly captured and passed to shader uniforms
+- [ ] **TEX-03**: Console logs confirm successful texture load with correct dimensions
 
-### Block Inventory
+### Texture Rendering
 
-- [x] **INV-01**: Pressing 1-9 selects block type, UI shows current selection
+- [ ] **TEX-04**: Blocks render with textures from atlas instead of flat vertex colors
+- [ ] **TEX-05**: Each block type displays the correct texture based on atlasPos in blocks.js
+- [ ] **TEX-06**: Different faces (top, sides, bottom) show appropriate textures (e.g., grass top green, grass sides dirt+grass)
 
-### Chunk Updates
+### UV Mapping
 
-- [x] **CHUNK-01**: Breaking/placing updates chunk mesh visually
+- [ ] **TEX-07**: UV coordinates properly tile across block faces
+- [ ] **TEX-08**: Texture orientation is correct (not flipped or rotated incorrectly)
+- [ ] **TEX-09**: Greedy mesh quads display textures consistently across merged faces
 
-### Persistence
+### Block Types
 
-- [x] **PERSIST-01**: Block edits persist until reload (no save system)
+- [ ] **TEX-10**: All 5 solid block types (Stone, Dirt, Grass, Water, Snow) render with correct textures
+- [ ] **TEX-11**: Air blocks remain transparent (no texture applied)
 
 ## v2 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Deferred to future milestones.
 
-### Advanced Features
+### Texture Enhancements
 
-- **PERSIST-02**: World state saves to localStorage
-- **PERSIST-03**: World state loads on startup
-- **EDIT-04**: Multiplayer block sync
-- **INV-02**: Creative mode block palette (all block types)
-- **INV-03**: Survival mode inventory with stacking
+- **TEX-20**: Additional block types (wood, sand, cobblestone, etc.)
+- **TEX-21**: Animated textures (water flow, lava)
+- **TEX-22**: Texture blending at biome boundaries
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
-
 | Feature | Reason |
 |---------|--------|
-| Block physics (falling sand) | Complex physics system, defer to v2 |
-| Redstone/logic | Requires circuit simulation, defer to v2 |
-| Block damage/health | Simple instant break sufficient for v1.1 |
-| Undo/redo | Requires command pattern, defer to v2 |
-| World save to disk | Requires serialization, defer to v2 |
+| New texture art | Using existing textures-atlas.png |
+| Texture animations | Deferred to v2 |
+| Biome-based texture variations | Deferred to v2 |
 
 ## Traceability
 
@@ -55,17 +54,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EDIT-01 | Phase 6: Block Targeting & Interaction | Complete |
-| EDIT-02 | Phase 6: Block Targeting & Interaction | Pending |
-| EDIT-03 | Phase 6: Block Targeting & Interaction | Complete |
-| INV-01 | Phase 7: Block Inventory | Complete |
-| CHUNK-01 | Phase 8: Chunk Updates & Persistence | Complete |
-| PERSIST-01 | Phase 8: Chunk Updates & Persistence | Complete |
+| TEX-01 | Phase 9 | Pending |
+| TEX-02 | Phase 9 | Pending |
+| TEX-03 | Phase 9 | Pending |
+| TEX-04 | Phase 10 | Pending |
+| TEX-05 | Phase 10 | Pending |
+| TEX-06 | Phase 10 | Pending |
+| TEX-07 | Phase 10 | Pending |
+| TEX-08 | Phase 10 | Pending |
+| TEX-09 | Phase 10 | Pending |
+| TEX-10 | Phase 10 | Pending |
+| TEX-11 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 6 total
-- Mapped to phases: 6 ✓
-- Unmapped: 0
+- v1 requirements: 11 total
+- Mapped to phases: 11
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-18*
+*Last updated: 2026-03-18 after initial definition*
