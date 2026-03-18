@@ -600,8 +600,12 @@ function syncChunkToWebGL(chunk) {
   }
 }
 
+// Chunk rebuild throttling to prevent frame drops
+const MAX_REBUILDS_PER_FRAME = 2;
+
 function updateChunks() {
   const visibleChunks = world.getVisibleChunks();
+  let rebuildCount = 0;
   
   for (const chunk of visibleChunks) {
     // Sync chunk if it has mesh data but no WebGL mesh
@@ -610,7 +614,14 @@ function updateChunks() {
     }
     // Also check if chunk needs mesh regeneration after edit
     else if (chunk.needsUpdate && chunk.meshData) {
+      // Throttle rebuilds to prevent frame spikes
+      if (rebuildCount >= MAX_REBUILDS_PER_FRAME) {
+        continue; // Skip remaining rebuilds this frame, will be processed next frame
+      }
+      
       chunk.needsUpdate = false;
+      rebuildCount++;
+      
       // Delete old mesh and recreate
       if (chunk._webglMesh) {
         gl.deleteBuffer(chunk._webglMesh.vbo);
