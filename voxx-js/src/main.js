@@ -84,6 +84,9 @@ function initBlockOutline() {
 function renderBlockOutline(mvpMatrix) {
   if (!targetedBlock || !outlineProgram) return;
   
+  // Disable depth test so outline is always visible
+  gl.disable(gl.DEPTH_TEST);
+  
   gl.useProgram(outlineProgram);
   
   // Create model matrix for targeted block position
@@ -104,6 +107,9 @@ function renderBlockOutline(mvpMatrix) {
   gl.lineWidth(2.0);
   gl.drawArrays(gl.LINES, 0, 24); // 12 edges * 2 vertices
   gl.bindVertexArray(null);
+  
+  // Re-enable depth test for other rendering
+  gl.enable(gl.DEPTH_TEST);
 }
 
 function multiplyMatrices(a, b) {
