@@ -1,6 +1,6 @@
 # State: Voxx-JS
 
-**Last Updated:** 2026-03-18 (after completing v1.1 milestone)
+**Last Updated:** 2026-03-18 (starting v1.2 milestone)
 
 ---
 
@@ -8,7 +8,7 @@
 
 **Core Value:** Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
-**Current Milestone:** v1.1 Block Editing — SHIPPED
+**Current Milestone:** v1.2 Texture Atlas (defining requirements)
 
 **Mode:** yolo
 
@@ -18,9 +18,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | Milestone Complete |
-| **Last Milestone** | v1.1 Block Editing |
-| **Next** | Planning next milestone |
+| **Status** | Defining requirements |
+| **Phase** | Not started |
+| **Plan** | — |
+| **Last activity** | 2026-03-18 — Milestone v1.2 started |
 
 ---
 

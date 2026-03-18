@@ -14,9 +14,20 @@ Players can explore and build in a procedurally generated 3D voxel world directl
 
 Block editing is complete. Players can target blocks with a magenta wireframe outline, break blocks with left-click, place blocks with right-click, select block types with keyboard (1-5) or mousewheel, and see chunk updates in real-time.
 
+## Current Milestone: v1.2 Texture Atlas
+
+**Goal:** Activate the existing texture atlas implementation (built in v1.0 but kept inactive) to render blocks with proper textures from textures-atlas.png
+
+**Target features:**
+- Verify and fix texture atlas loading
+- Debug texture rendering in shaders
+- Ensure correct UV mapping per block type and face
+- Add additional block types if atlas supports them
+
+**Note:** This code already exists in renderer.js, shaders.js, blocks.js, and chunk.js from v1.0. The milestone is activation and debugging, not building from scratch.
+
 ## Future Milestone Goals
 
-- Texture atlas for block types
 - Frustum culling for performance
 - Save/load world state (localStorage)
 - Block physics (falling sand, water flow)
