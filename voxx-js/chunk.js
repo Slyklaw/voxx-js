@@ -159,8 +159,9 @@ export class Chunk {
     const normals = [];
     const colors = [];
     const uvs = [];
+    const tileBase = [];  // Tile base UV coordinates for atlas wrapping
     const indices = [];
-    const blockTypes = []; // Add block type attribute
+    const blockTypes = [];
 
     const dims = [CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH];
     
@@ -273,30 +274,45 @@ export class Chunk {
                 const ATLAS_HEIGHT = 512;
                 const TILE_SIZE = 16;
                 
-                // Calculate UV bounds for a SINGLE tile - no scaling
-                // UVs always stay within one tile's bounds
+                // Calculate UV bounds for a SINGLE tile
                 const tileU0 = atlasX / ATLAS_WIDTH;
                 const tileV0 = atlasY / ATLAS_HEIGHT;
                 const tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
                 const tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
                 
-                // Simple UVs - texture stretches across face but stays within one tile
+                // Tile span in UV space
+                const tileSpanU = tileU1 - tileU0;
+                const tileSpanV = tileV1 - tileV0;
+                
+                // Scale UVs by face dimensions for tiling
+                // Left edge: UV = tileU0, Right edge: UV = tileU0 + w * tileSpanU
+                // Bottom edge: UV = tileV0, Top edge: UV = tileV0 + h * tileSpanV
+                const scaledU0 = tileU0;
+                const scaledV0 = tileV0;
+                const scaledU1 = tileU0 + w * tileSpanU;
+                const scaledV1 = tileV0 + h * tileSpanV;
+                
+                // Push scaled UVs (will be wrapped in shader)
                 uvs.push(
-                  tileU0, tileV0,    // v1 - bottom-left
-                  tileU1, tileV0,    // v2 - bottom-right
-                  tileU0, tileV1,    // v3 - top-left
-                  tileU1, tileV1     // v4 - top-right
+                  scaledU0, scaledV0,  // v1 - bottom-left
+                  scaledU1, scaledV0,  // v2 - bottom-right
+                  scaledU0, scaledV1,  // v3 - top-left
+                  scaledU1, scaledV1   // v4 - top-right
+                );
+                
+                // Push tile base coordinates (same for all 4 vertices)
+                tileBase.push(
+                  tileU0, tileV0,
+                  tileU0, tileV0,
+                  tileU0, tileV0,
+                  tileU0, tileV0
                 );
 
                 // Debug logging for first few faces
                 if (uvLogCount < UV_LOG_MAX) {
                   const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
                   const faceDir = normal[1] > 0 ? 'top' : (normal[1] < 0 ? 'bottom' : 'side');
-                  const tileU0 = atlasX / ATLAS_WIDTH;
-                  const tileV0 = atlasY / ATLAS_HEIGHT;
-                  const tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
-                  const tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
-                  console.log(`[Texture] ${blockName} ${faceDir}: atlas=[${atlasX},${atlasY}], size=${w}x${h}, UV=[${tileU0.toFixed(3)},${tileV0.toFixed(3)}]-[${tileU1.toFixed(3)},${tileV1.toFixed(3)}]`);
+                  console.log(`[Texture] ${blockName} ${faceDir}: atlas=[${atlasX},${atlasY}], size=${w}x${h}, UV=[${scaledU0.toFixed(4)},${scaledV0.toFixed(4)}]-[${scaledU1.toFixed(4)},${scaledV1.toFixed(4)}]`);
                   uvLogCount++;
                   if (uvLogCount === UV_LOG_MAX) {
                     console.log(`[Texture] UV logging limited to first ${UV_LOG_MAX} faces`);
@@ -304,8 +320,9 @@ export class Chunk {
                 }
 
               } else {
-                // Default UVs for AIR blocks (shouldn't be rendered anyway)
+                // Default values for AIR blocks
                 uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
+                tileBase.push(0, 0, 0, 0, 0, 0, 0, 0);
               }
 
               // Create indices for two triangles
@@ -353,6 +370,7 @@ export class Chunk {
       normals: new Float32Array(normals),
       colors: new Float32Array(colors),
       uvs: new Float32Array(uvs),
+      tileBase: new Float32Array(tileBase),
       indices: new Uint32Array(indices),
       blockTypes: new Float32Array(blockTypes)
     };

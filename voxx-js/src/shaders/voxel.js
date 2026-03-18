@@ -3,22 +3,29 @@ import { createProgram, getUniformLocations, getAttribLocations } from '../gl/sh
 const voxelVertexShader = `#version 300 es
 precision highp float;
 
-in vec3 aPosition;
-in vec3 aColor;
-in vec3 aNormal;
-in vec2 aUV;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aColor;
+layout(location = 2) in vec3 aNormal;
+layout(location = 3) in vec2 aUV;          // Scaled by face dimensions
+layout(location = 4) in vec2 aTileBase;    // Base UV coordinates in atlas
 
 uniform mat4 uModelViewProjection;
 uniform mat4 uModelMatrix;
+uniform vec2 uTileSpan;  // Size of one tile in UV space
 
 out vec3 vColor;
 out vec3 vNormal;
-out vec2 vUV;
+out vec2 vTileUnits;     // Position in tile units for interpolation
+out vec2 vTileBase;      // Tile base UV (same for all vertices of a face)
 
 void main() {
   vColor = aColor;
   vNormal = mat3(uModelMatrix) * aNormal;
-  vUV = aUV;
+  vTileBase = aTileBase;  // Pass through to fragment shader
+  
+  // Convert to tile units: left edge = 0, right edge = faceWidth
+  vTileUnits = (aUV - aTileBase) / uTileSpan;
+  
   gl_Position = uModelViewProjection * vec4(aPosition, 1.0);
 }`;
 
@@ -27,13 +34,15 @@ precision highp float;
 
 in vec3 vColor;
 in vec3 vNormal;
-in vec2 vUV;
+in vec2 vTileUnits;   // Position in tile units (interpolated)
+in vec2 vTileBase;    // Tile base UV (same for all vertices)
 
 uniform vec3 uLightDirection;
 uniform float uAmbient;
 uniform float uDiffuse;
 uniform sampler2D uTextureAtlas;
-uniform bool uDebugMode;  // true = show vertex colors, false = show texture
+uniform bool uDebugMode;
+uniform vec2 uTileSpan;   // Size of one tile in UV space
 
 out vec4 fragColor;
 
@@ -46,9 +55,21 @@ void main() {
   
   vec3 baseColor;
   if (uDebugMode) {
-    baseColor = vColor;  // Show vertex colors for debugging
+    baseColor = vColor;
   } else {
-    vec4 texColor = texture(uTextureAtlas, vUV);
+    // Wrap tile units within single tile [0, 1)
+    vec2 wrappedTileUnits = fract(vTileUnits);
+    
+    // If wrapped is near 0 and original was > 0.5, it wrapped from an integer
+    // Use this to map integer-wrapped values to near 1 (right edge of tile)
+    vec2 isNearZero = step(wrappedTileUnits, vec2(0.001));
+    vec2 isLargeUnit = step(vec2(0.5), vTileUnits);
+    wrappedTileUnits = mix(wrappedTileUnits, vec2(0.999), isNearZero * isLargeUnit);
+    
+    // Compute atlas UV using tile base and wrapped position
+    vec2 atlasUV = vTileBase + wrappedTileUnits * uTileSpan;
+    
+    vec4 texColor = texture(uTextureAtlas, atlasUV);
     baseColor = texColor.rgb;
   }
   
@@ -68,7 +89,8 @@ export function getVoxelUniforms(gl, program) {
     'uAmbient',
     'uDiffuse',
     'uTextureAtlas',
-    'uDebugMode'
+    'uDebugMode',
+    'uTileSpan'
   ]);
 }
 
@@ -77,7 +99,8 @@ export function getVoxelAttribs(gl, program) {
     'aPosition',
     'aColor',
     'aNormal',
-    'aUV'
+    'aUV',
+    'aTileBase'
   ]);
 }
 

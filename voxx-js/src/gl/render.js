@@ -171,6 +171,8 @@ export function initRenderer(gl) {
   gl.uniform1f(voxelUniforms.uAmbient, 0.6);
   gl.uniform1f(voxelUniforms.uDiffuse, 0.4);
   gl.uniform1i(voxelUniforms.uDebugMode, 0);  // Show textures
+  // Set tile span (16 pixels / 1024 atlas width = 0.015625)
+  gl.uniform2f(voxelUniforms.uTileSpan, 16/1024, 16/512);
   gl.useProgram(null);
 
   cameraUBO = createCameraUBO(gl);
@@ -214,9 +216,9 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
     // Set texture parameters for pixel art (nearest neighbor)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    // Use REPEAT for greedy meshing - UVs > 1.0 should tile the texture
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    // Use CLAMP_TO_EDGE for texture atlas - UVs should stay within tile bounds
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
     textureAtlasLoaded = true;
     console.log(`[Renderer] ✓ Texture atlas loaded and ready: ${image.width}x${image.height}`);

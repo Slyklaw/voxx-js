@@ -1,5 +1,5 @@
 const FLOAT_SIZE = 4;
-const VERTEX_SIZE = 11; // pos(3) + color(3) + normal(3) + uv(2)
+const VERTEX_SIZE = 13; // pos(3) + color(3) + normal(3) + uv(2) + tileBase(2)
 const STRIDE = VERTEX_SIZE * FLOAT_SIZE;
 
 export function createVBO(gl, data, usage = gl.STATIC_DRAW) {
@@ -19,44 +19,26 @@ export function setupVAO(gl, vao, vbo, attribs = {}) {
   gl.bindVertexArray(vao);
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 
-  const {
-    position = { size: 3, type: gl.FLOAT, normalized: false, offset: 0 },
-    color = { size: 3, type: gl.FLOAT, normalized: false, offset: 12 },
-    normal = { size: 3, type: gl.FLOAT, normalized: false, offset: 24 },
-    uv = { size: 2, type: gl.FLOAT, normalized: false, offset: 36 }
-  } = attribs;
+  // Use explicit layout locations matching shader
+  // Position: location 0
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, STRIDE, 0);
 
-  if (position.size > 0) {
-    const posLoc = gl.getAttribLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'aPosition');
-    if (posLoc >= 0) {
-      gl.enableVertexAttribArray(posLoc);
-      gl.vertexAttribPointer(posLoc, position.size, position.type, position.normalized, STRIDE, position.offset);
-    }
-  }
+  // Color: location 1
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, STRIDE, 12);
 
-  if (color.size > 0) {
-    const colLoc = gl.getAttribLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'aColor');
-    if (colLoc >= 0) {
-      gl.enableVertexAttribArray(colLoc);
-      gl.vertexAttribPointer(colLoc, color.size, color.type, color.normalized, STRIDE, color.offset);
-    }
-  }
+  // Normal: location 2
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, STRIDE, 24);
 
-  if (normal.size > 0) {
-    const normLoc = gl.getAttribLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'aNormal');
-    if (normLoc >= 0) {
-      gl.enableVertexAttribArray(normLoc);
-      gl.vertexAttribPointer(normLoc, normal.size, normal.type, normal.normalized, STRIDE, normal.offset);
-    }
-  }
+  // UV: location 3
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 2, gl.FLOAT, false, STRIDE, 36);
 
-  if (uv.size > 0) {
-    const uvLoc = gl.getAttribLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'aUV');
-    if (uvLoc >= 0) {
-      gl.enableVertexAttribArray(uvLoc);
-      gl.vertexAttribPointer(uvLoc, uv.size, uv.type, uv.normalized, STRIDE, uv.offset);
-    }
-  }
+  // TileBase: location 4
+  gl.enableVertexAttribArray(4);
+  gl.vertexAttribPointer(4, 2, gl.FLOAT, false, STRIDE, 44);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -115,6 +97,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   const colors = meshData.colors || new Float32Array(positions.length);
   const normals = meshData.normals || new Float32Array(positions.length);
   const uvs = meshData.uvs || new Float32Array((positions.length / 3) * 2);
+  const tileBase = meshData.tileBase || new Float32Array((positions.length / 3) * 2);
   const indices = meshData.indices;
 
   const vertexCount = positions.length / 3;
@@ -150,6 +133,10 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     // UV coordinates (new)
     data[base + 9] = uvs[i * 2 + 0] || 0;
     data[base + 10] = uvs[i * 2 + 1] || 0;
+    
+    // Tile base coordinates for atlas wrapping
+    data[base + 11] = tileBase[i * 2 + 0] || 0;
+    data[base + 12] = tileBase[i * 2 + 1] || 0;
   }
 
   const vbo = gl.createBuffer();
@@ -160,22 +147,20 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   gl.bindVertexArray(vao);
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 
-  const posLoc = attribs?.aPosition ?? 0;
-  const colLoc = attribs?.aColor ?? 1;
-  const normLoc = attribs?.aNormal ?? 2;
-  const uvLoc = attribs?.aUV ?? 3;
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, STRIDE, 0);
 
-  gl.enableVertexAttribArray(posLoc);
-  gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, STRIDE, 0);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 3, gl.FLOAT, false, STRIDE, 12);
 
-  gl.enableVertexAttribArray(colLoc);
-  gl.vertexAttribPointer(colLoc, 3, gl.FLOAT, false, STRIDE, 12);
+  gl.enableVertexAttribArray(2);
+  gl.vertexAttribPointer(2, 3, gl.FLOAT, false, STRIDE, 24);
 
-  gl.enableVertexAttribArray(normLoc);
-  gl.vertexAttribPointer(normLoc, 3, gl.FLOAT, false, STRIDE, 24);
+  gl.enableVertexAttribArray(3);
+  gl.vertexAttribPointer(3, 2, gl.FLOAT, false, STRIDE, 36);
 
-  gl.enableVertexAttribArray(uvLoc);
-  gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, STRIDE, 36);
+  gl.enableVertexAttribArray(4);
+  gl.vertexAttribPointer(4, 2, gl.FLOAT, false, STRIDE, 44);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -200,5 +185,6 @@ export const VERTEX_FORMAT = {
   COLOR_OFFSET: 12,
   NORMAL_OFFSET: 24,
   UV_OFFSET: 36,
+  TILE_BASE_OFFSET: 44,
   FLOATS_PER_VERTEX: VERTEX_SIZE
 };

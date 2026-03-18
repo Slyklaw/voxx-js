@@ -62,10 +62,11 @@ function generateMeshData(chunk, chunkX, chunkZ) {
   const positions = [];
   const normals = [];
   const uvs = [];
+  const tileBase = [];  // Tile base UV coordinates for atlas wrapping
   const indices = [];
   const colors = [];
-  const blockTypes = []; // Add block types array
-  let uvDebugCount = 0; // Debug counter
+  const blockTypes = [];
+  let uvDebugCount = 0;
   
   // World-space offsets for this chunk
   const worldOffsetX = chunkX * CHUNK_WIDTH;
@@ -137,7 +138,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
             if (val > 0) { normal[d] = 1; } else { normal[d] = -1; }
             normals.push(...normal, ...normal, ...normal, ...normal);
 
-            // Get the block color and type
+              // Get the block color and type
             const blockIndex = Math.abs(val);
 
             // Add UV coordinates for texture mapping
@@ -168,36 +169,54 @@ function generateMeshData(chunk, chunkX, chunkZ) {
               const ATLAS_HEIGHT = 512;
               const TILE_SIZE = 16;
               
-              // Calculate UV bounds for a SINGLE tile - no scaling
-              // UVs always stay within one tile's bounds
+              // Calculate UV bounds for a SINGLE tile
               tileU0 = atlasX / ATLAS_WIDTH;
               tileV0 = atlasY / ATLAS_HEIGHT;
               tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
               tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
               
-              // Simple UVs - texture stretches across face but stays within one tile
+              // Tile span in UV space
+              const tileSpanU = tileU1 - tileU0;
+              const tileSpanV = tileV1 - tileV0;
+              
+              // Scale UVs by face dimensions for tiling
+              // Left edge: UV = tileU0, Right edge: UV = tileU0 + w * tileSpanU
+              // Bottom edge: UV = tileV0, Top edge: UV = tileV0 + h * tileSpanV
+              const scaledU0 = tileU0;
+              const scaledV0 = tileV0;
+              const scaledU1 = tileU0 + w * tileSpanU;
+              const scaledV1 = tileV0 + h * tileSpanV;
+              
+              // Push scaled UVs (will be wrapped in shader)
               uvs.push(
-                tileU0, tileV0,    // v1 - bottom-left
-                tileU1, tileV0,    // v2 - bottom-right
-                tileU0, tileV1,    // v3 - top-left
-                tileU1, tileV1     // v4 - top-right
+                scaledU0, scaledV0,  // v1 - bottom-left
+                scaledU1, scaledV0,  // v2 - bottom-right
+                scaledU0, scaledV1,  // v3 - top-left
+                scaledU1, scaledV1   // v4 - top-right
               );
+              
+              // Push tile base coordinates (same for all 4 vertices)
+              tileBase.push(
+                tileU0, tileV0,
+                tileU0, tileV0,
+                tileU0, tileV0,
+                tileU0, tileV0
+              );
+              
+              const blockColor = getBlockColor(blockIndex);
+              for (let i = 0; i < 4; i++) {
+                colors.push(blockColor.r, blockColor.g, blockColor.b);
+                blockTypes.push(blockIndex);
+              }
             } else {
-              // Default UVs for AIR blocks (shouldn't be rendered anyway)
-              tileU0 = tileV0 = 0;
-              tileU1 = tileV1 = 1;
+              // Default values for AIR blocks
               uvs.push(0, 0, 1, 0, 0, 1, 1, 1);
-            }
-
-            // Debug: log ALL water faces to find correct position
-            if (block.type === 'WATER') {
-              console.log(`[Water Debug] atlasPos=[${atlasX},${atlasY}], UV=[${tileU0.toFixed(4)},${tileV0.toFixed(4)}]-[${tileU1.toFixed(4)},${tileV1.toFixed(4)}]`);
-            }
-            const blockColor = getBlockColor(blockIndex);
-            // Push color and block type for each vertex (4 times)
-            for (let i = 0; i < 4; i++) {
-              colors.push(blockColor.r, blockColor.g, blockColor.b);
-              blockTypes.push(blockIndex); // Store block type for each vertex
+              tileBase.push(0, 0, 0, 0, 0, 0, 0, 0);
+              const blockColor = getBlockColor(blockIndex);
+              for (let i = 0; i < 4; i++) {
+                colors.push(blockColor.r, blockColor.g, blockColor.b);
+                blockTypes.push(blockIndex);
+              }
             }
 
             if (val > 0) {
@@ -231,6 +250,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
     positions: new Float32Array(positions),
     normals: new Float32Array(normals),
     uvs: new Float32Array(uvs),
+    tileBase: new Float32Array(tileBase),
     indices: new Uint32Array(indices),
     colors: new Float32Array(colors),
     blockTypes: new Float32Array(blockTypes)
