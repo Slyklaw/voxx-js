@@ -3,6 +3,7 @@ import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } fro
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { bindChunk, unbindChunk, VERTEX_FORMAT } from './buffers.js';
+import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance } from './performance.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -193,7 +194,15 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   gl.disable(gl.CULL_FACE); // Disable culling for now to see all faces
   
   bindChunk(gl, chunkMesh.vao);
-  gl.drawArrays(gl.TRIANGLES, 0, chunkMesh.vertexCount);
+  
+  if (chunkMesh.ibo && chunkMesh.indexCount > 0) {
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
+    gl.drawElements(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+  } else {
+    gl.drawArrays(gl.TRIANGLES, 0, chunkMesh.vertexCount);
+  }
+  
   unbindChunk(gl);
 }
 
@@ -351,3 +360,55 @@ export function createMockChunkMesh(gl) {
 
   return { vao, vbo, vertexCount };
 }
+
+let renderCallback = null;
+let animationFrameId = null;
+let lastTimestamp = 0;
+let canvas = null;
+let glContext = null;
+let currentViewMatrix = null;
+let currentProjectionMatrix = null;
+let currentTimeOfDay = 0.5;
+
+export function renderLoop(canvasEl, gl, renderFn) {
+  canvas = canvasEl;
+  glContext = gl;
+  renderCallback = renderFn;
+  lastTimestamp = 0;
+  
+  initPerformance();
+  
+  function frame(timestamp) {
+    const deltaTime = beginFrame(timestamp);
+    
+    if (renderCallback) {
+      renderCallback(gl, deltaTime, timestamp);
+    }
+    
+    if (currentViewMatrix && currentProjectionMatrix) {
+      renderSky(glContext, currentViewMatrix, currentProjectionMatrix, currentTimeOfDay);
+    }
+    
+    animationFrameId = requestAnimationFrame(frame);
+  }
+  
+  animationFrameId = requestAnimationFrame(frame);
+  
+  return {
+    stop: () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    },
+    setViewMatrix: (view, proj) => {
+      currentViewMatrix = view;
+      currentProjectionMatrix = proj;
+    },
+    setTimeOfDay: (time) => {
+      currentTimeOfDay = time;
+    }
+  };
+}
+
+export { getFPS, getMetrics, logPerformance };

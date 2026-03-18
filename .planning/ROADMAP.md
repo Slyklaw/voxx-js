@@ -12,7 +12,7 @@
 - [ ] **Phase 2: Core Rendering Pipeline** - VAO/VBO infrastructure and rendering
 - [ ] **Phase 3: Chunk Mesh Integration** - Connect world data to GPU
 - [ ] **Phase 4: Camera & Controls Integration** - First-person view
-- [ ] **Phase 5: Polish & Performance** - Optimization and verification
+- [x] **Phase 5: Polish & Performance** - Optimization and verification (completed 2026-03-18)
 
 ---
 
@@ -113,7 +113,7 @@ Plans:
 3. No visible seams between chunks (boundary gaps resolved)
 4. Resource disposal verified—no memory growth over 10+ minutes of play
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md — Implement performance optimization (FPS monitoring, chunk dirty tracking, render loop integration)
@@ -128,7 +128,7 @@ Plans:
 | 2. Core Rendering Pipeline | 0/2 | Not started | - |
 | 3. Chunk Mesh Integration | 0/1 | Not started | - |
 | 4. Camera & Controls Integration | 0/1 | Not started | - |
-| 5. Polish & Performance | 1/1 | Planned | - |
+| 5. Polish & Performance | 1/1 | Complete    | 2026-03-18 |
 
 ---
 

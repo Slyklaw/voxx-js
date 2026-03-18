@@ -105,6 +105,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   const positions = meshData.positions;
   const colors = meshData.colors || new Float32Array(positions.length);
   const normals = meshData.normals || new Float32Array(positions.length);
+  const indices = meshData.indices;
 
   const vertexCount = positions.length / 3;
   const data = new Float32Array(vertexCount * VERTEX_SIZE);
@@ -160,7 +161,18 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-  return { vbo, vao, vertexCount };
+  // Create index buffer
+  let ibo = null;
+  let indexCount = 0;
+  if (indices && indices.length > 0) {
+    ibo = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
+    indexCount = indices.length;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+  }
+
+  return { vbo, vao, ibo, indexCount };
 }
 
 export const VERTEX_FORMAT = {
