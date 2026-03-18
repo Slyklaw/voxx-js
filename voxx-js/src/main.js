@@ -1,7 +1,7 @@
 import { gl, canvas, isContextLost } from './gl/context.js';
 import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
-import { initPerformance, beginFrame, getFPS } from './gl/performance.js';
+import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG } from '../config.js';
@@ -272,7 +272,7 @@ function render(currentTime) {
   if (timeEl) timeEl.textContent = `${isDaytime ? 'Day' : 'Night'}: ${timeString}`;
 
   const fpsEl = document.querySelector('.debug-fps');
-  if (fpsEl) fpsEl.textContent = `FPS: ${getFPS()}`;
+  if (fpsEl) fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()})`;
 
   const posEl = document.getElementById('camera-position');
   if (posEl) {
@@ -287,6 +287,8 @@ function render(currentTime) {
   const viewMatrix = createViewMatrix();
   const projectionMatrix = createProjectionMatrix();
 
+  beginRenderTiming();
+  
   clear(gl, canvas);
 
   const timeOfDay = (sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) % 1;
@@ -307,6 +309,8 @@ function render(currentTime) {
   if (webglChunks.length > 0) {
     renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix);
   }
+  
+  endRenderTiming();
 
   requestAnimationFrame(render);
 }
