@@ -7,8 +7,10 @@ import { SkyRenderer } from './sky.js';
 import { vertexShader, fragmentShader } from './shaders.js';
 import { getBlockAtlasPositions } from './blocks.js';
 
+console.log('[Texture] renderer.js module loaded');
 export class Renderer {
   constructor() {
+    console.log('[Texture] Renderer constructor called');
     this.scene = null;
     this.camera = null;
     this.renderer = null;
