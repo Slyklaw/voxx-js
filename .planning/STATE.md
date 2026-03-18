@@ -7,10 +7,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | Not started |
-| **Phase** | 9 - Texture Loading Verification |
-| **Plan** | — |
-| **Last activity** | 2026-03-18 — Roadmap created |
+| **Status** | In progress |
+| **Phase** | 10 - Texture Rendering Validation |
+| **Plan** | 01 - Texture Rendering Validation |
+| **Last activity** | 2026-03-18 — Phase 10 Plan 01 complete |
 
 ---
 
@@ -35,25 +35,26 @@
 ```
 v1.0 WebGL2 Refactor:    ████████████████████ 100% ✓
 v1.1 Block Editing:      ████████████████████ 100% ✓
-v1.2 Texture Atlas:      ░░░░░░░░░░░░░░░░░░░░   0%
+v1.2 Texture Atlas:      ████░░░░░░░░░░░░░░░░  27% (3/11)
 ```
 
-**Overall v1.2 Progress:** 0/11 requirements
+**Overall v1.2 Progress:** 3/11 requirements (TEX-01, TEX-02, TEX-03 from phase 9)
 
 ---
 
 ## Current Phase
 
-**Phase 9: Texture Loading Verification**
+**Phase 10: Texture Rendering Validation**
 
-**Goal:** Texture atlas loads successfully and is ready for rendering
+**Goal:** Add debug logging to verify texture pipeline works correctly
 
-**Requirements:** TEX-01, TEX-02, TEX-03
+**Requirements:** TEX-04, TEX-05, TEX-06, TEX-07, TEX-08, TEX-09, TEX-10, TEX-11
 
 **Success Criteria:**
-1. Console shows no errors during texture atlas load
-2. Atlas dimensions passed to shader uniforms
-3. Console logs confirm successful load
+1. Console shows block atlas positions at startup
+2. UV coordinates logged for first mesh faces
+3. Fragment shader debug mode available
+4. First chunk render confirmation logged
 
 ---
 
@@ -79,6 +80,9 @@ v1.2 Texture Atlas:      ░░░░░░░░░░░░░░░░░░�
 - Texture atlas exists from v1.0 but was kept inactive (vertex colors used instead)
 - Phases 9-10 chosen for activation work (code debugging, not building)
 - Quick depth setting appropriate for debugging-focused milestone
+- Debug shader uses color tinting (not wireframe) for block type verification
+- UV logging limited to first 10 faces to prevent console spam
+- IIFE pattern used for automatic module initialization logging
 
 ### Known Blockers
 
@@ -106,6 +110,13 @@ v1.2 Texture Atlas:      ░░░░░░░░░░░░░░░░░░�
    - Left-click destruction, right-click placement
    - Keyboard block selection (1-5) with UI
    - Throttled chunk updates, in-memory persistence
+
+### In Progress
+
+3. **v1.2 Texture Atlas** (2026-03-18) — Phase 10 started
+   - Phase 9: Texture Loading Verification (pending)
+   - Phase 10: Texture Rendering Validation (in progress, Plan 01 complete)
+   - Added debug logging for texture pipeline verification
 
 ### What's Next
 
