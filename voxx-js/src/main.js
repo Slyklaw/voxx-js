@@ -2,6 +2,7 @@ import { gl, canvas, isContextLost } from './gl/context.js';
 import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
+import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG } from '../config.js';
@@ -20,6 +21,103 @@ let targetedBlock = null;
 let world;
 let biomeCalculator;
 let chunkMeshes = new Map();
+
+// Block outline shader and renderer
+let outlineProgram = null;
+let outlineVAO = null;
+let outlineUniforms = null;
+
+function initBlockOutline() {
+  const vertexSource = `#version 300 es
+    in vec3 aPosition;
+    uniform mat4 uModelViewProjection;
+    void main() {
+      gl_Position = uModelViewProjection * vec4(aPosition, 1.0);
+    }
+  `;
+  
+  const fragmentSource = `#version 300 es
+    precision highp float;
+    uniform vec4 uColor;
+    out vec4 fragColor;
+    void main() {
+      fragColor = uColor;
+    }
+  `;
+  
+  outlineProgram = createProgram(gl, vertexSource, fragmentSource);
+  outlineUniforms = getUniformLocations(gl, outlineProgram, ['uModelViewProjection', 'uColor']);
+  
+  // Create unit cube wireframe vertices (12 edges)
+  const size = 0.51; // Slightly larger than block to avoid z-fighting
+  const vertices = new Float32Array([
+    // Bottom face
+    -size, -size, -size,   size, -size, -size,
+    size, -size, -size,    size, -size,  size,
+    size, -size,  size,   -size, -size,  size,
+    -size, -size,  size,  -size, -size, -size,
+    // Top face
+    -size,  size, -size,   size,  size, -size,
+    size,  size, -size,    size,  size,  size,
+    size,  size,  size,   -size,  size,  size,
+    -size,  size,  size,  -size,  size, -size,
+    // Vertical edges
+    -size, -size, -size,  -size,  size, -size,
+    size, -size, -size,   size,  size, -size,
+    size, -size,  size,   size,  size,  size,
+    -size, -size,  size,  -size,  size,  size,
+  ]);
+  
+  outlineVAO = gl.createVertexArray();
+  gl.bindVertexArray(outlineVAO);
+  
+  const vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  
+  gl.bindVertexArray(null);
+}
+
+function renderBlockOutline(mvpMatrix) {
+  if (!targetedBlock || !outlineProgram) return;
+  
+  gl.useProgram(outlineProgram);
+  
+  // Create model matrix for targeted block position
+  const model = new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    targetedBlock.x + 0.5, targetedBlock.y + 0.5, targetedBlock.z + 0.5, 1
+  ]);
+  
+  // Multiply MVP * Model
+  const finalMVP = multiplyMatrices(mvpMatrix, model);
+  
+  gl.uniformMatrix4fv(outlineUniforms.uModelViewProjection, false, finalMVP);
+  gl.uniform4f(outlineUniforms.uColor, 1.0, 0.0, 1.0, 1.0); // Magenta
+  
+  gl.bindVertexArray(outlineVAO);
+  gl.lineWidth(2.0);
+  gl.drawArrays(gl.LINES, 0, 24); // 12 edges * 2 vertices
+  gl.bindVertexArray(null);
+}
+
+function multiplyMatrices(a, b) {
+  const result = new Float32Array(16);
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      result[j * 4 + i] = 0;
+      for (let k = 0; k < 4; k++) {
+        result[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k];
+      }
+    }
+  }
+  return result;
+}
 
 function setupControls() {
   canvas.addEventListener('click', () => {
@@ -313,6 +411,7 @@ resizeCanvas();
 setupControls();
 setupRenderState(gl);
 initPerformance();
+initBlockOutline();
 
 initRenderer(gl);
 
@@ -365,7 +464,20 @@ function destroyBlock() {
   const chunk = world.getChunk(targetedBlock.chunkX, targetedBlock.chunkZ);
   if (chunk) {
     chunk.setVoxel(targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ, 0);
-    chunk.updateMesh(true);
+    
+    // Regenerate mesh data and update WebGL mesh
+    chunk.meshData = chunk.generateMeshData();
+    chunk.needsUpdate = true;
+    
+    // Dispose old WebGL mesh and recreate
+    if (chunk._webglMesh) {
+      gl.deleteBuffer(chunk._webglMesh.vbo);
+      gl.deleteBuffer(chunk._webglMesh.ibo);
+      gl.deleteVertexArray(chunk._webglMesh.vao);
+      chunk._webglMesh = null;
+      chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
+    }
+    
     console.log(`[BlockEdit] Destroyed block at ${targetedBlock.x},${targetedBlock.y},${targetedBlock.z}`);
   }
 }
@@ -395,7 +507,20 @@ function placeBlock() {
       const existing = chunk.getVoxel(localX, placeY, localZ);
       if (existing === 0) {
         chunk.setVoxel(localX, placeY, localZ, selectedBlockType);
-        chunk.updateMesh(true);
+        
+        // Regenerate mesh data and update WebGL mesh
+        chunk.meshData = chunk.generateMeshData();
+        chunk.needsUpdate = true;
+        
+        // Dispose old WebGL mesh and recreate
+        if (chunk._webglMesh) {
+          gl.deleteBuffer(chunk._webglMesh.vbo);
+          gl.deleteBuffer(chunk._webglMesh.ibo);
+          gl.deleteVertexArray(chunk._webglMesh.vao);
+          chunk._webglMesh = null;
+          chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
+        }
+        
         console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
       } else {
         console.log('[BlockEdit] placeBlock: position occupied');
@@ -504,6 +629,10 @@ function render(currentTime) {
   if (webglChunks.length > 0) {
     renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix);
   }
+  
+  // Render block outline on top of chunks
+  const mvpMatrix = multiplyMatrices(projectionMatrix, viewMatrix);
+  renderBlockOutline(mvpMatrix);
   
   endRenderTiming();
 
