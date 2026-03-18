@@ -24,6 +24,7 @@ export class Renderer {
   }
 
   async init(canvas) {
+    console.log('[Texture] Renderer.init() called');
     this.canvas = canvas;
 
     // Create scene
@@ -53,6 +54,7 @@ export class Renderer {
     // Initialize sky renderer
     this.skyRenderer = new SkyRenderer();
     await this.skyRenderer.init(this.scene, this.camera);
+    console.log('[Texture] Sky renderer initialized, proceeding to texture loading');
 
     // Initialize texture loader and load texture atlas
     this.textureLoader = new THREE.TextureLoader();
