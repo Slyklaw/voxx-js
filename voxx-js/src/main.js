@@ -6,6 +6,7 @@ import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG } from '../config.js';
 import { CHUNK_WIDTH, CHUNK_DEPTH } from '../chunk.js';
+import { CHUNK_HEIGHT } from '../chunkCore.js';
 
 console.log('WebGL2 main initializing...');
 
@@ -235,7 +236,7 @@ function raycastBlock(origin, direction, maxDistance = 8) {
       const localZ = ((currentZ % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
       const localY = currentY;
       
-      if (localY >= 0 && localY < 256) {
+      if (localY >= 0 && localY < CHUNK_HEIGHT) {
         const voxel = chunk.getVoxel(localX, localY, localZ);
         if (voxel !== 0) {
           // Found a solid block - return hit info
@@ -342,8 +343,14 @@ function updateTargetedBlock() {
   const result = raycastBlock(origin, direction, 8);
   
   if (result.hit) {
+    if (!targetedBlock || targetedBlock.x !== result.x || targetedBlock.y !== result.y || targetedBlock.z !== result.z) {
+      console.log(`[BlockEdit] Target: ${result.x},${result.y},${result.z} (type=${result.voxel})`);
+    }
     targetedBlock = result;
   } else {
+    if (targetedBlock) {
+      console.log('[BlockEdit] Target lost');
+    }
     targetedBlock = null;
   }
 }
@@ -383,7 +390,7 @@ function placeBlock() {
     const localX = ((placeX % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
     const localZ = ((placeZ % CHUNK_WIDTH) + CHUNK_WIDTH) % CHUNK_WIDTH;
     
-    if (placeY >= 0 && placeY < 256) {
+    if (placeY >= 0 && placeY < CHUNK_HEIGHT) {
       // Check if position is empty
       const existing = chunk.getVoxel(localX, placeY, localZ);
       if (existing === 0) {
