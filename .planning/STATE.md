@@ -1,6 +1,6 @@
-# State: Voxx-JS WebGL2 Refactor
+# State: Voxx-JS Block Editing
 
-**Last Updated:** 2026-03-17
+**Last Updated:** 2026-03-18
 
 ---
 
@@ -8,7 +8,7 @@
 
 **Core Value:** Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
-**Current Focus:** Phase 1: WebGL2 Context & Shaders
+**Current Milestone:** v1.1 Block Editing
 
 **Mode:** yolo
 
@@ -18,10 +18,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | Not started (awaiting planning) |
-| **Plan** | None |
-| **Status** | Ready for Phase 1 planning |
-| **Progress** | 0 / 5 phases |
+| **Phase** | Not started (defining requirements) |
+| **Plan** | — |
+| **Status** | Defining requirements |
+| **Progress** | 0 / ? phases |
 
 ---
 
@@ -29,9 +29,9 @@
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Frame Rate | 60fps | N/A (pre-refactor) |
-| Render Distance | 8+ chunks | N/A |
-| Bundle Size | < 100KB (vs 600KB Three.js) | N/A |
+| Frame Rate | 60fps | 60fps |
+| Block Edit Latency | < 16ms | N/A |
+| Chunk Rebuild | < 50ms | N/A |
 
 ---
 
@@ -51,8 +51,9 @@
 
 ### Technical Debt
 
-- Three.js renderer still in place (will be replaced)
-- Existing chunk.js, camera.js, workerPool.js remain unchanged
+- No block persistence yet (world resets on reload)
+- Chunk mesh rebuild not optimized (full rebuild on edit)
+- No undo/redo for block edits
 
 ---
 
@@ -60,29 +61,16 @@
 
 ### What's Been Done
 
-1. Project initialized with core value and constraints
-2. Requirements defined (17 v1 requirements across 6 categories)
-3. Research completed (WebGL2 patterns, pitfalls, architecture)
-4. Roadmap created (5 phases derived from requirements)
+1. v1.0 milestone completed — WebGL2 refactor shipped (2026-03-18)
+2. Core rendering pipeline functional with 60fps performance
+3. Procedural terrain, controls, day/night cycle, debug UI
 
 ### What's Next
 
-1. Plan Phase 1: WebGL2 Context & Shaders
-2. Execute Phase 1 implementation
-3. Verify success criteria before advancing
+1. Define requirements for block editing features
+2. Create roadmap with phases
+3. Plan Phase 1: Core block operations
 
 ---
 
-## Phase Status
-
-| Phase | Goal | Requirements | Status |
-|-------|------|--------------|--------|
-| 1 | WebGL2 Context & Shaders | WEBGL-01, 02, 03 | Not started |
-| 2 | Core Rendering Pipeline | RENDER-01 to 06 | Not started |
-| 3 | Chunk Mesh Integration | CHUNK-01, 02, 03 | Not started |
-| 4 | Camera & Controls Integration | CAMERA-01, 02, 03 | Not started |
-| 5 | Polish & Performance | PERF-01, 02 | Not started |
-
----
-
-*State updated: 2026-03-17*
+*State updated: 2026-03-18*

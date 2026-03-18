@@ -8,6 +8,16 @@ A browser-based voxel game engine (Minecraft-like 3D world) rendered in raw WebG
 
 Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
+## Current Milestone: v1.1 Block Editing
+
+**Goal:** Enable players to place and break blocks in the voxel world with an inventory system.
+
+**Target features:**
+- Break blocks (left-click)
+- Place blocks (right-click)
+- Block inventory (1-9 key selection)
+- Chunk mesh updates when blocks change
+
 ## Requirements
 
 ### Validated
@@ -25,10 +35,10 @@ Players can explore and build in a procedurally generated 3D voxel world directl
 
 ### Active
 
-- [ ] Block placement and removal (in-game editing)
-- [ ] Texture support for blocks
-- [ ] Chunk mesh updates on block changes
-- [ ] Frustum culling for performance
+- [ ] Break blocks (left-click to remove targeted block)
+- [ ] Place blocks (right-click to place block from inventory)
+- [ ] Block inventory (1-9 keys to select block type, visible UI)
+- [ ] Chunk mesh updates on block changes (rebuild affected chunks)
 
 ### Out of Scope
 
@@ -83,12 +93,12 @@ Players can explore and build in a procedurally generated 3D voxel world directl
 
 The core WebGL2 refactor is complete. The voxel game renders procedurally generated terrain with biome-based colors, supports first-person exploration with WASD+mouse controls, includes a debug UI with FPS counter, and maintains 60fps with default render distance.
 
-## Next Milestone Goals
+## Future Milestone Goals
 
-- Block placement and removal functionality
 - Texture atlas for block types
-- Improved performance (frustum culling, instancing)
+- Frustum culling for performance
 - Save/load world state
+- Block physics/collisions
 
 ---
-*Last updated: 2026-03-18 after v1.0 milestone*
+*Last updated: 2026-03-18 after v1.1 milestone started*
