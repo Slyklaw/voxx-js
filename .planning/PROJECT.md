@@ -8,15 +8,18 @@ A browser-based voxel game engine (Minecraft-like 3D world) rendered in raw WebG
 
 Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
-## Current Milestone: v1.1 Block Editing
+## Current State
 
-**Goal:** Enable players to place and break blocks in the voxel world with an inventory system.
+**v1.1 Block Editing:** SHIPPED 2026-03-18
 
-**Target features:**
-- Break blocks (left-click)
-- Place blocks (right-click)
-- Block inventory (1-9 key selection)
-- Chunk mesh updates when blocks change
+Block editing is complete. Players can target blocks with a magenta wireframe outline, break blocks with left-click, place blocks with right-click, select block types with keyboard (1-5) or mousewheel, and see chunk updates in real-time.
+
+## Future Milestone Goals
+
+- Texture atlas for block types
+- Frustum culling for performance
+- Save/load world state (localStorage)
+- Block physics (falling sand, water flow)
 
 ## Requirements
 
@@ -32,13 +35,18 @@ Players can explore and build in a procedurally generated 3D voxel world directl
 - ✓ Sky dome with day/night cycle — v1.0
 - ✓ FPS monitoring and debug UI — v1.0
 - ✓ Block selection outline (wireframe) — v1.0
+- ✓ Block targeting with raycast — v1.1
+- ✓ Block breaking (left-click) — v1.1
+- ✓ Block placement (right-click) — v1.1
+- ✓ Block inventory selection (1-5 + mousewheel) — v1.1
+- ✓ Real-time chunk mesh updates — v1.1
+- ✓ Block edits persist until reload — v1.1
 
 ### Active
 
-- [ ] Break blocks (left-click to remove targeted block)
-- [ ] Place blocks (right-click to place block from inventory)
-- [ ] Block inventory (1-9 keys to select block type, visible UI)
-- [ ] Chunk mesh updates on block changes (rebuild affected chunks)
+- [ ] Texture atlas for block types
+- [ ] Frustum culling for performance
+- [ ] Save/load world state (localStorage)
 
 ### Out of Scope
 
@@ -101,4 +109,4 @@ The core WebGL2 refactor is complete. The voxel game renders procedurally genera
 - Block physics/collisions
 
 ---
-*Last updated: 2026-03-18 after v1.1 milestone started*
+*Last updated: 2026-03-18 after v1.1 milestone*

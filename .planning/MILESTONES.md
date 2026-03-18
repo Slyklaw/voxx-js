@@ -9,3 +9,13 @@
 
 ---
 
+
+## v1.1 Block Editing (Shipped: 2026-03-18)
+
+**Phases completed:** 6 phases, 9 plans, 3 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
