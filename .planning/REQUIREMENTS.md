@@ -19,11 +19,11 @@ Requirements for v1.1 Block Editing milestone.
 
 ### Chunk Updates
 
-- [ ] **CHUNK-01**: Breaking/placing updates chunk mesh visually
+- [x] **CHUNK-01**: Breaking/placing updates chunk mesh visually
 
 ### Persistence
 
-- [ ] **PERSIST-01**: Block edits persist until reload (no save system)
+- [x] **PERSIST-01**: Block edits persist until reload (no save system)
 
 ## v2 Requirements
 
@@ -59,8 +59,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EDIT-02 | Phase 6: Block Targeting & Interaction | Pending |
 | EDIT-03 | Phase 6: Block Targeting & Interaction | Complete |
 | INV-01 | Phase 7: Block Inventory | Complete |
-| CHUNK-01 | Phase 8: Chunk Updates & Persistence | Pending |
-| PERSIST-01 | Phase 8: Chunk Updates & Persistence | Pending |
+| CHUNK-01 | Phase 8: Chunk Updates & Persistence | Complete |
+| PERSIST-01 | Phase 8: Chunk Updates & Persistence | Complete |
 
 **Coverage:**
 - v1 requirements: 6 total

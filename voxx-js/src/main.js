@@ -492,10 +492,16 @@ function destroyBlock() {
   const chunk = world.getChunk(targetedBlock.chunkX, targetedBlock.chunkZ);
   if (chunk) {
     chunk.setVoxel(targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ, 0);
+    chunk.updateMesh(true);
     
-    // Regenerate mesh data
-    chunk.meshData = chunk.generateMeshData();
-    chunk.needsUpdate = true;
+    // Recreate WebGL mesh (Three.js updateMesh doesn't handle WebGL2 meshes)
+    if (chunk._webglMesh) {
+      gl.deleteBuffer(chunk._webglMesh.vbo);
+      gl.deleteBuffer(chunk._webglMesh.ibo);
+      gl.deleteVertexArray(chunk._webglMesh.vao);
+      chunk._webglMesh = null;
+      chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
+    }
     
     // Mark neighbor chunks for update if block is on boundary
     markNeighborChunksForUpdate(targetedBlock.chunkX, targetedBlock.chunkZ, 
@@ -529,10 +535,16 @@ function placeBlock() {
       const existing = chunk.getVoxel(localX, placeY, localZ);
       if (existing === 0) {
         chunk.setVoxel(localX, placeY, localZ, selectedBlockType);
+        chunk.updateMesh(true);
         
-        // Regenerate mesh data
-        chunk.meshData = chunk.generateMeshData();
-        chunk.needsUpdate = true;
+        // Recreate WebGL mesh (Three.js updateMesh doesn't handle WebGL2 meshes)
+        if (chunk._webglMesh) {
+          gl.deleteBuffer(chunk._webglMesh.vbo);
+          gl.deleteBuffer(chunk._webglMesh.ibo);
+          gl.deleteVertexArray(chunk._webglMesh.vao);
+          chunk._webglMesh = null;
+          chunkMeshes.delete(`${chunk.chunkX},${chunk.chunkZ}`);
+        }
         
         // Mark neighbor chunks for update if block is on boundary
         markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
@@ -605,13 +617,14 @@ const MAX_REBUILDS_PER_FRAME = 2;
 
 function updateChunks() {
   const visibleChunks = world.getVisibleChunks();
-  let rebuildCount = 0;
   
   for (const chunk of visibleChunks) {
     // Sync chunk if it has mesh data but no WebGL mesh
     if (!chunk._webglMesh && chunk.meshData && chunk.meshData.positions && chunk.meshData.positions.length > 0) {
       syncChunkToWebGL(chunk);
     }
+  }
+}
     // Also check if chunk needs mesh regeneration after edit
     else if (chunk.needsUpdate && chunk.meshData) {
       // Throttle rebuilds to prevent frame spikes
