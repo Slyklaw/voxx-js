@@ -1,11 +1,32 @@
 import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DIRECTION, DEFAULT_AMBIENT, DEFAULT_DIFFUSE } from '../shaders/voxel.js';
+import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } from '../shaders/sky.js';
+import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
+import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { bindChunk, unbindChunk, VERTEX_FORMAT } from './buffers.js';
 
 let voxelProgram = null;
 let voxelUniforms = null;
 let voxelAttribs = null;
 
+let skyProgram = null;
+let skyUniforms = null;
+let skyAttribs = null;
+let skyVBO = null;
+let skyVAO = null;
+
+let selectionProgram = null;
+let selectionUniforms = null;
+let selectionAttribs = null;
+let selectionVBO = null;
+let selectionIBO = null;
+let selectionVAO = null;
+
+let cameraUBO = null;
+let globalUBO = null;
+
 const SKY_BLUE = [0.53, 0.81, 0.92, 1.0];
+
+const skyColors = getDefaultColors();
 
 function createCubeMesh() {
   const positions = [
@@ -46,6 +67,83 @@ function createCubeMesh() {
   return { positions, indices, colors, normals };
 }
 
+function initSky(gl) {
+  skyProgram = createSkyProgram(gl);
+  skyUniforms = getSkyUniforms(gl, skyProgram);
+  skyAttribs = getSkyAttribs(gl, skyProgram);
+
+  const skyVertices = new Float32Array([
+    -100, -100, -100,  100, -100, -100,  100, 100, -100, -100, 100, -100,
+    -100, -100,  100,  100, -100,  100,  100,  100,  100, -100, 100,  100
+  ]);
+
+  const skyIndices = new Uint16Array([
+    0, 1, 2, 0, 2, 3,
+    4, 6, 5, 4, 7, 6,
+    0, 4, 5, 0, 5, 1,
+    2, 6, 7, 2, 7, 3,
+    0, 3, 7, 0, 7, 4,
+    1, 5, 6, 1, 6, 2
+  ]);
+
+  skyVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, skyVBO);
+  gl.bufferData(gl.ARRAY_BUFFER, skyVertices, gl.STATIC_DRAW);
+
+  skyVAO = gl.createVertexArray();
+  gl.bindVertexArray(skyVAO);
+  gl.bindBuffer(gl.ARRAY_BUFFER, skyVBO);
+  gl.enableVertexAttribArray(skyAttribs.aPosition);
+  gl.vertexAttribPointer(skyAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
+
+  const skyIBO = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, skyIBO);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, skyIndices, gl.STATIC_DRAW);
+
+  gl.bindVertexArray(null);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+  gl.useProgram(skyProgram);
+  gl.uniform3fv(skyUniforms.uDayTopColor, skyColors.dayTop);
+  gl.uniform3fv(skyUniforms.uDayBottomColor, skyColors.dayBottom);
+  gl.uniform3fv(skyUniforms.uNightTopColor, skyColors.nightTop);
+  gl.uniform3fv(skyUniforms.uNightBottomColor, skyColors.nightBottom);
+  gl.useProgram(null);
+}
+
+function initSelection(gl) {
+  selectionProgram = createSelectionProgram(gl);
+  selectionUniforms = getSelectionUniforms(gl, selectionProgram);
+  selectionAttribs = getSelectionAttribs(gl, selectionProgram);
+
+  const vertices = createWireframeCubeVertices();
+  const indices = createWireframeCubeIndices();
+
+  selectionVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, selectionVBO);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+  selectionVAO = gl.createVertexArray();
+  gl.bindVertexArray(selectionVAO);
+  gl.bindBuffer(gl.ARRAY_BUFFER, selectionVBO);
+  gl.enableVertexAttribArray(selectionAttribs.aPosition);
+  gl.vertexAttribPointer(selectionAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
+
+  selectionIBO = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, selectionIBO);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+  gl.bindVertexArray(null);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+  gl.useProgram(selectionProgram);
+  gl.uniform3fv(selectionUniforms.uSelectionColor, DEFAULT_SELECTION_COLOR);
+  gl.uniform1f(selectionUniforms.uBlockSize, DEFAULT_BLOCK_SIZE);
+  gl.useProgram(null);
+}
+
 export function initRenderer(gl) {
   voxelProgram = createVoxelProgram(gl);
   voxelUniforms = getVoxelUniforms(gl, voxelProgram);
@@ -57,10 +155,18 @@ export function initRenderer(gl) {
   gl.uniform1f(voxelUniforms.uDiffuse, DEFAULT_DIFFUSE);
   gl.useProgram(null);
 
+  cameraUBO = createCameraUBO(gl);
+  globalUBO = createGlobalUBO(gl);
+
+  initSky(gl);
+  initSelection(gl);
+
   return {
     program: voxelProgram,
     uniforms: voxelUniforms,
-    attribs: voxelAttribs
+    attribs: voxelAttribs,
+    sky: { program: skyProgram, uniforms: skyUniforms },
+    selection: { program: selectionProgram, uniforms: selectionUniforms }
   };
 }
 
@@ -89,6 +195,57 @@ export function setupRenderState(gl) {
   gl.enable(gl.CULL_FACE);
   gl.cullFace(gl.BACK);
   gl.frontFace(gl.CCW);
+}
+
+export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
+  if (!skyProgram) return;
+
+  gl.depthMask(false);
+  gl.useProgram(skyProgram);
+
+  const identityMatrix = new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ]);
+
+  gl.uniformMatrix4fv(skyUniforms.uModelMatrix, false, identityMatrix);
+  gl.uniformMatrix4fv(skyUniforms.uViewMatrix, false, viewMatrix);
+  gl.uniformMatrix4fv(skyUniforms.uProjectionMatrix, false, projectionMatrix);
+  gl.uniform1f(skyUniforms.uTimeOfDay, timeOfDay);
+
+  gl.bindVertexArray(skyVAO);
+  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+  gl.bindVertexArray(null);
+
+  gl.useProgram(null);
+  gl.depthMask(true);
+}
+
+export function renderSelection(gl, blockPos, modelViewProjection) {
+  if (!selectionProgram || !blockPos) return;
+
+  gl.useProgram(selectionProgram);
+  gl.uniformMatrix4fv(selectionUniforms.uModelViewProjection, false, modelViewProjection);
+  gl.uniform3fv(selectionUniforms.uBlockPosition, blockPos);
+
+  gl.bindVertexArray(selectionVAO);
+  gl.drawElements(gl.LINES, 24, gl.UNSIGNED_SHORT, 0);
+  gl.bindVertexArray(null);
+
+  gl.useProgram(null);
+}
+
+export function updateCamera(gl, viewMatrix, projectionMatrix) {
+  if (!cameraUBO) return;
+  updateCameraUBO(gl, cameraUBO, viewMatrix, projectionMatrix);
+}
+
+export function updateTimeOfDay(gl, time) {
+  if (!globalUBO) return;
+  const normalizedTime = (time % 24) / 24;
+  updateGlobalUBO(gl, globalUBO, DEFAULT_LIGHT_DIRECTION, normalizedTime, [1, 1, 1]);
 }
 
 export function createMockChunkMesh(gl) {
