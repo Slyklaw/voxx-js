@@ -1,6 +1,6 @@
-# State: Voxx-JS Block Editing
+# State: Voxx-JS
 
-**Last Updated:** 2026-03-18 (after completing Phase 8 Plan 1)
+**Last Updated:** 2026-03-18 (after completing v1.1 milestone)
 
 ---
 
@@ -8,7 +8,7 @@
 
 **Core Value:** Players can explore and build in a procedurally generated 3D voxel world directly in their browser.
 
-**Current Milestone:** v1.1 Block Editing
+**Current Milestone:** v1.1 Block Editing — SHIPPED
 
 **Mode:** yolo
 
@@ -18,10 +18,9 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | 8: Chunk Updates & Persistence |
-| **Plan** | 1 (of 1) |
-| **Status** | Plan Complete |
-| **Progress** | 1 / 1 phases |
+| **Status** | Milestone Complete |
+| **Last Milestone** | v1.1 Block Editing |
+| **Next** | Planning next milestone |
 
 ---
 
@@ -75,35 +74,27 @@
 
 ## Session Continuity
 
-### What's Been Done
+### Milestones Completed
 
-1. v1.0 milestone completed — WebGL2 refactor shipped (2026-03-18)
-2. Core rendering pipeline functional with 60fps performance
-3. Procedural terrain, controls, day/night cycle, debug UI
-4. v1.1 requirements defined (6 requirements)
-5. Roadmap created with 3 phases (6-8)
+1. **v1.0 WebGL2 Refactor** (2026-03-17) — 5 phases, 6 plans
+   - Refactored from Three.js to raw WebGL2
+   - Procedural terrain, controls, day/night cycle
+   
+2. **v1.1 Block Editing** (2026-03-18) — 3 phases, 5 plans
+   - Block targeting with raycast and wireframe outline
+   - Left-click destruction, right-click placement
+   - Keyboard block selection (1-5) with UI
+   - Throttled chunk updates, in-memory persistence
 
 ### What's Next
 
-1. ✅ Block targeting implemented (Plan 1 complete)
-2. ✅ Left-click break implemented (Plan 2 complete)
-3. ✅ Right-click place implemented (Plan 3 complete)
-4. ✅ Keyboard block selection (1-5) with UI feedback (Plan 1 complete)
-5. ✅ Chunk mesh update verification complete (Phase 8 Plan 1)
-6. ✅ Rebuild throttling added to prevent frame drops (Phase 8 Plan 1)
+Start next milestone with `/gsd-new-milestone`
 
-**Phase 8 complete** — All v1.1 Block Editing requirements satisfied (CHUNK-01, PERSIST-01)
+Potential v1.2 features:
+- Texture atlas for block types
+- Frustum culling for performance
+- Save/load world state (localStorage)
 
 ---
 
-## v1.1 Phase Map
-
-| Phase | Goal | Requirements |
-|-------|------|--------------|
-| 6 | Target, break, and place blocks | EDIT-01, EDIT-02, EDIT-03 |
-| 7 | Select block type to place | INV-01 |
-| 8 | Visual updates and session persistence | CHUNK-01, PERSIST-01 |
-
----
-
-*State updated: 2026-03-18 after completing Plan 03 (right-click place) — Phase 6 complete*
+*State updated: 2026-03-18 — v1.1 milestone complete*
