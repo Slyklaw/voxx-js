@@ -836,6 +836,29 @@ function render(currentTime) {
     posEl.textContent = `X: ${cameraPosition.x.toFixed(2)} Y: ${cameraPosition.y.toFixed(2)} Z: ${cameraPosition.z.toFixed(2)}`;
   }
 
+  // Update biome display based on player position
+  if (biomeCalculator) {
+    const biomeContributions = biomeCalculator.getBiomeContributions(cameraPosition.x, cameraPosition.z);
+    const lowlandBar = document.querySelector('.biome-fill.lowland');
+    const lowlandPercent = document.querySelector('.biome-item:first-child .biome-percent');
+    const mountainBar = document.querySelector('.biome-fill.mountains');
+    const mountainPercent = document.querySelector('.biome-item:last-child .biome-percent');
+    
+    if (biomeContributions && biomeContributions.length >= 2) {
+      const lowlandContrib = biomeContributions.find(c => c.biome.name === 'Lowland');
+      const mountainContrib = biomeContributions.find(c => c.biome.name === 'Mountains');
+      
+      if (lowlandBar && lowlandPercent && lowlandContrib) {
+        lowlandBar.style.width = `${lowlandContrib.contribution}%`;
+        lowlandPercent.textContent = `${lowlandContrib.contribution}%`;
+      }
+      if (mountainBar && mountainPercent && mountainContrib) {
+        mountainBar.style.width = `${mountainContrib.contribution}%`;
+        mountainPercent.textContent = `${mountainContrib.contribution}%`;
+      }
+    }
+  }
+
   world.update(cameraPosition, renderDistance);
   
   updateChunks();
