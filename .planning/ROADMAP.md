@@ -67,25 +67,25 @@
 3. WebGL context loss triggers recovery sequence, application continues after restore
 4. Block selector UI visually reflects current selected block
 
-**Plans:** TBD
+**Plans:** 1 - 02-deduplication-PLAN.md (5 tasks including verification)
 
 ---
 
-### Phase 4: Performance & Validation
+### Phase 2: Deduplication
 
-**Goal:** Add debug infrastructure and input validation
+**Goal:** Unify duplicated code to prevent future divergence
 
-**Depends on:** Phase 3
+**Depends on:** Phase 1
 
-**Requirements:** PERF-01, PERF-02, PERF-03, VAL-01, VAL-02
+**Requirements:** DEDUP-01, DEDUP-02
 
 **Success Criteria** (what must be TRUE):
-1. Debug mode flag exists and controls console.log output
-2. Worker pool callback IDs use incrementing counter (no collision risk)
-3. Invalid block types trigger assertion in debug mode
-4. Camera position/rotation values are bounds-checked
+1. Greedy meshing algorithm exists in exactly one location, imported where needed
+2. Chunk dimension constants defined once, imported by all consumers
+3. Both `chunk.js` and `chunkWorker.js` use shared greedy meshing utility
+4. No compilation or runtime errors after refactoring
 
-**Plans:** TBD
+**Plans:** 1 - 02-deduplication-PLAN.md (5 tasks including verification)
 
 ---
 
@@ -94,7 +94,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Dead Code Removal | 1/1 | Complete | 2026-03-18 |
-| 2. Deduplication | 0/1 | Not started | - |
+| 2. Deduplication | 1/1 | Planned | - |
 | 3. Bug Fixes | 0/1 | Not started | - |
 | 4. Performance & Validation | 0/1 | Not started | - |
 
