@@ -27,7 +27,10 @@ Decimal phases appear between their surrounding integers in numeric order.
    2. User can see player facing direction indicator (e.g., "NW", "SE") updating in real-time
    3. User can see clock display showing day/night cycle progress (e.g., "Dawn", "Day", "Dusk", "Night")
    4. User can observe visual indicator of time progression (e.g., sun/moon position in sky)
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md — Implement compass and clock UI elements
 
 ### Phase 2: Performance Optimization
 **Goal**: Improved performance for smoother rendering and reduced memory usage
@@ -58,6 +61,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. UI Fixes | 0/TBD | Not started | - |
+| 1. UI Fixes | 1 plan | Not started | - |
 | 2. Performance Optimization | 0/TBD | Not started | - |
 | 3. Code Quality & Testing | 0/TBD | Not started | - |
