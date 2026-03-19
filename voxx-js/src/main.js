@@ -20,6 +20,29 @@ let targetedBlock = null;
 let wireframeMode = false;
 let debugColorsMode = false;
 
+// Convert yaw angle to cardinal direction (N, NE, E, SE, S, SW, W, NW)
+function getCardinalDirection(yaw) {
+  // Normalize yaw to 0-360 degrees
+  let degrees = ((yaw * 180 / Math.PI) % 360 + 360) % 360;
+  // Map degrees to cardinal directions (45-degree segments centered on 22.5° offsets)
+  if (degrees >= 337.5 || degrees < 22.5) return 'N';
+  if (degrees >= 22.5 && degrees < 67.5) return 'NE';
+  if (degrees >= 67.5 && degrees < 112.5) return 'E';
+  if (degrees >= 112.5 && degrees < 157.5) return 'SE';
+  if (degrees >= 157.5 && degrees < 202.5) return 'S';
+  if (degrees >= 202.5 && degrees < 247.5) return 'SW';
+  if (degrees >= 247.5 && degrees < 292.5) return 'W';
+  return 'NW'; // 292.5 to 337.5
+}
+
+// Get day phase based on hour (0-23)
+function getDayPhase(hours) {
+  if (hours >= 5 && hours < 7) return 'Dawn';
+  if (hours >= 7 && hours < 17) return 'Day';
+  if (hours >= 17 && hours < 19) return 'Dusk';
+  return 'Night';
+}
+
 // Update block selection UI to highlight current selection
 function updateBlockSelectionUI() {
   document.querySelectorAll('.block-item').forEach(item => {
@@ -788,7 +811,22 @@ function render(currentTime) {
   const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   
   const timeEl = document.getElementById('time-display');
-  if (timeEl) timeEl.textContent = `${isDaytime ? 'Day' : 'Night'}: ${timeString}`;
+  const dayPhase = getDayPhase(hours);
+  if (timeEl) timeEl.textContent = `${isDaytime ? 'Day' : 'Night'}: ${timeString} (${dayPhase})`;
+
+  // Update compass direction text and needle
+  const compassTextEl = document.querySelector('.compass-text');
+  if (compassTextEl) {
+    const direction = getCardinalDirection(cameraRotation.y);
+    compassTextEl.textContent = direction;
+  }
+
+  const compassNeedleEl = document.querySelector('.compass-needle');
+  if (compassNeedleEl) {
+    // Rotate needle opposite to camera rotation (inverted for compass display)
+    const needleRotation = -cameraRotation.y * 180 / Math.PI;
+    compassNeedleEl.style.transform = `translate(-50%, -100%) rotate(${needleRotation}deg)`;
+  }
 
   const fpsEl = document.querySelector('.debug-fps');
   if (fpsEl) fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${selectedBlockType}`;
