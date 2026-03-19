@@ -61,3 +61,53 @@ export const TEST_CONFIG = {
   CUBE_COLOR: 0x8B4513,
   CUBE_POSITION: { x: 20, y: 70, z: 20 }
 };
+
+// Mesh generation configuration
+export const MESH_CONFIG = {
+  ATLAS_WIDTH: 1024,      // Texture atlas width in pixels
+  ATLAS_HEIGHT: 512,       // Texture atlas height in pixels
+  TILE_SIZE: 16,          // Texture tile size in pixels
+  VERTEX_SIZE: 14,        // Floats per vertex (pos:3 + color:3 + normal:3 + uv:2 + tileBase:2 + variant:1)
+  STRIDE_BYTES: 56        // VERTEX_SIZE * 4 bytes per float
+};
+
+// Atlas UV calculation constants
+export const ATLAS_CONFIG = {
+  ATLAS_WIDTH: 1024,
+  ATLAS_HEIGHT: 512,
+  TILE_SIZE: 16,
+  UV_SCALE_U: 16 / 1024,  // 0.015625
+  UV_SCALE_V: 16 / 512    // 0.03125
+};
+
+// Worker pool configuration
+export const WORKER_CONFIG = {
+  MAX_DISPATCHES_PER_FRAME: 4,
+  DISPATCH_BUDGET_MS: 4,
+  FRAME_TIME_THRESHOLD_MS: 16,  // ~60fps
+  STALE_REQUEST_MAX_DISTANCE: 2
+};
+
+// Block rendering configuration
+export const BLOCK_CONFIG = {
+  DEFAULT_COLOR_R: 0.8,
+  DEFAULT_COLOR_G: 0.8,
+  DEFAULT_COLOR_B: 0.8,
+  DEFAULT_NORMAL_X: 0,
+  DEFAULT_NORMAL_Y: 1,
+  DEFAULT_NORMAL_Z: 0,
+  DEFAULT_TILE_U: 0,
+  DEFAULT_TILE_V: 0,
+  DEFAULT_VARIANT: 0.0
+};
+
+// Biome tuning constants
+export const BIOME_TUNING = {
+  NOISE_NORMALIZE_FACTOR: 0.5,    // Convert [-1,1] to [0,1]
+  BIOME_INDEX_OFFSET: 0.001,       // Slight offset to avoid edge case
+  LOWLAND_DEPTH_GRASS: 1,
+  LOWLAND_DEPTH_DIRT: 4,
+  MOUNTAIN_SNOW_DEPTH: 3,
+  MOUNTAIN_DIRT_DEPTH: 6,
+  MOUNTAIN_GRASS_DEPTH: 3         // Thin grass layer on mountains
+};
