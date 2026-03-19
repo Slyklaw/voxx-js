@@ -87,7 +87,7 @@
 3. Invalid block types trigger assertion in debug mode
 4. Camera position/rotation values are bounds-checked
 
-**Plans:** TBD
+**Plans:** 1 - 04-performance-validation-PLAN.md (4 tasks)
 
 ---
 
@@ -98,7 +98,7 @@
 | 1. Dead Code Removal | 1/1 | Complete | 2026-03-18 |
 | 2. Deduplication | 1/1 | Complete | 2026-03-18 |
 | 3. Bug Fixes | 1/1 | Complete | 2026-03-19 |
-| 4. Performance & Validation | 0/1 | Not started | - |
+| 4. Performance & Validation | 1/1 | Planned | - |
 
 ---
 
