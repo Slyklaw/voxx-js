@@ -57,13 +57,20 @@ void main() {
   if (uDebugMode) {
     baseColor = vColor;
   } else {
+    // Apply 90° rotation for X faces (normal.x is non-zero)
+    // Rotation: 90° clockwise transforms (u,v) to (v, 1-u)
+    vec2 tileUnits = vTileUnits;
+    if (abs(normal.x) > 0.5) {
+      tileUnits = vec2(vTileUnits.y, 1.0 - vTileUnits.x);
+    }
+    
     // Wrap tile units within single tile [0, 1)
-    vec2 wrappedTileUnits = fract(vTileUnits);
+    vec2 wrappedTileUnits = fract(tileUnits);
     
     // If wrapped is near 0 and original was > 0.5, it wrapped from an integer
     // Use this to map integer-wrapped values to near 1 (right edge of tile)
     vec2 isNearZero = step(wrappedTileUnits, vec2(0.001));
-    vec2 isLargeUnit = step(vec2(0.5), vTileUnits);
+    vec2 isLargeUnit = step(vec2(0.5), tileUnits);
     wrappedTileUnits = mix(wrappedTileUnits, vec2(0.999), isNearZero * isLargeUnit);
     
     // Compute atlas UV using tile base and wrapped position
