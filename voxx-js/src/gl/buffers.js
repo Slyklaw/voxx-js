@@ -1,6 +1,9 @@
+import { MESH_CONFIG, BLOCK_CONFIG } from '../../config.js';
+
 const FLOAT_SIZE = 4;
-const VERTEX_SIZE = 14; // pos(3) + color(3) + normal(3) + uv(2) + tileBase(2) + triangleVariant(1)
-const STRIDE = VERTEX_SIZE * FLOAT_SIZE;
+// Use config constants for vertex format
+const VERTEX_SIZE = MESH_CONFIG.VERTEX_SIZE;
+const STRIDE = MESH_CONFIG.STRIDE_BYTES;
 
 /**
  * Buffer pool for reusing WebGL buffer objects to reduce allocation overhead.
@@ -231,9 +234,9 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
       data[base + 4] = colors[i * 3 + 1];
       data[base + 5] = colors[i * 3 + 2];
     } else {
-      data[base + 3] = 0.8;
-      data[base + 4] = 0.8;
-      data[base + 5] = 0.8;
+      data[base + 3] = BLOCK_CONFIG.DEFAULT_COLOR_R;
+      data[base + 4] = BLOCK_CONFIG.DEFAULT_COLOR_G;
+      data[base + 5] = BLOCK_CONFIG.DEFAULT_COLOR_B;
     }
     
     if (normals[i * 3] !== undefined) {
@@ -241,9 +244,9 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
       data[base + 7] = normals[i * 3 + 1];
       data[base + 8] = normals[i * 3 + 2];
     } else {
-      data[base + 6] = 0;
-      data[base + 7] = 1;
-      data[base + 8] = 0;
+      data[base + 6] = BLOCK_CONFIG.DEFAULT_NORMAL_X;
+      data[base + 7] = BLOCK_CONFIG.DEFAULT_NORMAL_Y;
+      data[base + 8] = BLOCK_CONFIG.DEFAULT_NORMAL_Z;
     }
 
     // UV coordinates
