@@ -5,7 +5,6 @@ import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bin
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { DEBUG } from '../../config.js';
-import { Frustum } from './frustum.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -327,16 +326,13 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   
   beginDrawCalls();
   
-  // Create frustum from view-projection matrices
-  const frustum = new Frustum();
-  frustum.extractFromMatrices(viewMatrix, projectionMatrix);
-  
-  // Filter to visible chunks using frustum culling, then sort for deterministic rendering
+  // Filter to visible chunks, then sort for deterministic rendering
+  // Note: frustum culling was removed due to issues with plane extraction math
   const visibleChunks = chunks
     .filter(chunk => {
       // chunk is a Chunk object with .chunkX and .chunkZ properties
       // Also check it has a ready WebGL mesh
-      return chunk && chunk._webglMesh && frustum.isChunkVisible(chunk.chunkX, chunk.chunkZ);
+      return chunk && chunk._webglMesh;
     })
     .sort((a, b) => {
       // Sort by key for deterministic draw order
