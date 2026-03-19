@@ -388,6 +388,11 @@ body {
   background-color: rgb(255, 255, 255);
 }
 
+.block-icon.unknown {
+  background-color: rgb(128, 128, 128);
+  border: 1px dashed rgba(255,255,255,0.3);
+}
+
 .block-item span {
   color: white;
   font-size: 12px;

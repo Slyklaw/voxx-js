@@ -1,4 +1,4 @@
-import { gl, canvas, isContextLost } from './gl/context.js';
+import { gl, canvas, isContextLost, registerContextResources } from './gl/context.js';
 import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, setDebugMode } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
@@ -15,6 +15,7 @@ let keys = {};
 let cameraPosition = { x: 50, y: 200, z: 50 };
 let cameraRotation = { x: 0.5, y: 0 };  // Looking down at terrain
 let selectedBlockType = 1;
+let renderDistance = 8;
 let targetedBlock = null;
 let wireframeMode = false;
 let debugColorsMode = false;
@@ -45,10 +46,39 @@ let world;
 let biomeCalculator;
 let chunkMeshes = new Map();
 
-// Block outline shader and renderer
 let outlineProgram = null;
 let outlineVAO = null;
 let outlineUniforms = null;
+
+function disposeWebGLResources() {
+  if (gl && outlineVAO) gl.deleteVertexArray(outlineVAO);
+  outlineProgram = null;
+  outlineVAO = null;
+  outlineUniforms = null;
+  for (const chunk of Object.values(world?.chunks || {})) {
+    if (chunk._webglMesh) {
+      const m = chunk._webglMesh;
+      if (m.vao) gl.deleteVertexArray(m.vao);
+      if (m.vbo) gl.deleteBuffer(m.vbo);
+      if (m.ibo) gl.deleteBuffer(m.ibo);
+      chunk._webglMesh = null;
+    }
+  }
+  chunkMeshes.clear();
+  if (DEBUG) console.log('[WebGL] Resources disposed on context loss');
+}
+
+function initWebGLResources() {
+  initBlockOutline();
+  initRenderer(gl);
+  loadTextureAtlas(gl, 'textures-atlas.png');
+  for (const chunk of Object.values(world?.chunks || {})) {
+    if (chunk.meshData && chunk.meshReady) {
+      chunk._webglMesh = null;
+    }
+  }
+  if (DEBUG) console.log('[WebGL] Resources reinitialized on context restore');
+}
 
 function initBlockOutline() {
   const vertexSource = `#version 300 es
@@ -206,7 +236,7 @@ function setupControls() {
   document.addEventListener('wheel', (event) => {
     if (!isPointerLocked) return;
     
-    const blockCount = 5; // Currently 5 block types (1-5)
+    const blockCount = 9; // Allow selecting blocks 1-9
     
     if (event.deltaY > 0) {
       // Scroll down - next block
@@ -243,12 +273,18 @@ function setupControls() {
 
   document.getElementById('render-inc')?.addEventListener('click', () => {
     const el = document.getElementById('render-distance-value');
-    if (el) el.textContent = Math.max(1, parseInt(el.textContent) + 1);
+    if (el) {
+      renderDistance = Math.min(32, renderDistance + 1);
+      el.textContent = renderDistance;
+    }
   });
 
   document.getElementById('render-dec')?.addEventListener('click', () => {
     const el = document.getElementById('render-distance-value');
-    if (el) el.textContent = Math.max(1, parseInt(el.textContent) - 1);
+    if (el) {
+      renderDistance = Math.max(1, renderDistance - 1);
+      el.textContent = renderDistance;
+    }
   });
 
   document.getElementById('speed-inc')?.addEventListener('click', () => {
@@ -484,11 +520,12 @@ updateDebugUI(); // Initialize debug mode indicators
 setupRenderState(gl);
 initPerformance();
 initBlockOutline();
-
 initRenderer(gl);
 
   // Load texture atlas for block textures
   loadTextureAtlas(gl, 'textures-atlas.png');
+
+registerContextResources({ dispose: disposeWebGLResources, init: initWebGLResources });
 
 const noiseSeed = Math.random();
 world = new World(noiseSeed);
@@ -601,6 +638,7 @@ function placeBlock() {
         markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
         
         if (DEBUG) console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
+        updateBlockSelectionUI();
       } else {
         if (DEBUG) console.log('[BlockEdit] placeBlock: position occupied');
       }
@@ -739,7 +777,6 @@ function render(currentTime) {
     posEl.textContent = `X: ${cameraPosition.x.toFixed(2)} Y: ${cameraPosition.y.toFixed(2)} Z: ${cameraPosition.z.toFixed(2)}`;
   }
 
-  const renderDistance = parseInt(document.getElementById('render-distance-value')?.textContent || '8');
   world.update(cameraPosition, renderDistance);
   
   updateChunks();
