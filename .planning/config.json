@@ -1,0 +1,17 @@
+{
+  "mode": "yolo",
+  "depth": "quick",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "balanced",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "auto_advance": true
+  },
+  "milestone": {
+    "version": "v1.3",
+    "name": "Tech Debt Removal"
+  }
+}
