@@ -6,8 +6,7 @@ import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
-import { CHUNK_WIDTH, CHUNK_DEPTH } from '../chunk.js';
-import { CHUNK_HEIGHT } from '../chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../chunkCore.js';
 
 console.log('WebGL2 main initializing...');
 
