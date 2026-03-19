@@ -56,7 +56,11 @@ Plans:
    2. Developer sees proper error messages when worker communication fails
    3. Developer can run unit tests for chunk generation and meshing algorithms and see results
    4. Developer can refactor code without breaking existing functionality (tests pass)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Extract magic numbers to named constants + improve error handling
+- [ ] 03-02-PLAN.md — Add unit tests for chunk generation and meshing
 
 ## Progress
 
