@@ -27,6 +27,9 @@ let globalUBO = null;
 let textureAtlas = null;
 let textureAtlasLoaded = false;
 
+let currentWireframeMode = false;
+let currentDebugMode = false;
+
 const SKY_BLUE = [0.53, 0.81, 0.92, 1.0];
 
 const skyColors = getDefaultColors();
@@ -235,7 +238,7 @@ export function isTextureLoaded() {
   return textureAtlasLoaded;
 }
 
-export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix) {
+export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix, wireframe = false, debugMode = false) {
   if (!chunkMesh || !chunkMesh.vao) {
     return;
   }
@@ -255,6 +258,11 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
     multiplyMatrices(mvp, projectionMatrix, viewMatrix, identity);
     gl.uniformMatrix4fv(voxelUniforms.uModelViewProjection, false, mvp);
     gl.uniformMatrix4fv(voxelUniforms.uModelMatrix, false, identity);
+  }
+  
+  // Set debug mode uniform
+  if (voxelUniforms && voxelUniforms.uDebugMode !== undefined) {
+    gl.uniform1i(voxelUniforms.uDebugMode, debugMode ? 1 : 0);
   }
   
   // Bind texture atlas (always bind placeholder or real texture)
@@ -277,7 +285,13 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   
   bindChunk(gl, chunkMesh.vao);
   
-  if (chunkMesh.ibo && chunkMesh.indexCount > 0) {
+  if (wireframe && chunkMesh.wireIbo && chunkMesh.wireIndexCount > 0) {
+    // Wireframe mode: draw as lines using wireframe indices
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.wireIbo);
+    gl.drawElements(gl.LINES, chunkMesh.wireIndexCount, gl.UNSIGNED_INT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+  } else if (chunkMesh.ibo && chunkMesh.indexCount > 0) {
+    // Normal mode: draw triangles using regular indices
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
     gl.drawElements(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -288,10 +302,22 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   unbindChunk(gl);
 }
 
-export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix) {
+export function setWireframeMode(gl, enabled) {
+  currentWireframeMode = enabled;
+}
+
+export function setDebugMode(gl, enabled) {
+  currentDebugMode = enabled;
+  if (voxelUniforms && voxelUniforms.uDebugMode !== undefined) {
+    gl.useProgram(voxelProgram);
+    gl.uniform1i(voxelUniforms.uDebugMode, enabled ? 1 : 0);
+  }
+}
+
+export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix, wireframe = false, debugMode = false) {
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    renderChunk(gl, chunk, null, viewMatrix, projectionMatrix);
+    renderChunk(gl, chunk, null, viewMatrix, projectionMatrix, wireframe, debugMode);
   }
 }
 

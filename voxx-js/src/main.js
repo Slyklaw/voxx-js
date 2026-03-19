@@ -1,5 +1,5 @@
 import { gl, canvas, isContextLost } from './gl/context.js';
-import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas } from './gl/render.js';
+import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, setDebugMode } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
@@ -17,6 +17,8 @@ let cameraPosition = { x: 50, y: 200, z: 50 };
 let cameraRotation = { x: 0.5, y: 0 };  // Looking down at terrain
 let selectedBlockType = 1;
 let targetedBlock = null;
+let wireframeMode = false;
+let debugColorsMode = false;
 
 // Update block selection UI to highlight current selection
 function updateBlockSelectionUI() {
@@ -24,6 +26,20 @@ function updateBlockSelectionUI() {
     const blockNum = parseInt(item.dataset.block);
     item.classList.toggle('selected', blockNum === selectedBlockType);
   });
+}
+
+// Update debug mode UI indicator
+function updateDebugUI() {
+  const wireEl = document.getElementById('wireframe-indicator');
+  const debugEl = document.getElementById('debug-indicator');
+  if (wireEl) {
+    wireEl.textContent = wireframeMode ? 'WIRE' : '';
+    wireEl.style.display = wireframeMode ? 'block' : 'none';
+  }
+  if (debugEl) {
+    debugEl.textContent = debugColorsMode ? 'DEBUG' : '';
+    debugEl.style.display = debugColorsMode ? 'block' : 'none';
+  }
 }
 
 let world;
@@ -171,6 +187,20 @@ function setupControls() {
       console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
       updateBlockSelectionUI();
     }
+    
+    // Toggle debug colors mode (V key)
+    if (event.code === 'KeyV' && isPointerLocked) {
+      debugColorsMode = !debugColorsMode;
+      console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+      updateDebugUI();
+    }
+    
+    // Toggle wireframe mode (F key)
+    if (event.code === 'KeyF' && isPointerLocked) {
+      wireframeMode = !wireframeMode;
+      console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+      updateDebugUI();
+    }
   });
 
   // Mousewheel for block selection
@@ -232,6 +262,20 @@ function setupControls() {
     const el = document.getElementById('move-speed-value');
     if (el) PLAYER_CONFIG.MOVE_SPEED = Math.max(1, parseInt(el.textContent) - 10);
     el.textContent = PLAYER_CONFIG.MOVE_SPEED;
+  });
+
+  // Wireframe toggle from UI
+  document.getElementById('wireframe-toggle')?.addEventListener('change', (e) => {
+    wireframeMode = e.target.checked;
+    console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+    updateDebugUI();
+  });
+
+  // Debug colors toggle from UI
+  document.getElementById('debug-toggle')?.addEventListener('change', (e) => {
+    debugColorsMode = e.target.checked;
+    console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+    updateDebugUI();
   });
 }
 
@@ -437,6 +481,7 @@ resizeCanvas();
 
 setupControls();
 updateBlockSelectionUI(); // Initialize block selector UI
+updateDebugUI(); // Initialize debug mode indicators
 setupRenderState(gl);
 initPerformance();
 initBlockOutline();
@@ -722,9 +767,9 @@ function render(currentTime) {
     }
   }
 
-  // Render chunks with textures
+  // Render chunks with textures or wireframe
   if (webglChunks.length > 0) {
-    renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix);
+    renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode);
   }
   
   // Check for WebGL errors

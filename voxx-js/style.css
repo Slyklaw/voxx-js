@@ -277,6 +277,36 @@ body {
   transform: translateX(-50%);
 }
 
+#mode-indicators {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+#wireframe-indicator, #debug-indicator {
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: none;
+}
+
+#wireframe-indicator {
+  border: 2px solid #00ff00;
+}
+
+#debug-indicator {
+  border: 2px solid #ff00ff;
+  color: #ff00ff;
+}
+
 #block-selector {
   position: fixed;
   bottom: 20px;

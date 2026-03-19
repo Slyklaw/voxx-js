@@ -62,9 +62,16 @@
         <button id="speed-inc">+10</button>
       </div>
       <div class="debug-control">
-        <span>Wireframe:</span>
+        <span>Wireframe [F]:</span>
         <label class="toggle-switch">
           <input type="checkbox" id="wireframe-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="debug-control">
+        <span>Debug Colors [V]:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="debug-toggle">
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -72,6 +79,10 @@
     <div id="crosshair">
       <div class="crosshair-line horizontal"></div>
       <div class="crosshair-line vertical"></div>
+    </div>
+    <div id="mode-indicators">
+      <div id="wireframe-indicator">WIRE</div>
+      <div id="debug-indicator">DEBUG</div>
     </div>
     <div id="block-selector">
       <div class="block-item" data-block="1">

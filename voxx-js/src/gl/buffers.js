@@ -176,7 +176,25 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
   }
 
-  return { vbo, vao, ibo, indexCount, vertexCount };
+  // Create wireframe index buffer (convert triangles to lines)
+  let wireIbo = null;
+  let wireIndexCount = 0;
+  if (indices && indices.length > 0) {
+    // For each triangle (3 indices), create 3 lines: (i0,i1), (i1,i2), (i2,i0)
+    const wireIndices = [];
+    for (let i = 0; i < indices.length; i += 3) {
+      wireIndices.push(indices[i], indices[i + 1]);     // Edge 1
+      wireIndices.push(indices[i + 1], indices[i + 2]); // Edge 2
+      wireIndices.push(indices[i + 2], indices[i]);     // Edge 3
+    }
+    wireIbo = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wireIbo);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(wireIndices), gl.STATIC_DRAW);
+    wireIndexCount = wireIndices.length;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+  }
+
+  return { vbo, vao, ibo, wireIbo, indexCount, wireIndexCount, vertexCount };
 }
 
 export const VERTEX_FORMAT = {
