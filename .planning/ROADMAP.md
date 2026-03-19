@@ -31,7 +31,7 @@
 3. `voxx-js/world.js` does not contain unused `generateChunk()` method
 4. All `console.log` calls are guarded by debug flag check
 
-**Plans:** TBD
+**Plans:** 1 - 01-dead-code-removal-PLAN.md (4 tasks)
 
 ---
 
@@ -93,7 +93,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Dead Code Removal | 0/1 | Not started | - |
+| 1. Dead Code Removal | 1/1 | Planned | - |
 | 2. Deduplication | 0/1 | Not started | - |
 | 3. Bug Fixes | 0/1 | Not started | - |
 | 4. Performance & Validation | 0/1 | Not started | - |
