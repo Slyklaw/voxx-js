@@ -29,13 +29,9 @@ export class WorkerPool {
   }
 
   _startStagedDispatch() {
-    // Use requestIdleCallback if available, otherwise setTimeout
+    // Use setTimeout for reliable cross-browser dispatch
     const scheduleNext = () => {
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(() => this._processDispatchQueue(), { timeout: 100 });
-      } else {
-        setTimeout(() => this._processDispatchQueue(), 0);
-      }
+      setTimeout(() => this._processDispatchQueue(), 0);
     };
 
     this._processDispatchQueue = () => {
