@@ -78,18 +78,14 @@ export class WorkerPool {
 
     if (event.data.type === 'chunkGenerated') {
       const { chunkData, callbackId } = event.data;
-      // Queue result for staged dispatch instead of immediate callback
-      this.dispatchQueue.push({ chunkData, callback: null, priority: 0 });
-      
       // Immediately resolve the pending callback with staged queue
       // The actual dispatch happens in _processDispatchQueue
       const callback = this.pendingCallbacks.get(callbackId);
       if (callback) {
         // Wrap callback to go through staged dispatch
-        const originalCallback = callback;
         this.dispatchQueue.push({
           chunkData,
-          callback: originalCallback,
+          callback,
           callbackId,
           priority: 0
         });
