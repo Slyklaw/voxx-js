@@ -57,11 +57,10 @@ void main() {
   if (uDebugMode) {
     baseColor = vColor;
   } else {
-    // Apply 90° rotation for X faces (normal.x is non-zero)
-    // Rotation: 90° clockwise transforms (u,v) to (v, 1-u)
+    // Rotate X faces 90° counter-clockwise: (u, v) → (1-v, u)
     vec2 tileUnits = vTileUnits;
     if (abs(normal.x) > 0.5) {
-      tileUnits = vec2(vTileUnits.y, 1.0 - vTileUnits.x);
+      tileUnits = vec2(1.0 - vTileUnits.y, vTileUnits.x);
     }
     
     // Wrap tile units within single tile [0, 1)

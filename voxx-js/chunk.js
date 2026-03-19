@@ -332,7 +332,7 @@ export class Chunk {
                 indices.push(vertexCount + 1, vertexCount + 3, vertexCount + 2);
               } else {
                 indices.push(vertexCount, vertexCount + 2, vertexCount + 1);
-                indices.push(vertexCount + 1, vertexCount + 2, vertexCount + 3);
+                indices.push(vertexCount + 2, vertexCount + 3, vertexCount + 1);
               }
 
               // Clear mask

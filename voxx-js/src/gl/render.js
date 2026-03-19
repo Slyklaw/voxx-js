@@ -273,7 +273,7 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
         console.warn('[Renderer] No texture atlas to bind!');
       }
   
-  gl.disable(gl.CULL_FACE); // Show all faces
+  // gl.disable(gl.CULL_FACE); // DEBUG: Show all faces
   
   bindChunk(gl, chunkMesh.vao);
   
