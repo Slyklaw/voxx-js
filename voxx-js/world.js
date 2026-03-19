@@ -9,9 +9,10 @@ import { BiomeCalculator } from './biomes.js';
 import { WorkerPool } from './workerPool.js';
 
 export class World {
-  constructor(noiseSeed) {
+  constructor(noiseSeed, gl = null) {
     this.chunks = {};
     this.noiseSeed = noiseSeed;
+    this._gl = gl; // Store GL context for proper WebGL resource disposal
 
     // Track pending worker jobs keyed by "x,z"
     this.pendingChunks = new Map();
@@ -171,7 +172,7 @@ export class World {
     for (const key in this.chunks) {
       if (!chunksToKeep.has(key)) {
         const chunk = this.chunks[key];
-        chunk.dispose();
+        chunk.dispose(this._gl);
         delete this.chunks[key];
         // Mark as not needed. We cannot cancel an in-flight worker easily, but we can ignore late results.
         // pendingChunks entry will be cleared when the result arrives; leaving it is harmless.
@@ -184,9 +185,10 @@ export class World {
     return Object.values(this.chunks).filter(chunk => chunk.meshData && chunk.meshReady);
   }
 
-  dispose() {
+  dispose(gl = null) {
+    const glCtx = gl || this._gl;
     for (const key in this.chunks) {
-      this.chunks[key].dispose();
+      this.chunks[key].dispose(glCtx);
     }
     this.chunks = {};
     this.pendingChunks.clear();

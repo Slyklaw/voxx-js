@@ -194,9 +194,25 @@ export class Chunk {
     this.needsUpdate = false;
   }
 
-  dispose() {
-    // Cleanup - mesh handled by src/gl/buffers.js
+  dispose(gl = null) {
+    // Clean up WebGL resources if GL context provided and _webglMesh exists
+    if (gl && this._webglMesh) {
+      const mesh = this._webglMesh;
+      if (mesh.vao) gl.deleteVertexArray(mesh.vao);
+      if (mesh.vbo) gl.deleteBuffer(mesh.vbo);
+      if (mesh.ibo) gl.deleteBuffer(mesh.ibo);
+      if (mesh.wireIbo) gl.deleteBuffer(mesh.wireIbo);
+      this._webglMesh = null;
+    }
+    
+    // Clean up mesh data
     this.meshData = null;
     this.meshReady = false;
+    
+    // Clear neighbor references
+    this.neighborChunks.north = null;
+    this.neighborChunks.south = null;
+    this.neighborChunks.east = null;
+    this.neighborChunks.west = null;
   }
 }

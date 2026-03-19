@@ -572,7 +572,7 @@ initRenderer(gl);
 registerContextResources({ dispose: disposeWebGLResources, init: initWebGLResources });
 
 const noiseSeed = Math.random();
-world = new World(noiseSeed);
+world = new World(noiseSeed, gl);
 biomeCalculator = new BiomeCalculator(noiseSeed);
 
 let lastTime = 0;
