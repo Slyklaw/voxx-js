@@ -70,7 +70,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-02 | Phase 2 | Pending |
 | REFA-01 | Phase 3 | Pending |
 | REFA-02 | Phase 3 | Pending |
-| TEST-01 | Phase 4 | Pending |
+| TEST-01 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 7 total
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*
