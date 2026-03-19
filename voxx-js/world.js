@@ -2,7 +2,8 @@
  * World implementation
  */
 
-import { Chunk, CHUNK_WIDTH, CHUNK_DEPTH } from './chunk.js';
+import { Chunk } from './chunk.js';
+import { CHUNK_WIDTH, CHUNK_DEPTH } from './chunkCore.js';
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { BiomeCalculator } from './biomes.js';
 import { WorkerPool } from './workerPool.js';
