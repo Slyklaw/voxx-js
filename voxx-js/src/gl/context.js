@@ -10,6 +10,7 @@ const gl = canvas.getContext('webgl2', {
 
 let contextLost = false;
 const contextLossListeners = [];
+const resourceRegistry = [];
 
 function isContextLost() {
   return contextLost;
@@ -18,13 +19,19 @@ function isContextLost() {
 function handleContextLost(event) {
   event.preventDefault();
   contextLost = true;
+  resourceRegistry.forEach(({ dispose }) => dispose());
   contextLossListeners.forEach(callback => callback());
   return true;
 }
 
 function handleContextRestored() {
   contextLost = false;
-  initWebGLResources();
+  resourceRegistry.forEach(({ init }) => init());
+  contextLossListeners.forEach(callback => callback());
+}
+
+function registerContextResources({ dispose, init }) {
+  resourceRegistry.push({ dispose, init });
 }
 
 function addContextLossListener(callback) {
@@ -39,8 +46,7 @@ function removeContextLossListener(callback) {
 }
 
 function initWebGLResources() {
-  // Re-initialize all WebGL resources (shaders, buffers, etc.)
-  // This is called when context is restored
+  resourceRegistry.forEach(({ init }) => init());
 }
 
 if (canvas) {
@@ -52,6 +58,7 @@ export {
   gl,
   canvas,
   isContextLost,
+  registerContextResources,
   addContextLossListener,
   removeContextLossListener
 };
