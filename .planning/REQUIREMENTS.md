@@ -16,8 +16,8 @@ Requirements for tech debt cleanup. Each maps to roadmap phases.
 
 ### Deduplication
 
-- [ ] **DEDUP-01**: Extract greedy meshing to shared utility module
-- [ ] **DEDUP-02**: Consolidate chunk constants to single source, import where needed
+- [x] **DEDUP-01**: Extract greedy meshing to shared utility module
+- [x] **DEDUP-02**: Consolidate chunk constants to single source, import where needed
 
 ### Bug Fixes
 
@@ -70,8 +70,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLEAN-02 | Phase 1 | Complete |
 | CLEAN-03 | Phase 1 | Complete |
 | CLEAN-04 | Phase 1 | Complete |
-| DEDUP-01 | Phase 2 | Pending |
-| DEDUP-02 | Phase 2 | Pending |
+| DEDUP-01 | Phase 2 | Complete |
+| DEDUP-02 | Phase 2 | Complete |
 | BUG-01 | Phase 3 | Pending |
 | BUG-02 | Phase 3 | Pending |
 | BUG-03 | Phase 3 | Pending |

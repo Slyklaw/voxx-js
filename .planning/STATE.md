@@ -7,21 +7,21 @@
 See: `.planning/PROJECT.md` (updated 2026-03-18)
 
 **Core value:** Improve code quality and reliability without breaking existing functionality.
-**Current focus:** Phase 1: Dead Code Removal
+**Current focus:** Phase 3: Bug Fixes
 
 ## Current Position
 
-**Phase:** 1 - Dead Code Removal
-**Status:** Complete (2026-03-19)
-**Progress:** 4/4 requirements complete
+**Phase:** 2 - Deduplication
+**Status:** Complete (2026-03-18)
+**Progress:** 2/2 requirements complete
 
-**Current Plan:** 01-dead-code-removal — Complete
+**Current Plan:** 02-deduplication — Complete
 
 ## Performance Metrics
 
-- **Requirements complete:** 4/15 (27%)
-- **Phases complete:** 1/4 (25%)
-- **Plans executed:** 1/4 (25%)
+- **Requirements complete:** 6/15 (40%)
+- **Phases complete:** 2/4 (50%)
+- **Plans executed:** 2/4 (50%)
 
 ## Accumulated Context
 
@@ -29,8 +29,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `voxx-js/chunk.js` | Chunk data + mesh gen | Has dead code |
-| `voxx-js/chunkWorker.js` | Worker-side chunk processing | Duplicates greedy mesh |
+| `voxx-js/greedyMesh.js` | Shared greedy meshing utility | New - single source of truth |
+| `voxx-js/chunkCore.js` | Chunk core + constants | Single source for CHUNK_WIDTH/HEIGHT/DEPTH |
+| `voxx-js/chunk.js` | Chunk data + mesh gen | Refactored - uses shared modules |
+| `voxx-js/chunkWorker.js` | Worker-side chunk processing | Refactored - uses shared modules |
 | `voxx-js/src/main.js` | Entry point, controls | Has bugs |
 | `voxx-js/src/gl/context.js` | WebGL context | Missing context loss handler |
 
@@ -40,6 +42,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 |----------|-----------|--------|
 | Scope limited to tech debt | Avoid feature creep | Made |
 | Dead code removal first | Reduce maintenance surface | Made |
+| Deduplication second | Prevent future divergence | Made |
+| getVoxelFn abstraction | Flexibility for neighbor-aware vs direct voxel access | Made |
 | Performance fixes last | Verify stability first | Made |
 
 ### Blockers
@@ -47,10 +51,6 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 None currently.
 
 ## Session Continuity
-
-### After Phase 1 Complete
-
-Run `/gsd-plan-phase 2` to plan deduplication phase.
 
 ### After Phase 2 Complete
 
@@ -66,4 +66,4 @@ Run `/gsd-discuss-milestone` to verify and close milestone.
 
 ---
 
-*State updated: 2026-03-18 after initialization*
+*State updated: 2026-03-18 after Phase 2 deduplication completion*
