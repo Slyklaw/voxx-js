@@ -8,27 +8,39 @@ Voxx-JS is a browser-based voxel engine using WebGL2 for 3D rendering with proce
 
 Improve code quality and reliability without breaking existing functionality.
 
+---
+
+## Current State
+
+**Version:** v1.0 (shipped 2026-03-19)
+**Status:** Tech debt cleanup complete
+
+---
+
 ## Requirements
 
 ### Validated
 
-- ✓ Procedural terrain generation with biomes — existing
-- ✓ WebGL2 rendering with custom shaders — existing
-- ✓ Block placement and destruction via raycasting — existing
-- ✓ Web Worker pool for chunk generation — existing
-- ✓ Greedy meshing optimization — existing (but duplicated)
+- ✓ Procedural terrain generation with biomes — v1.0
+- ✓ WebGL2 rendering with custom shaders — v1.0
+- ✓ Block placement and destruction via raycasting — v1.0
+- ✓ Web Worker pool for chunk generation — v1.0
+- ✓ Greedy meshing optimization — v1.0 (deduplicated)
+- ✓ Dead code removal (Three.js refs, unused modules) — v1.0
+- ✓ Chunk constant consolidation — v1.0
+- ✓ Block selection UI fix — v1.0
+- ✓ Render distance UI fix — v1.0
+- ✓ WebGL context loss recovery — v1.0
+- ✓ DEBUG flag infrastructure — v1.0
+- ✓ Worker callback ID collision-safe generation — v1.0
+- ✓ Block type assertions — v1.0
+- ✓ Camera bounds checking — v1.0
 
 ### Active
 
-- [ ] Remove dead code (Three.js references, unused modules, legacy methods)
-- [ ] Deduplicate greedy meshing implementation (exists in two files)
-- [ ] Consolidate duplicated constants into single source
-- [ ] Fix block selection UI mismatch (mousewheel vs keyboard)
-- [ ] Make render distance UI functional
-- [ ] Implement context loss recovery handler
-- [ ] Add debug flag to disable production logging
-- [ ] Add bounds checking / validation to prevent invalid states
-- [ ] Improve worker pool callback ID generation (collision-safe)
+- [ ] Collision detection — requires separate feature work
+- [ ] World persistence (save/load) — requires separate feature work
+- [ ] Test coverage — deferred to future quality initiative
 
 ### Out of Scope
 
@@ -43,17 +55,12 @@ Improve code quality and reliability without breaking existing functionality.
 **Stack:** JavaScript ES2020+, WebGL2, Web Workers
 **Entry:** `voxx-js/index.html` → `voxx-js/src/main.js`
 
-**Existing codebase state:**
-- 1,208 lines of documentation across 7 files
-- Multiple patterns already established (chunk architecture, worker pool)
-- No existing tests
-- ~59 debug log statements throughout
-
-**Key files identified in tech debt audit:**
-- `voxx-js/chunk.js` (lines 157-389): Greedy meshing duplication
-- `voxx-js/chunkWorker.js` (lines 61-269): Greedy meshing duplication  
-- `voxx-js/src/main.js`: Block selection bug, render distance bug
-- `voxx-js/src/gl/context.js`: Empty context loss handler
+**v1.0 milestone changes:**
+- Created `voxx-js/greedyMesh.js` — shared greedy meshing utility (~450 lines deduplicated)
+- Removed Three.js references and dead properties
+- Deleted orphaned `src/gl/test-render.js`
+- Fixed 4 bugs: block selection, render distance, context loss, UI updates
+- Added DEBUG infrastructure and input validation
 
 ## Constraints
 
@@ -65,9 +72,27 @@ Improve code quality and reliability without breaking existing functionality.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Scope limited to tech debt | Avoid feature creep during cleanup | — Pending |
-| Dead code removal first | Reduces maintenance burden before deduplication | — Pending |
-| Performance fixes last | Verify base stability before optimization | — Pending |
+| Scope limited to tech debt | Avoid feature creep during cleanup | ✓ Complete |
+| Dead code removal first | Reduces maintenance burden before deduplication | ✓ Complete |
+| Performance fixes last | Verify base stability before optimization | ✓ Complete |
+| getVoxelFn abstraction for greedy meshing | Support both neighbor-aware and direct voxel access | ✓ Good |
+
+## v1.0 Accomplishments
+
+1. Removed dead code (Three.js refs, unused modules, legacy methods)
+2. Extracted shared greedyMesh.js utility (~450 lines deduplicated)
+3. Fixed 4 bugs: block selection, render distance, context loss, UI updates
+4. Added debug infrastructure and input validation
 
 ---
-*Last updated: 2026-03-18 after initialization*
+
+## Next Milestone Goals
+
+**Suggested focus areas:**
+- Collision detection (player walks on terrain)
+- World persistence (save/load builds)
+- Test coverage (unit tests for terrain generation)
+- Visual polish (lighting, shadows)
+
+---
+*Last updated: 2026-03-19 after v1.0 milestone*

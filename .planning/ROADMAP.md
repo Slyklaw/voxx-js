@@ -1,107 +1,47 @@
 # Roadmap: Voxx-JS Tech Debt Cleanup
 
-## Summary
+## Milestones
 
-**Phases:** 4
-**Depth:** quick
-**Coverage:** 15/15 requirements mapped ✓
+- ✅ **v1.0 Tech Debt Cleanup** — Phases 1-4 (shipped 2026-03-19)
 
-## Phases
+## Current Phase
 
-- [x] **Phase 1: Dead Code Removal** - Remove Three.js refs, unused modules, legacy methods
-- [x] **Phase 2: Deduplication** - Extract shared greedy meshing, consolidate constants
-- [x] **Phase 3: Bug Fixes** - Fix block selection, render distance, context loss handler
-- [x] **Phase 4: Performance & Validation** - Debug flags, assertions, input bounds checking
+No active phases. See `.planning/milestones/` for completed milestones.
 
----
+## Archived Milestones
 
-## Phase Details
+<details>
+<summary>✅ v1.0 Tech Debt Cleanup — SHIPPED 2026-03-19</summary>
 
-### Phase 1: Dead Code Removal
+### Summary
+15/15 requirements complete. Removed dead code, deduplicated greedy meshing, fixed 4 bugs, added debug infrastructure.
 
-**Goal:** Remove dead code and unused artifacts to reduce maintenance burden
+### Phase 1: Dead Code Removal ✓
+- Removed Three.js references from chunk.js
+- Deleted orphaned test-render.js
+- Removed unused generateChunk() method
+- Guarded console.log with DEBUG flag
 
-**Depends on:** Nothing (first phase)
+### Phase 2: Deduplication ✓
+- Created shared greedyMesh.js (~450 lines)
+- Consolidated chunk constants in chunkCore.js
+- Both chunk.js and chunkWorker.js refactored
 
-**Requirements:** CLEAN-01, CLEAN-02, CLEAN-03, CLEAN-04
+### Phase 3: Bug Fixes ✓
+- BUG-01: Block selection 1-9 via mousewheel
+- BUG-02: Render distance UI connected
+- BUG-03: WebGL context loss recovery
+- BUG-04: Block selector UI updates
 
-**Success Criteria** (what must be TRUE):
-1. `voxx-js/chunk.js` contains no Three.js references (comments or properties)
-2. `voxx-js/src/gl/test-render.js` is either removed or has documented purpose
-3. `voxx-js/world.js` does not contain unused `generateChunk()` method
-4. All `console.log` calls are guarded by debug flag check
+### Phase 4: Performance & Validation ✓
+- Worker callback IDs use incrementing counter
+- Block type assertions in debug mode
+- Camera bounds checking added
 
-**Plans:** 1 - 01-dead-code-removal-PLAN.md (4 tasks)
+**Stats:** 4 phases, 4 plans, ~25 commits, 1 new file (greedyMesh.js)
 
----
-
-### Phase 2: Deduplication
-
-**Goal:** Unify duplicated code to prevent future divergence
-
-**Depends on:** Phase 1
-
-**Requirements:** DEDUP-01, DEDUP-02
-
-**Success Criteria** (what must be TRUE):
-1. Greedy meshing algorithm exists in exactly one location, imported where needed
-2. Chunk dimension constants defined once, imported by all consumers
-3. Both `chunk.js` and `chunkWorker.js` use shared greedy meshing utility
-4. No compilation or runtime errors after refactoring
-
-**Plans:** 1 - 02-deduplication-PLAN.md (5 tasks)
+</details>
 
 ---
 
-### Phase 3: Bug Fixes
-
-**Goal:** Fix known bugs identified in codebase audit
-
-**Depends on:** Phase 2
-
-**Requirements:** BUG-01, BUG-02, BUG-03, BUG-04
-
-**Success Criteria** (what must be TRUE):
-1. Mousewheel block selection allows selecting blocks 1-9 (matching keyboard support)
-2. Render distance UI buttons actually change the visible chunk count
-3. WebGL context loss triggers recovery sequence, application continues after restore
-4. Block selector UI visually reflects current selected block
-
-**Plans:** 1 - 03-bug-fixes-PLAN.md (5 tasks including verification)
-
-**Completion:** All 4 bugs fixed (BUG-01 through BUG-04). Commits: `22207af`, `78db171`, `6c5cb9d`, `401e185`. Verification: PASSED.
-
----
-
-### Phase 4: Performance & Validation
-
-**Goal:** Add debug infrastructure and input validation
-
-**Depends on:** Phase 3
-
-**Requirements:** PERF-01, PERF-02, PERF-03, VAL-01, VAL-02
-
-**Success Criteria** (what must be TRUE):
-1. Debug mode flag exists and controls console.log output
-2. Worker pool callback IDs use incrementing counter (no collision risk)
-3. Invalid block types trigger assertion in debug mode
-4. Camera position/rotation values are bounds-checked
-
-**Plans:** 1 - 04-performance-validation-PLAN.md (4 tasks)
-
-**Completion:** All 5 requirements implemented (PERF-01 through PERF-03, VAL-01, VAL-02). Commits: `f44584e`. Verification: PASSED.
-
----
-
-## Progress
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Dead Code Removal | 1/1 | Complete | 2026-03-18 |
-| 2. Deduplication | 1/1 | Complete | 2026-03-18 |
-| 3. Bug Fixes | 1/1 | Complete | 2026-03-19 |
-| 4. Performance & Validation | 1/1 | Complete | 2026-03-19 |
-
----
-
-*Roadmap created: 2026-03-18*
+*For v1.0 details, see `.planning/milestones/v1.0-ROADMAP.md`*

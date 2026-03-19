@@ -12,7 +12,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 ## Current Position
 
 **Phase:** 4 - Performance & Validation
-**Status:** Milestone complete
+**Status:** v1.0 milestone complete
 **Progress:** 15/15 requirements complete
 
 **Current Plan:** Not started
