@@ -28,14 +28,14 @@ Requirements for tech debt cleanup. Each maps to roadmap phases.
 
 ### Performance
 
-- [ ] **PERF-01**: Add debug flag to disable console.log statements in production
-- [ ] **PERF-02**: Replace worker pool callback ID generation with collision-safe approach
-- [ ] **PERF-03**: Add bounds assertions for block type lookups in debug mode
+- [x] **PERF-01**: Add debug flag to disable console.log statements in production
+- [x] **PERF-02**: Replace worker pool callback ID generation with collision-safe approach
+- [x] **PERF-03**: Add bounds assertions for block type lookups in debug mode
 
 ### Validation
 
-- [ ] **VAL-01**: Add debug mode assertion for invalid block types
-- [ ] **VAL-02**: Add input bounds checking for camera position and rotation
+- [x] **VAL-01**: Add debug mode assertion for invalid block types
+- [x] **VAL-02**: Add input bounds checking for camera position and rotation
 
 ## v2 Requirements
 
@@ -76,16 +76,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BUG-02 | Phase 3 | Complete |
 | BUG-03 | Phase 3 | Complete |
 | BUG-04 | Phase 3 | Complete |
-| PERF-01 | Phase 4 | Pending |
-| PERF-02 | Phase 4 | Pending |
-| PERF-03 | Phase 4 | Pending |
-| VAL-01 | Phase 4 | Pending |
-| VAL-02 | Phase 4 | Pending |
+| PERF-01 | Phase 4 | Complete |
+| PERF-02 | Phase 4 | Complete |
+| PERF-03 | Phase 4 | Complete |
+| VAL-01 | Phase 4 | Complete |
+| VAL-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Complete: 10
-- Pending: 5 (PERF-01, PERF-02, PERF-03, VAL-01, VAL-02)
+- Complete: 15
+- Pending: 0 ✓
 
 ---
 *Requirements defined: 2026-03-18*
