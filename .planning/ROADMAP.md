@@ -8,7 +8,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Dead Code Removal** - Remove Three.js refs, unused modules, legacy methods
+- [x] **Phase 1: Dead Code Removal** - Remove Three.js refs, unused modules, legacy methods
 - [ ] **Phase 2: Deduplication** - Extract shared greedy meshing, consolidate constants
 - [ ] **Phase 3: Bug Fixes** - Fix block selection, render distance, context loss handler
 - [ ] **Phase 4: Performance & Validation** - Debug flags, assertions, input bounds checking
@@ -93,7 +93,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Dead Code Removal | 1/1 | Planned | - |
+| 1. Dead Code Removal | 1/1 | Complete | 2026-03-18 |
 | 2. Deduplication | 0/1 | Not started | - |
 | 3. Bug Fixes | 0/1 | Not started | - |
 | 4. Performance & Validation | 0/1 | Not started | - |

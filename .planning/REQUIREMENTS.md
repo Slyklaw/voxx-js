@@ -9,10 +9,10 @@ Requirements for tech debt cleanup. Each maps to roadmap phases.
 
 ### Cleanup (Dead Code)
 
-- [ ] **CLEAN-01**: Remove Three.js references from `chunk.js` (comments, dead properties)
-- [ ] **CLEAN-02**: Remove or document `src/gl/test-render.js` purpose
-- [ ] **CLEAN-03**: Remove unused `World.generateChunk()` method from `world.js`
-- [ ] **CLEAN-04**: Remove remaining debug log statements from production paths
+- [x] **CLEAN-01**: Remove Three.js references from `chunk.js` (comments, dead properties)
+- [x] **CLEAN-02**: Remove or document `src/gl/test-render.js` purpose
+- [x] **CLEAN-03**: Remove unused `World.generateChunk()` method from `world.js`
+- [x] **CLEAN-04**: Remove remaining debug log statements from production paths
 
 ### Deduplication
 
@@ -66,10 +66,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLEAN-01 | Phase 1 | Pending |
-| CLEAN-02 | Phase 1 | Pending |
-| CLEAN-03 | Phase 1 | Pending |
-| CLEAN-04 | Phase 1 | Pending |
+| CLEAN-01 | Phase 1 | Complete |
+| CLEAN-02 | Phase 1 | Complete |
+| CLEAN-03 | Phase 1 | Complete |
+| CLEAN-04 | Phase 1 | Complete |
 | DEDUP-01 | Phase 2 | Pending |
 | DEDUP-02 | Phase 2 | Pending |
 | BUG-01 | Phase 3 | Pending |
