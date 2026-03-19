@@ -14,8 +14,8 @@ Requirements for initial quality enhancement release. Each maps to roadmap phase
 
 ### Performance
 
-- [ ] **PERF-01**: Optimize rendering pipeline to improve frame rates and reduce draw calls
-- [ ] **PERF-02**: Reduce memory footprint through better caching and resource cleanup
+- [x] **PERF-01**: Optimize rendering pipeline to improve frame rates and reduce draw calls
+- [x] **PERF-02**: Reduce memory footprint through better caching and resource cleanup
 
 ### Code Quality
 
@@ -66,8 +66,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | UI-01 | Phase 1 | ✅ Complete |
 | UI-02 | Phase 1 | ✅ Complete |
-| PERF-01 | Phase 2 | Pending |
-| PERF-02 | Phase 2 | Pending |
+| PERF-01 | Phase 2 | ✅ Complete |
+| PERF-02 | Phase 2 | ✅ Complete |
 | REFA-01 | Phase 3 | Pending |
 | REFA-02 | Phase 3 | Pending |
 | TEST-01 | Phase 3 | Pending |
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after roadmap creation*
+*Last updated: 2026-03-19 after Phase 2 completion*
