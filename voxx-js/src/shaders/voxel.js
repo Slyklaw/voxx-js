@@ -8,6 +8,7 @@ layout(location = 1) in vec3 aColor;
 layout(location = 2) in vec3 aNormal;
 layout(location = 3) in vec2 aUV;          // Scaled by face dimensions
 layout(location = 4) in vec2 aTileBase;    // Base UV coordinates in atlas
+layout(location = 5) in float aTriangleVariant;  // 0.0 or 1.0 to distinguish triangles
 
 uniform mat4 uModelViewProjection;
 uniform mat4 uModelMatrix;
@@ -17,11 +18,13 @@ out vec3 vColor;
 out vec3 vNormal;
 out vec2 vTileUnits;     // Position in tile units for interpolation
 out vec2 vTileBase;      // Tile base UV (same for all vertices of a face)
+out float vTriangleVariant;  // Pass through to fragment shader
 
 void main() {
   vColor = aColor;
   vNormal = mat3(uModelMatrix) * aNormal;
   vTileBase = aTileBase;  // Pass through to fragment shader
+  vTriangleVariant = aTriangleVariant;
   
   // Convert to tile units: left edge = 0, right edge = faceWidth
   vTileUnits = (aUV - aTileBase) / uTileSpan;
@@ -36,6 +39,7 @@ in vec3 vColor;
 in vec3 vNormal;
 in vec2 vTileUnits;   // Position in tile units (interpolated)
 in vec2 vTileBase;    // Tile base UV (same for all vertices)
+in float vTriangleVariant;  // 0.0 or 1.0 to distinguish triangles
 
 uniform vec3 uLightDirection;
 uniform float uAmbient;
@@ -55,7 +59,9 @@ void main() {
   
   vec3 baseColor;
   if (uDebugMode) {
-    baseColor = vColor;
+    // In debug mode, slightly brighten or darken based on triangle variant
+    float variantFactor = mix(0.7, 1.0, vTriangleVariant);
+    baseColor = vColor * variantFactor;
   } else {
     // Rotate X faces 90° counter-clockwise: (u, v) → (1-v, u)
     vec2 tileUnits = vTileUnits;
@@ -106,7 +112,8 @@ export function getVoxelAttribs(gl, program) {
     'aColor',
     'aNormal',
     'aUV',
-    'aTileBase'
+    'aTileBase',
+    'aTriangleVariant'
   ]);
 }
 

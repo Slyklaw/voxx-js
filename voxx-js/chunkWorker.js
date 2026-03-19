@@ -66,6 +66,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
   const indices = [];
   const colors = [];
   const blockTypes = [];
+  const triangleVariant = [];  // Per-vertex triangle identifier for debug mode
   let uvDebugCount = 0;
   
   // World-space offsets for this chunk
@@ -219,6 +220,16 @@ function generateMeshData(chunk, chunkX, chunkZ) {
               }
             }
 
+            // Add triangle variant for debug mode (triangle 1 = 0.0, triangle 2 = 1.0)
+            // Each quad creates two triangles: (v1,v2,v3) and (v2,v4,v3)
+            // v1=0.0, v2=0.0, v3=0.0 for triangle 1 → all interpolate to 0.0
+            // v2=1.0, v4=1.0, v3=1.0 for triangle 2 → all interpolate to 1.0
+            if (val > 0) {
+              triangleVariant.push(0.0, 0.0, 0.0, 1.0);  // v1,v2,v3 get 0.0; v4 gets 1.0
+            } else {
+              triangleVariant.push(1.0, 1.0, 1.0, 0.0);  // v1,v2,v3 get 1.0; v4 gets 0.0
+            }
+
             if (val > 0) {
               // Front face
               indices.push(vertexCount, vertexCount + 1, vertexCount + 2);
@@ -253,6 +264,7 @@ function generateMeshData(chunk, chunkX, chunkZ) {
     tileBase: new Float32Array(tileBase),
     indices: new Uint32Array(indices),
     colors: new Float32Array(colors),
-    blockTypes: new Float32Array(blockTypes)
+    blockTypes: new Float32Array(blockTypes),
+    triangleVariant: new Float32Array(triangleVariant)
   };
 }

@@ -1,5 +1,5 @@
 const FLOAT_SIZE = 4;
-const VERTEX_SIZE = 13; // pos(3) + color(3) + normal(3) + uv(2) + tileBase(2)
+const VERTEX_SIZE = 14; // pos(3) + color(3) + normal(3) + uv(2) + tileBase(2) + triangleVariant(1)
 const STRIDE = VERTEX_SIZE * FLOAT_SIZE;
 
 export function createVBO(gl, data, usage = gl.STATIC_DRAW) {
@@ -39,6 +39,10 @@ export function setupVAO(gl, vao, vbo, attribs = {}) {
   // TileBase: location 4
   gl.enableVertexAttribArray(4);
   gl.vertexAttribPointer(4, 2, gl.FLOAT, false, STRIDE, 44);
+
+  // TriangleVariant: location 5
+  gl.enableVertexAttribArray(5);
+  gl.vertexAttribPointer(5, 1, gl.FLOAT, false, STRIDE, 52);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -98,6 +102,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   const normals = meshData.normals || new Float32Array(positions.length);
   const uvs = meshData.uvs || new Float32Array((positions.length / 3) * 2);
   const tileBase = meshData.tileBase || new Float32Array((positions.length / 3) * 2);
+  const triangleVariant = meshData.triangleVariant || new Float32Array(positions.length / 3);
   const indices = meshData.indices;
 
   const vertexCount = positions.length / 3;
@@ -137,6 +142,9 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     // Tile base coordinates for atlas wrapping
     data[base + 11] = tileBase[i * 2 + 0] || 0;
     data[base + 12] = tileBase[i * 2 + 1] || 0;
+    
+    // Triangle variant for debug mode (0.0 or 1.0 to distinguish triangles)
+    data[base + 13] = triangleVariant[i] !== undefined ? triangleVariant[i] : 0.0;
   }
 
   const vbo = gl.createBuffer();
@@ -161,6 +169,9 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
 
   gl.enableVertexAttribArray(4);
   gl.vertexAttribPointer(4, 2, gl.FLOAT, false, STRIDE, 44);
+
+  gl.enableVertexAttribArray(5);
+  gl.vertexAttribPointer(5, 1, gl.FLOAT, false, STRIDE, 52);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -204,5 +215,6 @@ export const VERTEX_FORMAT = {
   NORMAL_OFFSET: 24,
   UV_OFFSET: 36,
   TILE_BASE_OFFSET: 44,
+  TRIANGLE_VARIANT_OFFSET: 52,
   FLOATS_PER_VERTEX: VERTEX_SIZE
 };
