@@ -3,6 +3,7 @@ import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } fro
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance } from './performance.js';
+import { bindChunk, unbindChunk } from './buffers.js';
 import { DEBUG } from '../../config.js';
 
 export let voxelProgram = null;
