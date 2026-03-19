@@ -5,12 +5,8 @@
 import { getBlockColor, BLOCK_TYPES, BLOCKS, getBlockAtlasPositions } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import { DEBUG } from './config.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
 // generateMeshData() returns plain arrays compatible with src/gl/buffers.js
-
-// Chunk constants
-export const CHUNK_WIDTH = 32;
-export const CHUNK_HEIGHT = 256;
-export const CHUNK_DEPTH = 32;
 
 export class Chunk {
   constructor(chunkX, chunkZ) {
