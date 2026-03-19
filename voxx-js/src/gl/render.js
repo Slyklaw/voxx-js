@@ -328,14 +328,8 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   beginDrawCalls();
   
   // Create frustum from view-projection matrices
-  // FROZEN: Only compute frustum once at start, don't update as camera moves
-  // Type 'resetFrustum()' in console to unfreeze
-  if (!renderChunks._frustum) {
-    renderChunks._frustum = new Frustum();
-    renderChunks._frustum.extractFromMatrices(viewMatrix, projectionMatrix);
-    console.log('[Frustum] FROZEN at initial position. Type resetFrustum() to update.');
-  }
-  const frustum = renderChunks._frustum;
+  const frustum = new Frustum();
+  frustum.extractFromMatrices(viewMatrix, projectionMatrix);
   
   // Filter to visible chunks using frustum culling, then sort for deterministic rendering
   const visibleChunks = chunks
@@ -602,11 +596,3 @@ export function renderLoop(canvasEl, gl, renderFn) {
 }
 
 export { getFPS, getMetrics, logPerformance };
-
-// Global function to reset frozen frustum
-window.resetFrustum = function() {
-  if (renderChunks._frustum) {
-    renderChunks._frustum = null;
-    console.log('[Frustum] Unfrozen. Will recompute on next frame.');
-  }
-};
