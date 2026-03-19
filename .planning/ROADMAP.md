@@ -9,7 +9,7 @@
 ## Phases
 
 - [x] **Phase 1: Dead Code Removal** - Remove Three.js refs, unused modules, legacy methods
-- [ ] **Phase 2: Deduplication** - Extract shared greedy meshing, consolidate constants
+- [x] **Phase 2: Deduplication** - Extract shared greedy meshing, consolidate constants
 - [ ] **Phase 3: Bug Fixes** - Fix block selection, render distance, context loss handler
 - [ ] **Phase 4: Performance & Validation** - Debug flags, assertions, input bounds checking
 
@@ -49,7 +49,7 @@
 3. Both `chunk.js` and `chunkWorker.js` use shared greedy meshing utility
 4. No compilation or runtime errors after refactoring
 
-**Plans:** TBD
+**Plans:** 1 - 02-deduplication-PLAN.md (5 tasks)
 
 ---
 
@@ -94,7 +94,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Dead Code Removal | 1/1 | Complete | 2026-03-18 |
-| 2. Deduplication | 1/1 | Planned | - |
+| 2. Deduplication | 1/1 | Complete | 2026-03-18 |
 | 3. Bug Fixes | 0/1 | Not started | - |
 | 4. Performance & Validation | 0/1 | Not started | - |
 

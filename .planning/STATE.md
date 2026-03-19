@@ -13,7 +13,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 
 **Phase:** 2 - Deduplication
 **Status:** Complete (2026-03-18)
-**Progress:** 2/2 requirements complete
+**Progress:** 6/15 requirements complete
 
 **Current Plan:** 02-deduplication — Complete
 
