@@ -69,49 +69,56 @@ export class Frustum {
     this.multiplyMatrices(vp, projectionMatrix, viewMatrix);
 
     // Column-major layout: element at row r, col c is at index c * 4 + r
-    const m = vp;
-
-    // Extract planes (Real-Time Rendering method)
-    // Left plane: m[3][0] + m[0][0]
-    this.planes[2].a = m[12] + m[0];
-    this.planes[2].b = m[13] + m[1];
-    this.planes[2].c = m[14] + m[2];
-    this.planes[2].d = m[15] + m[3];
+    // But plane extraction formulas assume row-major, so we need to transpose
+    // Transpose VP to convert from column-major to row-major
+    const t = new Float32Array(16);
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        t[i * 4 + j] = vp[j * 4 + i];
+      }
+    }
+    
+    // Now extract planes using row-major indices
+    // Left plane: row 3 + row 0
+    this.planes[2].a = t[12] + t[0];
+    this.planes[2].b = t[13] + t[1];
+    this.planes[2].c = t[14] + t[2];
+    this.planes[2].d = t[15] + t[3];
     this.planes[2].normalize();
 
-    // Right plane: m[3][0] - m[0][0]
-    this.planes[3].a = m[12] - m[0];
-    this.planes[3].b = m[13] - m[1];
-    this.planes[3].c = m[14] - m[2];
-    this.planes[3].d = m[15] - m[3];
+    // Right plane: row 3 - row 0
+    this.planes[3].a = t[12] - t[0];
+    this.planes[3].b = t[13] - t[1];
+    this.planes[3].c = t[14] - t[2];
+    this.planes[3].d = t[15] - t[3];
     this.planes[3].normalize();
 
-    // Bottom plane: m[3][1] + m[1][1]
-    this.planes[4].a = m[12] + m[4];
-    this.planes[4].b = m[13] + m[5];
-    this.planes[4].c = m[14] + m[6];
-    this.planes[4].d = m[15] + m[7];
+    // Bottom plane: row 3 + row 1
+    this.planes[4].a = t[12] + t[4];
+    this.planes[4].b = t[13] + t[5];
+    this.planes[4].c = t[14] + t[6];
+    this.planes[4].d = t[15] + t[7];
     this.planes[4].normalize();
 
-    // Top plane: m[3][1] - m[1][1]
-    this.planes[5].a = m[12] - m[4];
-    this.planes[5].b = m[13] - m[5];
-    this.planes[5].c = m[14] - m[6];
-    this.planes[5].d = m[15] - m[7];
+    // Top plane: row 3 - row 1
+    this.planes[5].a = t[12] - t[4];
+    this.planes[5].b = t[13] - t[5];
+    this.planes[5].c = t[14] - t[6];
+    this.planes[5].d = t[15] - t[7];
     this.planes[5].normalize();
 
-    // Near plane: m[3][2] + m[2][2]
-    this.planes[0].a = m[12] + m[8];
-    this.planes[0].b = m[13] + m[9];
-    this.planes[0].c = m[14] + m[10];
-    this.planes[0].d = m[15] + m[11];
+    // Near plane: row 3 + row 2
+    this.planes[0].a = t[12] + t[8];
+    this.planes[0].b = t[13] + t[9];
+    this.planes[0].c = t[14] + t[10];
+    this.planes[0].d = t[15] + t[11];
     this.planes[0].normalize();
 
-    // Far plane: m[3][2] - m[2][2]
-    this.planes[1].a = m[12] - m[8];
-    this.planes[1].b = m[13] - m[9];
-    this.planes[1].c = m[14] - m[10];
-    this.planes[1].d = m[15] - m[11];
+    // Far plane: row 3 - row 2
+    this.planes[1].a = t[12] - t[8];
+    this.planes[1].b = t[13] - t[9];
+    this.planes[1].c = t[14] - t[10];
+    this.planes[1].d = t[15] - t[11];
     this.planes[1].normalize();
   }
 

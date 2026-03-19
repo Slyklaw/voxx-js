@@ -332,12 +332,11 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   frustum.extractFromMatrices(viewMatrix, projectionMatrix);
   
   // Filter to visible chunks using frustum culling, then sort for deterministic rendering
-  // TEMPORARILY DISABLED - only render chunks near camera for testing
   const visibleChunks = chunks
     .filter(chunk => {
       // chunk is a Chunk object with .chunkX and .chunkZ properties
       // Also check it has a ready WebGL mesh
-      return chunk && chunk._webglMesh;
+      return chunk && chunk._webglMesh && frustum.isChunkVisible(chunk.chunkX, chunk.chunkZ);
     })
     .sort((a, b) => {
       // Sort by key for deterministic draw order
