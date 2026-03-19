@@ -37,6 +37,7 @@ export class WorkerPool {
     this._processDispatchQueue = () => {
       if (this.dispatchQueue.length === 0) return;
       
+      console.log('[WorkerPool] Processing dispatch queue, length:', this.dispatchQueue.length);
       const now = performance.now();
       let dispatched = 0;
       
@@ -47,6 +48,7 @@ export class WorkerPool {
         
         const item = this.dispatchQueue.shift();
         if (item.callback) {
+          console.log('[WorkerPool] Calling callback for chunk');
           item.callback(item.chunkData);
         }
         dispatched++;
@@ -74,10 +76,12 @@ export class WorkerPool {
 
     if (event.data.type === 'chunkGenerated') {
       const { chunkData, callbackId } = event.data;
+      console.log('[WorkerPool] Received chunkGenerated, queue length:', this.dispatchQueue.length);
       // Immediately resolve the pending callback with staged queue
       // The actual dispatch happens in _processDispatchQueue
       const callback = this.pendingCallbacks.get(callbackId);
       if (callback) {
+        console.log('[WorkerPool] Dispatching to queue');
         // Wrap callback to go through staged dispatch
         this.dispatchQueue.push({
           chunkData,
@@ -86,6 +90,8 @@ export class WorkerPool {
           priority: 0
         });
         this.pendingCallbacks.delete(callbackId);
+      } else {
+        console.log('[WorkerPool] No callback found for callbackId:', callbackId);
       }
     } else if (event.data.type === 'error') {
       console.error('[WorkerPool] Worker error:', event.data.error);
