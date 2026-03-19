@@ -19,6 +19,10 @@ let renderStartTime = 0;
 // Draw call tracking
 let drawCalls = 0;
 
+// Memory tracking
+const MEMORY_SAMPLE_SIZE = 60;
+let memorySamples = [];
+
 export function initPerformance() {
   frameTimes = [];
   renderTimes = [];
@@ -34,6 +38,7 @@ export function initPerformance() {
   totalFrames = 0;
   fpsUpdateCounter = 0;
   drawCalls = 0;
+  memorySamples = [];
 }
 
 export function beginRenderTiming() {
@@ -69,8 +74,38 @@ export function getDrawCalls() {
   return drawCalls;
 }
 
+export function updateMemoryMetrics() {
+  // performance.memory is Chrome-specific; undefined on Safari/Firefox
+  if (typeof performance !== 'undefined' && performance.memory) {
+    const usedMB = performance.memory.usedJSHeapSize / (1024 * 1024);
+    memorySamples.push(usedMB);
+    if (memorySamples.length > MEMORY_SAMPLE_SIZE) {
+      memorySamples.shift();
+    }
+  }
+}
+
+export function getCurrentMemoryMB() {
+  if (memorySamples.length > 0) {
+    return memorySamples[memorySamples.length - 1];
+  }
+  return null;
+}
+
+export function getAverageMemoryMB() {
+  if (memorySamples.length === 0) return null;
+  const sum = memorySamples.reduce((a, b) => a + b, 0);
+  return sum / memorySamples.length;
+}
+
+export function getPeakMemoryMB() {
+  if (memorySamples.length === 0) return null;
+  return Math.max(...memorySamples);
+}
+
 export function beginFrame(timestamp) {
   drawCalls = 0; // Reset draw call count at start of each frame
+  updateMemoryMetrics(); // Track memory usage each frame
   if (lastFrameTime === 0) {
     lastFrameTime = timestamp;
     return 0;
@@ -145,6 +180,9 @@ export function getMetrics() {
     frameTime,
     renderTime,
     drawCalls,
+    currentMemoryMB: getCurrentMemoryMB(),
+    averageMemoryMB: getAverageMemoryMB(),
+    peakMemoryMB: getPeakMemoryMB(),
     minFrameTime: minFrameTime === Infinity ? 0 : minFrameTime,
     maxFrameTime,
     minRenderTime: minRenderTime === Infinity ? 0 : minRenderTime,
@@ -174,5 +212,9 @@ import { DEBUG } from '../../config.js';
 export function logPerformance() {
   if (!DEBUG) return;
   const metrics = getMetrics();
-  console.log(`[Performance] FPS: ${metrics.fps} | Est: ${metrics.estimatedFPS} | Frame: ${metrics.frameTime.toFixed(2)}ms | Render: ${metrics.renderTime.toFixed(2)}ms | DrawCalls: ${metrics.drawCalls} | Avg: ${metrics.averageFrameTime.toFixed(2)}ms`);
+  let memStr = '';
+  if (metrics.currentMemoryMB !== null) {
+    memStr = ` | Mem: ${metrics.currentMemoryMB.toFixed(1)}MB (avg: ${metrics.averageMemoryMB.toFixed(1)}MB, peak: ${metrics.peakMemoryMB.toFixed(1)}MB)`;
+  }
+  console.log(`[Performance] FPS: ${metrics.fps} | Est: ${metrics.estimatedFPS} | Frame: ${metrics.frameTime.toFixed(2)}ms | Render: ${metrics.renderTime.toFixed(2)}ms | DrawCalls: ${metrics.drawCalls}${memStr} | Avg: ${metrics.averageFrameTime.toFixed(2)}ms`);
 }
