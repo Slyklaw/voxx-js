@@ -16,6 +16,9 @@ let fpsUpdateCounter = 0;
 let fpsUpdateInterval = 60;
 let renderStartTime = 0;
 
+// Draw call tracking
+let drawCalls = 0;
+
 export function initPerformance() {
   frameTimes = [];
   renderTimes = [];
@@ -30,6 +33,7 @@ export function initPerformance() {
   maxRenderTime = 0;
   totalFrames = 0;
   fpsUpdateCounter = 0;
+  drawCalls = 0;
 }
 
 export function beginRenderTiming() {
@@ -53,7 +57,20 @@ export function endRenderTiming() {
   }
 }
 
+export function beginDrawCalls() {
+  drawCalls = 0;
+}
+
+export function incrementDrawCalls(n = 1) {
+  drawCalls += n;
+}
+
+export function getDrawCalls() {
+  return drawCalls;
+}
+
 export function beginFrame(timestamp) {
+  drawCalls = 0; // Reset draw call count at start of each frame
   if (lastFrameTime === 0) {
     lastFrameTime = timestamp;
     return 0;
@@ -127,6 +144,7 @@ export function getMetrics() {
     estimatedFPS,
     frameTime,
     renderTime,
+    drawCalls,
     minFrameTime: minFrameTime === Infinity ? 0 : minFrameTime,
     maxFrameTime,
     minRenderTime: minRenderTime === Infinity ? 0 : minRenderTime,
@@ -156,5 +174,5 @@ import { DEBUG } from '../../config.js';
 export function logPerformance() {
   if (!DEBUG) return;
   const metrics = getMetrics();
-  console.log(`[Performance] FPS: ${metrics.fps} | Est: ${metrics.estimatedFPS} | Frame: ${metrics.frameTime.toFixed(2)}ms | Render: ${metrics.renderTime.toFixed(2)}ms | Avg: ${metrics.averageFrameTime.toFixed(2)}ms`);
+  console.log(`[Performance] FPS: ${metrics.fps} | Est: ${metrics.estimatedFPS} | Frame: ${metrics.frameTime.toFixed(2)}ms | Render: ${metrics.renderTime.toFixed(2)}ms | DrawCalls: ${metrics.drawCalls} | Avg: ${metrics.averageFrameTime.toFixed(2)}ms`);
 }
