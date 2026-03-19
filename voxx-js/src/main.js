@@ -1,7 +1,7 @@
 import { gl, canvas, isContextLost, registerContextResources } from './gl/context.js';
 import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, setDebugMode } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
-import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming } from './gl/performance.js';
+import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
@@ -877,23 +877,23 @@ function render(currentTime) {
   updateTimeOfDay(gl, sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24);
 
   const visibleChunks = world.getVisibleChunks();
-  const webglChunks = [];
   
-  for (const chunk of visibleChunks) {
-    if (chunk._webglMesh && chunk._webglMesh.vao) {
-      webglChunks.push(chunk._webglMesh);
-    }
-  }
-
   // Render chunks with textures or wireframe
-  if (webglChunks.length > 0) {
-    renderChunks(gl, webglChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode);
+  // Pass Chunk objects (with _webglMesh) for culling and rendering
+  if (visibleChunks.length > 0) {
+    renderChunks(gl, visibleChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode);
   }
   
   // Check for WebGL errors
   const err = gl.getError();
   if (err !== gl.NO_ERROR) {
     console.error(`[Renderer] WebGL error: ${err}`);
+  }
+  
+  // Log performance metrics in debug mode
+  logPerformance();
+  if (DEBUG) {
+    console.log(`[Performance] Draw calls this frame: ${getDrawCalls()}`);
   }
   
   // Render block outline on top of chunks

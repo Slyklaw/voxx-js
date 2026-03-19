@@ -2,9 +2,10 @@ import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DI
 import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } from '../shaders/sky.js';
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
-import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance } from './performance.js';
+import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk } from './buffers.js';
 import { DEBUG } from '../../config.js';
+import { Frustum } from './frustum.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -318,9 +319,38 @@ export function setDebugMode(gl, enabled) {
 }
 
 export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix, wireframe = false, debugMode = false) {
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    renderChunk(gl, chunk, null, viewMatrix, projectionMatrix, wireframe, debugMode);
+  if (!chunks || chunks.length === 0) return;
+  
+  beginDrawCalls();
+  
+  // Create frustum from view-projection matrices
+  const frustum = new Frustum();
+  frustum.extractFromMatrices(viewMatrix, projectionMatrix);
+  
+  // Filter to visible chunks using frustum culling, then sort for deterministic rendering
+  const visibleChunks = chunks
+    .filter(chunk => {
+      // chunk is a Chunk object with .chunkX and .chunkZ properties
+      // Also check it has a ready WebGL mesh
+      return chunk && chunk._webglMesh && frustum.isChunkVisible(chunk.chunkX, chunk.chunkZ);
+    })
+    .sort((a, b) => {
+      // Sort by key for deterministic draw order
+      const keyA = `${a.chunkX},${a.chunkZ}`;
+      const keyB = `${b.chunkX},${b.chunkZ}`;
+      return keyA.localeCompare(keyB);
+    });
+  
+  // Render each visible chunk
+  for (let i = 0; i < visibleChunks.length; i++) {
+    const chunk = visibleChunks[i];
+    // chunk._webglMesh is the WebGL mesh object created by createChunkMeshFromData
+    renderChunk(gl, chunk._webglMesh, null, viewMatrix, projectionMatrix, wireframe, debugMode);
+    incrementDrawCalls(1);
+  }
+  
+  if (DEBUG && visibleChunks.length > 0) {
+    console.log(`[Renderer] Chunks: ${chunks.length} total, ${visibleChunks.length} visible (${chunks.length - visibleChunks.length} culled)`);
   }
 }
 
