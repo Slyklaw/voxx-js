@@ -1,6 +1,6 @@
 # Milestones
 
-## v1.0 WebGL2 Refactor (Shipped: 2026-03-18)
+## v1.0 WebGL2 Refactor (Shipped: 2026-03-17)
 
 **Phases completed:** 5 phases, 6 plans
 
@@ -36,23 +36,22 @@
 
 ---
 
+## v1.2 Texture Atlas (Shipped: 2026-03-19)
 
-## v1.1 Block Editing (Shipped: 2026-03-18)
-
-**Phases completed:** 6 phases, 9 plans, 3 tasks
-
-**Key accomplishments:**
-- (none recorded)
-
----
-
-
-## v1.1 Block Editing (Shipped: 2026-03-18)
-
-**Phases completed:** 6 phases, 9 plans, 3 tasks
+**Phases completed:** 3 phases (9, 9.5, 10), 3 plans
 
 **Key accomplishments:**
-- (none recorded)
+- Implemented full texture pipeline (vertex format, shaders, UV generation)
+- All 5 block types render with correct atlas textures
+- UV wrapping and X-face rotation for Minecraft-style orientation
+- Debug logging for pipeline verification
+
+**Shipped Features:**
+- Texture atlas (1024x512, 16x16 tiles) with 5 block types
+- Vertex format extended to 14 floats with UV at offset 36
+- Fragment shader texture sampling with wrapping
+- Atlas positions defined for Stone, Dirt, Grass, Water, Snow
+
+**Archive:** `.planning/milestones/v1.2-ROADMAP.md`
 
 ---
-
