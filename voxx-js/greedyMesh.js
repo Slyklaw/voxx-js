@@ -1,6 +1,6 @@
 import { BLOCKS, BLOCK_TYPES, getBlockColor } from './blocks.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
-import { DEBUG } from './config.js';
+import { DEBUG, ATLAS_CONFIG } from './config.js';
 
 /**
  * Generate mesh data using greedy meshing algorithm
@@ -100,14 +100,10 @@ export function generateMeshData(chunk, getVoxelFn, chunkX, chunkZ) {
                 atlasY = block.atlasPos.sides[1];
               }
 
-              const ATLAS_WIDTH = 1024;
-              const ATLAS_HEIGHT = 512;
-              const TILE_SIZE = 16;
-
-              tileU0 = atlasX / ATLAS_WIDTH;
-              tileV0 = atlasY / ATLAS_HEIGHT;
-              tileU1 = (atlasX + TILE_SIZE) / ATLAS_WIDTH;
-              tileV1 = (atlasY + TILE_SIZE) / ATLAS_HEIGHT;
+              tileU0 = atlasX / ATLAS_CONFIG.ATLAS_WIDTH;
+              tileV0 = atlasY / ATLAS_CONFIG.ATLAS_HEIGHT;
+              tileU1 = (atlasX + ATLAS_CONFIG.TILE_SIZE) / ATLAS_CONFIG.ATLAS_WIDTH;
+              tileV1 = (atlasY + ATLAS_CONFIG.TILE_SIZE) / ATLAS_CONFIG.ATLAS_HEIGHT;
 
               const tileSpanU = tileU1 - tileU0;
               const tileSpanV = tileV1 - tileV0;
