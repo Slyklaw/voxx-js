@@ -1,3 +1,5 @@
+import { DEBUG } from './config.js';
+
 // Block type constants for easy reference
 export const BLOCK_TYPES = {
   AIR: 0,
@@ -25,6 +27,8 @@ export const BLOCKS = [
   { type: 'SNOW', color: [255, 255, 255, 255], atlasPos: { top: [496, 16], sides: [496, 16], bottom: [496, 16] } },
 ];
 
+export const BLOCK_TYPES_COUNT = BLOCKS.length;
+
 // Block names for UI display
 export const BLOCK_NAMES = {
   [BLOCK_TYPES.AIR]: 'Air',
@@ -36,11 +40,23 @@ export const BLOCK_NAMES = {
 };
 
 /**
+ * Debug assertion for valid block type
+ * @param {number} blockType - Block type ID
+ * @param {string} operation - Name of the operation being performed
+ */
+function assertValidBlockType(blockType, operation) {
+  if (DEBUG && (blockType < 0 || blockType >= BLOCK_TYPES_COUNT)) {
+    console.error(`[Blocks] Invalid block type ${blockType} in ${operation}`);
+  }
+}
+
+/**
  * Get block color as RGB values (0-1 range)
  * @param {number} blockType - Block type ID
  * @returns {Object} RGB color object
  */
 export function getBlockColor(blockType) {
+  assertValidBlockType(blockType, 'getBlockColor');
   const block = BLOCKS[blockType];
   if (!block) return { r: 0, g: 0, b: 0 };
   
@@ -57,6 +73,7 @@ export function getBlockColor(blockType) {
  * @returns {boolean} True if block is solid
  */
 export function isBlockSolid(blockType) {
+  assertValidBlockType(blockType, 'isBlockSolid');
   return blockType !== BLOCK_TYPES.AIR;
 }
 
@@ -66,6 +83,7 @@ export function isBlockSolid(blockType) {
  * @returns {boolean} True if block is transparent
  */
 export function isBlockTransparent(blockType) {
+  assertValidBlockType(blockType, 'isBlockTransparent');
   return blockType === BLOCK_TYPES.AIR || blockType === BLOCK_TYPES.WATER;
 }
 

@@ -203,7 +203,11 @@ function setupControls() {
     const sensitivity = 0.002;
     cameraRotation.y -= event.movementX * sensitivity;
     cameraRotation.x -= event.movementY * sensitivity;
-    cameraRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotation.x));
+    const clampedPitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotation.x));
+    if (clampedPitch !== cameraRotation.x) {
+      cameraRotation.x = clampedPitch;
+      if (DEBUG) console.log('[Camera] Pitch clamped to bounds');
+    }
   });
 
   document.addEventListener('keydown', (event) => {
@@ -354,6 +358,23 @@ function updateMovement(deltaTime) {
   if (keys['ShiftLeft'] || keys['ShiftRight']) {
     cameraPosition.y -= speed;
   }
+
+  const MIN_POS = -10000;
+  const MAX_POS = 10000;
+  let clamped = false;
+  if (cameraPosition.x < MIN_POS || cameraPosition.x > MAX_POS) {
+    cameraPosition.x = Math.max(MIN_POS, Math.min(MAX_POS, cameraPosition.x));
+    clamped = true;
+  }
+  if (cameraPosition.y < MIN_POS || cameraPosition.y > MAX_POS) {
+    cameraPosition.y = Math.max(MIN_POS, Math.min(MAX_POS, cameraPosition.y));
+    clamped = true;
+  }
+  if (cameraPosition.z < MIN_POS || cameraPosition.z > MAX_POS) {
+    cameraPosition.z = Math.max(MIN_POS, Math.min(MAX_POS, cameraPosition.z));
+    clamped = true;
+  }
+  if (clamped && DEBUG) console.log('[Camera] Position clamped to world bounds');
 }
 
 function createViewMatrix() {

@@ -5,6 +5,7 @@ export class WorkerPool {
     this.workers = [];
     this.taskQueue = [];
     this.pendingCallbacks = new Map();
+    this.callbackIdCounter = 0;
     this.initWorkers();
   }
 
@@ -65,7 +66,7 @@ export class WorkerPool {
   }
 
   enqueueTask(message, callback) {
-    const callbackId = performance.now() + Math.random().toString(36).substring(2);
+    const callbackId = ++this.callbackIdCounter;
     this.pendingCallbacks.set(callbackId, callback);
 
     const availableWorker = this.workers.find(w => !w.busy);
