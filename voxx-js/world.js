@@ -7,6 +7,7 @@ import { CHUNK_WIDTH, CHUNK_DEPTH } from './chunkCore.js';
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { BiomeCalculator } from './biomes.js';
 import { WorkerPool } from './workerPool.js';
+import { DEBUG } from './config.js';
 
 // Hot chunk retention configuration
 const HOT_CHUNK_TIME_MS = 30000;  // Chunk is hot if accessed within 30 seconds
@@ -235,7 +236,15 @@ export class World {
 
   getVisibleChunks() {
     // WebGL2: check for meshData (not Three.js chunk.mesh)
-    const visible = Object.values(this.chunks).filter(chunk => chunk.meshData && chunk.meshReady);
+    const allChunks = Object.values(this.chunks);
+    const visible = allChunks.filter(chunk => chunk.meshData && chunk.meshReady);
+    
+    // Debug logging
+    if (DEBUG && visible.length > 0 && visible.length !== this._lastVisibleCount) {
+      console.log(`[World] getVisibleChunks: ${visible.length}/${allChunks.length} chunks ready`);
+      this._lastVisibleCount = visible.length;
+    }
+    
     // Track access for hot chunk retention
     for (const chunk of visible) {
       this.updateChunkAccess(`${chunk.chunkX},${chunk.chunkZ}`);
