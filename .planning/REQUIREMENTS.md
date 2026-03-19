@@ -9,8 +9,8 @@ Requirements for initial quality enhancement release. Each maps to roadmap phase
 
 ### UI
 
-- [ ] **UI-01**: Compass displays cardinal directions (N, S, E, W) and player facing direction
-- [ ] **UI-02**: Clock displays day/night cycle progress with visual indicator
+- [x] **UI-01**: Compass displays cardinal directions (N, S, E, W) and player facing direction
+- [x] **UI-02**: Clock displays day/night cycle progress with visual indicator
 
 ### Performance
 
@@ -64,8 +64,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
+| UI-01 | Phase 1 | ✅ Complete |
+| UI-02 | Phase 1 | ✅ Complete |
 | PERF-01 | Phase 2 | Pending |
 | PERF-02 | Phase 2 | Pending |
 | REFA-01 | Phase 3 | Pending |
