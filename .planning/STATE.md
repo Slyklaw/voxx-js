@@ -12,10 +12,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-18)
 ## Current Position
 
 **Phase:** 2 - Deduplication
-**Status:** Complete (2026-03-18)
+**Status:** Milestone complete
 **Progress:** 6/15 requirements complete
 
-**Current Plan:** 02-deduplication — Complete
+**Current Plan:** Not started
 
 ## Performance Metrics
 
