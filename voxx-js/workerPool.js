@@ -29,39 +29,8 @@ export class WorkerPool {
   }
 
   _startStagedDispatch() {
-    // Use setTimeout for reliable cross-browser dispatch
-    const scheduleNext = () => {
-      setTimeout(() => this._processDispatchQueue(), 0);
-    };
-
-    this._processDispatchQueue = () => {
-      if (this.dispatchQueue.length === 0) return;
-      
-      console.log('[WorkerPool] Processing dispatch queue, length:', this.dispatchQueue.length);
-      const now = performance.now();
-      let dispatched = 0;
-      
-      // Dispatch up to maxDispatchesPerFrame, respecting frame budget
-      while (this.dispatchQueue.length > 0 && dispatched < this.maxDispatchesPerFrame) {
-        const elapsed = performance.now() - now;
-        if (elapsed >= this.dispatchBudgetMs) break; // Respect frame budget
-        
-        const item = this.dispatchQueue.shift();
-        if (item.callback) {
-          console.log('[WorkerPool] Calling callback for chunk');
-          item.callback(item.chunkData);
-        }
-        dispatched++;
-      }
-      
-      // Schedule next batch if more items waiting
-      if (this.dispatchQueue.length > 0) {
-        scheduleNext();
-      }
-    };
-    
-    // Initial schedule check
-    scheduleNext();
+    // Direct dispatch - call callback immediately when chunk is ready
+    // This bypasses the complex staged dispatch that was causing issues
   }
 
   handleWorkerResponse(worker, event) {
@@ -76,22 +45,11 @@ export class WorkerPool {
 
     if (event.data.type === 'chunkGenerated') {
       const { chunkData, callbackId } = event.data;
-      console.log('[WorkerPool] Received chunkGenerated, queue length:', this.dispatchQueue.length);
-      // Immediately resolve the pending callback with staged queue
-      // The actual dispatch happens in _processDispatchQueue
+      // Directly call the callback with the chunk data
       const callback = this.pendingCallbacks.get(callbackId);
       if (callback) {
-        console.log('[WorkerPool] Dispatching to queue');
-        // Wrap callback to go through staged dispatch
-        this.dispatchQueue.push({
-          chunkData,
-          callback,
-          callbackId,
-          priority: 0
-        });
+        callback(chunkData);
         this.pendingCallbacks.delete(callbackId);
-      } else {
-        console.log('[WorkerPool] No callback found for callbackId:', callbackId);
       }
     } else if (event.data.type === 'error') {
       console.error('[WorkerPool] Worker error:', event.data.error);
