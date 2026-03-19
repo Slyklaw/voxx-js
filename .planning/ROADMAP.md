@@ -41,7 +41,11 @@ Plans:
    2. User observes reduced stuttering during chunk loading
    3. User can verify memory usage is lower over extended play sessions (via browser dev tools)
    4. User sees fewer draw calls reported in debug mode (if enabled)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Optimize rendering pipeline with frustum culling and draw call reduction
+- [ ] 02-02-PLAN.md — Reduce memory footprint through buffer pooling and proper cleanup
 
 ### Phase 3: Code Quality & Testing
 **Goal**: Maintainable codebase with basic test coverage
@@ -62,5 +66,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. UI Fixes | 1/1 | ✅ Complete | 2026-03-19 |
-| 2. Performance Optimization | 0/TBD | Not started | - |
+| 2. Performance Optimization | 0/2 | Not started | - |
 | 3. Code Quality & Testing | 0/TBD | Not started | - |
