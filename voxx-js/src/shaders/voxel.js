@@ -79,7 +79,8 @@ void main() {
     wrappedTileUnits = mix(wrappedTileUnits, vec2(0.999), isNearZero * isLargeUnit);
     
     // Compute atlas UV using tile base and wrapped position
-    vec2 atlasUV = vTileBase + wrappedTileUnits * uTileSpan;
+    // Flip V within tile to correct upside-down textures
+    vec2 atlasUV = vTileBase + vec2(wrappedTileUnits.x * uTileSpan.x, (1.0 - wrappedTileUnits.y) * uTileSpan.y);
     
     vec4 texColor = texture(uTextureAtlas, atlasUV);
     baseColor = texColor.rgb;
