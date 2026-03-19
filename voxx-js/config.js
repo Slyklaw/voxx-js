@@ -19,6 +19,12 @@ export const LIGHTING_CONFIG = {
   FILL_LIGHT_POSITION: { x: -50, y: 50, z: -50 }
 };
 
+// Lighting defaults for voxel shader
+export const LIGHTING_DEFAULTS = {
+  AMBIENT: 0.6,
+  DIFFUSE: 0.4
+};
+
 // Player configuration
 export const PLAYER_CONFIG = {
   MOVE_SPEED: 20,

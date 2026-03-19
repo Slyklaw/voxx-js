@@ -4,7 +4,7 @@ import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFA
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
-import { DEBUG } from '../../config.js';
+import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG } from '../../config.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -178,11 +178,11 @@ export function initRenderer(gl) {
 
   gl.useProgram(voxelProgram);
   gl.uniform3fv(voxelUniforms.uLightDirection, DEFAULT_LIGHT_DIRECTION);
-  gl.uniform1f(voxelUniforms.uAmbient, 0.6);
-  gl.uniform1f(voxelUniforms.uDiffuse, 0.4);
+  gl.uniform1f(voxelUniforms.uAmbient, LIGHTING_DEFAULTS.AMBIENT);
+  gl.uniform1f(voxelUniforms.uDiffuse, LIGHTING_DEFAULTS.DIFFUSE);
   gl.uniform1i(voxelUniforms.uDebugMode, 0);  // Show textures
-  // Set tile span (16 pixels / 1024 atlas width = 0.015625)
-  gl.uniform2f(voxelUniforms.uTileSpan, 16/1024, 16/512);
+  // Set tile span using atlas config
+  gl.uniform2f(voxelUniforms.uTileSpan, ATLAS_CONFIG.UV_SCALE_U, ATLAS_CONFIG.UV_SCALE_V);
   gl.useProgram(null);
 
   cameraUBO = createCameraUBO(gl);
