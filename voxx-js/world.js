@@ -8,11 +8,30 @@ import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/
 import { BiomeCalculator } from './biomes.js';
 import { WorkerPool } from './workerPool.js';
 
+// Hot chunk retention configuration
+const HOT_CHUNK_TIME_MS = 30000;  // Chunk is hot if accessed within 30 seconds
+const HOT_CHUNK_MIN_ACCESS = 10;   // Chunk is hot if accessed 10+ times
+
 export class World {
   constructor(noiseSeed, gl = null) {
     this.chunks = {};
     this.noiseSeed = noiseSeed;
     this._gl = gl; // Store GL context for proper WebGL resource disposal
+
+    // Track pending worker jobs keyed by "x,z"
+    this.pendingChunks = new Map();
+
+    // Worker pool for chunk generation/meshing (reuse existing chunkWorker.js)
+    this.pool = new WorkerPool('./chunkWorker.js');
+
+    // Create noise functions (kept for any main-thread quick tests, not used for generation now)
+    this.heightNoise = createNoise2D(() => noiseSeed);
+    this.biomeNoise = createNoise2D(() => noiseSeed + 1000);
+    this.biomeCalculator = new BiomeCalculator(noiseSeed);
+
+    // Hot chunk retention: track access timestamps and counts
+    this.chunkAccessMap = new Map(); // chunkKey -> { lastAccess: timestamp, accessCount: number }
+  }
 
     // Track pending worker jobs keyed by "x,z"
     this.pendingChunks = new Map();
@@ -167,6 +186,7 @@ export class World {
     }
 
     const chunksToKeep = new Set();
+    const accessOrder = []; // Track access order for eviction priority
 
     // Prioritize loading near-to-far by pushing coordinates into a list with distance sort
     const coords = [];
@@ -182,26 +202,119 @@ export class World {
     for (const c of coords) {
       const key = `${c.x},${c.z}`;
       chunksToKeep.add(key);
+      // Track access for hot chunk retention (chunks we're keeping are "accessed")
+      this.updateChunkAccess(key);
+      accessOrder.push({ key, d2: c.d2 });
+      
       if (!this.chunks[key]) {
         this.getChunk(c.x, c.z);
       }
     }
 
-    // Unload distant chunks (and ignore any late worker results)
+    // Smart unload: prioritize evicting cold + distant chunks
+    // First pass: collect all unload candidates (not in chunksToKeep and not hot)
+    const unloadCandidates = [];
     for (const key in this.chunks) {
       if (!chunksToKeep.has(key)) {
-        const chunk = this.chunks[key];
-        chunk.dispose(this._gl);
-        delete this.chunks[key];
-        // Mark as not needed. We cannot cancel an in-flight worker easily, but we can ignore late results.
-        // pendingChunks entry will be cleared when the result arrives; leaving it is harmless.
+        if (this.shouldUnloadChunk(key, camChunkX, camChunkZ, renderDistance)) {
+          // Sort by distance from player (furthest first), but hot chunks are already excluded
+          const parts = key.split(',');
+          const chunkX = parseInt(parts[0]);
+          const chunkZ = parseInt(parts[1]);
+          const dx = chunkX - camChunkX;
+          const dz = chunkZ - camChunkZ;
+          unloadCandidates.push({ key, d2: dx * dx + dz * dz });
+        }
       }
     }
+    
+    // Sort unload candidates by distance (furthest first)
+    unloadCandidates.sort((a, b) => b.d2 - a.d2);
+
+    // Unload the distant/cold chunks
+    for (const candidate of unloadCandidates) {
+      const chunk = this.chunks[candidate.key];
+      if (chunk) {
+        chunk.dispose(this._gl);
+        delete this.chunks[candidate.key];
+        this.pendingChunks.delete(candidate.key);
+      }
+    }
+
+    // Clean up access map entries for unloaded chunks
+    this.cleanupAccessMap();
   }
 
   getVisibleChunks() {
     // WebGL2: check for meshData (not Three.js chunk.mesh)
-    return Object.values(this.chunks).filter(chunk => chunk.meshData && chunk.meshReady);
+    const visible = Object.values(this.chunks).filter(chunk => chunk.meshData && chunk.meshReady);
+    // Track access for hot chunk retention
+    for (const chunk of visible) {
+      this.updateChunkAccess(`${chunk.chunkX},${chunk.chunkZ}`);
+    }
+    return visible;
+  }
+
+  /**
+   * Update the access record for a chunk (called when chunk is rendered or accessed).
+   * @param {string} chunkKey - The chunk key (e.g., "0,-1")
+   */
+  updateChunkAccess(chunkKey) {
+    const now = performance.now();
+    let record = this.chunkAccessMap.get(chunkKey);
+    if (!record) {
+      record = { lastAccess: now, accessCount: 0 };
+      this.chunkAccessMap.set(chunkKey, record);
+    }
+    record.lastAccess = now;
+    record.accessCount++;
+  }
+
+  /**
+   * Check if a chunk is "hot" (frequently used, should be retained).
+   * A chunk is hot if accessed within HOT_CHUNK_TIME_MS OR accessCount >= HOT_CHUNK_MIN_ACCESS.
+   */
+  isHotChunk(chunkKey) {
+    const record = this.chunkAccessMap.get(chunkKey);
+    if (!record) return false;
+    
+    const now = performance.now();
+    const timeSinceAccess = now - record.lastAccess;
+    return timeSinceAccess < HOT_CHUNK_TIME_MS || record.accessCount >= HOT_CHUNK_MIN_ACCESS;
+  }
+
+  /**
+   * Determine if a chunk should be unloaded (not hot and distant).
+   * @param {string} chunkKey - The chunk key to check
+   * @param {number} camChunkX - Camera chunk X
+   * @param {number} camChunkZ - Camera chunk Z
+   * @param {number} renderDistance - Current render distance
+   */
+  shouldUnloadChunk(chunkKey, camChunkX, camChunkZ, renderDistance) {
+    // Never unload hot chunks
+    if (this.isHotChunk(chunkKey)) return false;
+    
+    // Parse chunk coordinates
+    const parts = chunkKey.split(',');
+    const chunkX = parseInt(parts[0]);
+    const chunkZ = parseInt(parts[1]);
+    
+    const dx = Math.abs(chunkX - camChunkX);
+    const dz = Math.abs(chunkZ - camChunkZ);
+    
+    // Unload if beyond render distance
+    return dx > renderDistance || dz > renderDistance;
+  }
+
+  /**
+   * Clean up old entries from the access map (no longer existing chunks).
+   */
+  cleanupAccessMap() {
+    for (const key of this.chunkAccessMap.keys()) {
+      if (!this.chunks[key]) {
+        this.chunkAccessMap.delete(key);
+      }
+    }
   }
 
   dispose(gl = null) {
