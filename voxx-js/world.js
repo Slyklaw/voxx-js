@@ -73,8 +73,18 @@ export class World {
           
           this.pendingChunks.delete(key);
         };
+        
         this.pendingChunks.set(key, true);
-        this.pool.enqueueTask(payload, onComplete);
+        
+        // Calculate priority based on distance to player (lower = higher priority)
+        // Stored in _playerChunkX/_playerChunkZ, updated in world.update()
+        const playerX = this._playerChunkX || 0;
+        const playerZ = this._playerChunkZ || 0;
+        const dx = chunkX - playerX;
+        const dz = chunkZ - playerZ;
+        const priority = dx * dx + dz * dz; // Squared distance as priority
+        
+        this.pool.enqueueTask(payload, onComplete, priority);
       }
       return chunk;
     }
@@ -146,6 +156,15 @@ export class World {
   update(cameraPosition, renderDistance = 8) {
     const camChunkX = Math.floor(cameraPosition.x / CHUNK_WIDTH);
     const camChunkZ = Math.floor(cameraPosition.z / CHUNK_DEPTH);
+
+    // Track player chunk position for priority calculations and stale request clearing
+    this._playerChunkX = camChunkX;
+    this._playerChunkZ = camChunkZ;
+
+    // Clear stale worker requests for chunks that are now far away
+    if (this.pool && this.pool.clearStaleRequests) {
+      this.pool.clearStaleRequests(camChunkX, camChunkZ, renderDistance);
+    }
 
     const chunksToKeep = new Set();
 
