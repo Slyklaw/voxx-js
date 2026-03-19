@@ -33,18 +33,6 @@ export class World {
     this.chunkAccessMap = new Map(); // chunkKey -> { lastAccess: timestamp, accessCount: number }
   }
 
-    // Track pending worker jobs keyed by "x,z"
-    this.pendingChunks = new Map();
-
-    // Worker pool for chunk generation/meshing (reuse existing chunkWorker.js)
-    this.pool = new WorkerPool('./chunkWorker.js');
-
-    // Create noise functions (kept for any main-thread quick tests, not used for generation now)
-    this.heightNoise = createNoise2D(() => noiseSeed);
-    this.biomeNoise = createNoise2D(() => noiseSeed + 1000);
-    this.biomeCalculator = new BiomeCalculator(noiseSeed);
-  }
-
   getChunk(chunkX, chunkZ) {
     const key = `${chunkX},${chunkZ}`;
     if (!this.chunks[key]) {
