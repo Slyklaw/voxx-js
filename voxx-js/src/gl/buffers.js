@@ -2,6 +2,117 @@ const FLOAT_SIZE = 4;
 const VERTEX_SIZE = 14; // pos(3) + color(3) + normal(3) + uv(2) + tileBase(2) + triangleVariant(1)
 const STRIDE = VERTEX_SIZE * FLOAT_SIZE;
 
+/**
+ * Buffer pool for reusing WebGL buffer objects to reduce allocation overhead.
+ * Maintains separate pools for VBOs, VAOs, and IBOs with a configurable max size.
+ */
+export class BufferPool {
+  constructor(gl, maxSize = 32) {
+    this.gl = gl;
+    this.maxSize = maxSize;
+    this.availableVBOs = [];
+    this.availableVAOs = [];
+    this.availableIBOs = [];
+    this.availableWireIBOs = [];
+  }
+
+  acquireVBO() {
+    if (this.availableVBOs.length > 0) {
+      return this.availableVBOs.pop();
+    }
+    return this.gl.createBuffer();
+  }
+
+  releaseVBO(vbo) {
+    if (!vbo) return;
+    if (this.availableVBOs.length < this.maxSize) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vbo);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(0), this.gl.STATIC_DRAW);
+      this.availableVBOs.push(vbo);
+    } else {
+      this.gl.deleteBuffer(vbo);
+    }
+  }
+
+  acquireVAO() {
+    if (this.availableVAOs.length > 0) {
+      return this.availableVAOs.pop();
+    }
+    return this.gl.createVertexArray();
+  }
+
+  releaseVAO(vao) {
+    if (!vao) return;
+    if (this.availableVAOs.length < this.maxSize) {
+      this.availableVAOs.push(vao);
+    } else {
+      this.gl.deleteVertexArray(vao);
+    }
+  }
+
+  acquireIBO() {
+    if (this.availableIBOs.length > 0) {
+      return this.availableIBOs.pop();
+    }
+    return this.gl.createBuffer();
+  }
+
+  acquireWireIBO() {
+    if (this.availableWireIBOs.length > 0) {
+      return this.availableWireIBOs.pop();
+    }
+    return this.gl.createBuffer();
+  }
+
+  releaseIBO(ibo) {
+    if (!ibo) return;
+    if (this.availableIBOs.length < this.maxSize) {
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, ibo);
+      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(0), this.gl.STATIC_DRAW);
+      this.availableIBOs.push(ibo);
+    } else {
+      this.gl.deleteBuffer(ibo);
+    }
+  }
+
+  releaseWireIBO(ibo) {
+    if (!ibo) return;
+    if (this.availableWireIBOs.length < this.maxSize) {
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, ibo);
+      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(0), this.gl.STATIC_DRAW);
+      this.availableWireIBOs.push(ibo);
+    } else {
+      this.gl.deleteBuffer(ibo);
+    }
+  }
+
+  dispose() {
+    const gl = this.gl;
+    this.availableVBOs.forEach(vbo => gl.deleteBuffer(vbo));
+    this.availableVAOs.forEach(vao => gl.deleteVertexArray(vao));
+    this.availableIBOs.forEach(ibo => gl.deleteBuffer(ibo));
+    this.availableWireIBOs.forEach(ibo => gl.deleteBuffer(ibo));
+    this.availableVBOs = [];
+    this.availableVAOs = [];
+    this.availableIBOs = [];
+    this.availableWireIBOs = [];
+  }
+}
+
+let _bufferPool = null;
+
+export function initBufferPool(gl, maxSize = 32) {
+  if (_bufferPool) {
+    _bufferPool.dispose();
+  }
+  _bufferPool = new BufferPool(gl, maxSize);
+  return _bufferPool;
+}
+
+export function getBufferPool() {
+  return _bufferPool;
+}
+
 export function createVBO(gl, data, usage = gl.STATIC_DRAW) {
   const vbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -135,7 +246,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
       data[base + 8] = 0;
     }
 
-    // UV coordinates (new)
+    // UV coordinates
     data[base + 9] = uvs[i * 2 + 0] || 0;
     data[base + 10] = uvs[i * 2 + 1] || 0;
     
@@ -143,15 +254,17 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     data[base + 11] = tileBase[i * 2 + 0] || 0;
     data[base + 12] = tileBase[i * 2 + 1] || 0;
     
-    // Triangle variant for debug mode (0.0 or 1.0 to distinguish triangles)
+    // Triangle variant for debug mode
     data[base + 13] = triangleVariant[i] !== undefined ? triangleVariant[i] : 0.0;
   }
 
-  const vbo = gl.createBuffer();
+  // Use buffer pool if available, otherwise fall back to direct creation
+  const pool = getBufferPool();
+  const vbo = pool ? pool.acquireVBO() : gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
-  const vao = gl.createVertexArray();
+  const vao = pool ? pool.acquireVAO() : gl.createVertexArray();
   gl.bindVertexArray(vao);
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 
@@ -180,7 +293,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
   let ibo = null;
   let indexCount = 0;
   if (indices && indices.length > 0) {
-    ibo = gl.createBuffer();
+    ibo = pool ? pool.acquireIBO() : gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
     indexCount = indices.length;
@@ -198,7 +311,7 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
       wireIndices.push(indices[i + 1], indices[i + 2]); // Edge 2
       wireIndices.push(indices[i + 2], indices[i]);     // Edge 3
     }
-    wireIbo = gl.createBuffer();
+    wireIbo = pool ? pool.acquireWireIBO() : gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wireIbo);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(wireIndices), gl.STATIC_DRAW);
     wireIndexCount = wireIndices.length;

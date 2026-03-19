@@ -3,7 +3,7 @@ import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } fro
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
-import { bindChunk, unbindChunk } from './buffers.js';
+import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { DEBUG } from '../../config.js';
 import { Frustum } from './frustum.js';
 
@@ -154,6 +154,10 @@ function initSelection(gl) {
 
 export function initRenderer(gl) {
   if (DEBUG) console.log('[Renderer] Initializing voxel renderer...');
+  
+  // Initialize buffer pool for WebGL resource reuse
+  initBufferPool(gl, 32);
+  if (DEBUG) console.log('[Renderer] Buffer pool initialized');
   voxelProgram = createVoxelProgram(gl);
   if (!voxelProgram) {
     console.error('[Renderer] Failed to create voxel shader program!');
