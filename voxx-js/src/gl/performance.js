@@ -151,7 +151,10 @@ export function resetMetrics() {
   renderTimes = [];
 }
 
+import { DEBUG } from '../../config.js';
+
 export function logPerformance() {
+  if (!DEBUG) return;
   const metrics = getMetrics();
   console.log(`[Performance] FPS: ${metrics.fps} | Est: ${metrics.estimatedFPS} | Frame: ${metrics.frameTime.toFixed(2)}ms | Render: ${metrics.renderTime.toFixed(2)}ms | Avg: ${metrics.averageFrameTime.toFixed(2)}ms`);
 }

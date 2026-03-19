@@ -2,6 +2,7 @@ import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/
 import { ChunkCore, CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
 import { BIOME_CONFIG } from './biomes.js';
 import { getBlockColor, BLOCK_TYPES, BLOCKS } from './blocks.js';
+import { DEBUG } from './config.js';
 
 self.onmessage = function (e) {
   const { chunkX, chunkZ, noiseSeed, callbackId } = e.data;
@@ -27,7 +28,7 @@ self.onmessage = function (e) {
     };
 
     // Debug: Log UV data for first few chunks with water
-    if (meshData.uvs && meshData.uvs.length >= 8) {
+      if (DEBUG && meshData.uvs && meshData.uvs.length >= 8) {
       const uMin = Math.min(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===0));
       const uMax = Math.max(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===0));
       const vMin = Math.min(...meshData.uvs.slice(0,8).filter((_,i)=>i%2===1));

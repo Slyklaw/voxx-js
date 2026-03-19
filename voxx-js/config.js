@@ -1,4 +1,5 @@
-// Rendering configuration
+// Debug configuration
+export const DEBUG = false;
 export const RENDER_CONFIG = {
   FOV: 75,
   NEAR_PLANE: 0.1,

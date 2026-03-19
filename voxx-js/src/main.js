@@ -5,7 +5,7 @@ import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, 
 import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
-import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG } from '../config.js';
+import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
 import { CHUNK_WIDTH, CHUNK_DEPTH } from '../chunk.js';
 import { CHUNK_HEIGHT } from '../chunkCore.js';
 
@@ -184,21 +184,21 @@ function setupControls() {
     const num = parseInt(event.key);
     if (num >= 1 && num <= 9 && isPointerLocked) {
       selectedBlockType = num;
-      console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
+      if (DEBUG) console.log(`[BlockEdit] Key ${event.key} pressed -> selectedBlockType = ${selectedBlockType}`);
       updateBlockSelectionUI();
     }
     
     // Toggle debug colors mode (V key)
     if (event.code === 'KeyV' && isPointerLocked) {
       debugColorsMode = !debugColorsMode;
-      console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+      if (DEBUG) console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
       updateDebugUI();
     }
     
     // Toggle wireframe mode (F key)
     if (event.code === 'KeyF' && isPointerLocked) {
       wireframeMode = !wireframeMode;
-      console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+      if (DEBUG) console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
       updateDebugUI();
     }
   });
@@ -217,7 +217,7 @@ function setupControls() {
       selectedBlockType = ((selectedBlockType - 2 + blockCount) % blockCount) + 1;
     }
     
-    console.log(`[BlockEdit] Wheel -> selectedBlockType = ${selectedBlockType}`);
+    if (DEBUG) console.log(`[BlockEdit] Wheel -> selectedBlockType = ${selectedBlockType}`);
     updateBlockSelectionUI();
   });
 
@@ -228,7 +228,7 @@ function setupControls() {
   // Block editing mouse events
   document.addEventListener('mousedown', (event) => {
     if (!isPointerLocked) return;
-    console.log(`[BlockEdit] mousedown: button=${event.button}, target=${targetedBlock ? `(${targetedBlock.x},${targetedBlock.y},${targetedBlock.z})` : 'none'}`);
+    if (DEBUG) console.log(`[BlockEdit] mousedown: button=${event.button}, target=${targetedBlock ? `(${targetedBlock.x},${targetedBlock.y},${targetedBlock.z})` : 'none'}`);
     
     if (event.button === 0) {
       // Left click - break block
@@ -267,14 +267,14 @@ function setupControls() {
   // Wireframe toggle from UI
   document.getElementById('wireframe-toggle')?.addEventListener('change', (e) => {
     wireframeMode = e.target.checked;
-    console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+    if (DEBUG) console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
     updateDebugUI();
   });
 
   // Debug colors toggle from UI
   document.getElementById('debug-toggle')?.addEventListener('change', (e) => {
     debugColorsMode = e.target.checked;
-    console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+    if (DEBUG) console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
     updateDebugUI();
   });
 }
@@ -519,12 +519,12 @@ function updateTargetedBlock() {
   
   if (result.hit) {
     if (!targetedBlock || targetedBlock.x !== result.x || targetedBlock.y !== result.y || targetedBlock.z !== result.z) {
-      console.log(`[BlockEdit] Target: ${result.x},${result.y},${result.z} (type=${result.voxel})`);
+      if (DEBUG) console.log(`[BlockEdit] Target: ${result.x},${result.y},${result.z} (type=${result.voxel})`);
     }
     targetedBlock = result;
   } else {
     if (targetedBlock) {
-      console.log('[BlockEdit] Target lost');
+      if (DEBUG) console.log('[BlockEdit] Target lost');
     }
     targetedBlock = null;
   }
@@ -533,7 +533,7 @@ function updateTargetedBlock() {
 // Destroy block at targeted position
 function destroyBlock() {
   if (!targetedBlock || !targetedBlock.hit) {
-    console.log('[BlockEdit] destroyBlock: no target');
+    if (DEBUG) console.log('[BlockEdit] destroyBlock: no target');
     return;
   }
   
@@ -557,14 +557,14 @@ function destroyBlock() {
     markNeighborChunksForUpdate(targetedBlock.chunkX, targetedBlock.chunkZ, 
                                   targetedBlock.localX, targetedBlock.localY, targetedBlock.localZ);
     
-    console.log(`[BlockEdit] Destroyed block at ${targetedBlock.x},${targetedBlock.y},${targetedBlock.z}`);
+    if (DEBUG) console.log(`[BlockEdit] Destroyed block at ${targetedBlock.x},${targetedBlock.y},${targetedBlock.z}`);
   }
 }
 
 // Place block at targeted position
 function placeBlock() {
   if (!targetedBlock || !targetedBlock.hit) {
-    console.log('[BlockEdit] placeBlock: no target');
+    if (DEBUG) console.log('[BlockEdit] placeBlock: no target');
     return;
   }
   
@@ -601,9 +601,9 @@ function placeBlock() {
         // Mark neighbor chunks for update if block is on boundary
         markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
         
-        console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
+        if (DEBUG) console.log(`[BlockEdit] Placed block type ${selectedBlockType} at ${placeX},${placeY},${placeZ}`);
       } else {
-        console.log('[BlockEdit] placeBlock: position occupied');
+        if (DEBUG) console.log('[BlockEdit] placeBlock: position occupied');
       }
     }
   }
@@ -636,7 +636,7 @@ function markNeighborChunksForUpdate(chunkX, chunkZ, localX, localY, localZ) {
     if (neighborChunk && neighborChunk.hasVoxelData) {
       neighborChunk.meshData = neighborChunk.generateMeshData();
       neighborChunk.needsUpdate = true;
-      console.log(`[BlockEdit] Marked neighbor chunk ${n.x},${n.z} for update`);
+      if (DEBUG) console.log(`[BlockEdit] Marked neighbor chunk ${n.x},${n.z} for update`);
     }
   }
 }
@@ -658,7 +658,7 @@ function syncChunkToWebGL(chunk) {
     if (webglMesh) {
       chunk._webglMesh = webglMesh;
       chunkMeshes.set(key, webglMesh);
-      console.log(`[WebGL2] Created mesh for chunk ${key}: ${webglMesh.vertexCount} vertices`);
+      if (DEBUG) console.log(`[WebGL2] Created mesh for chunk ${key}: ${webglMesh.vertexCount} vertices`);
       
       // Debug: log first few colors from mesh data (commented - spam)
       // if (chunk.meshData.colors && chunk.meshData.colors.length >= 6) {

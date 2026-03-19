@@ -141,12 +141,6 @@ export class World {
     });
   }
 
-  // Main-thread generation retained for reference or debugging; no longer used in normal flow.
-  generateChunk(chunk) {
-    chunk.generate(this.heightNoise, this.biomeNoise);
-    chunk.updateMesh();
-  }
-
   update(cameraPosition, renderDistance = 8) {
     const camChunkX = Math.floor(cameraPosition.x / CHUNK_WIDTH);
     const camChunkZ = Math.floor(cameraPosition.z / CHUNK_DEPTH);

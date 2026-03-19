@@ -2,8 +2,8 @@ import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DI
 import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } from '../shaders/sky.js';
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
-import { bindChunk, unbindChunk, VERTEX_FORMAT } from './buffers.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance } from './performance.js';
+import { DEBUG } from '../../config.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -151,7 +151,7 @@ function initSelection(gl) {
 }
 
 export function initRenderer(gl) {
-  console.log('[Renderer] Initializing voxel renderer...');
+  if (DEBUG) console.log('[Renderer] Initializing voxel renderer...');
   voxelProgram = createVoxelProgram(gl);
   if (!voxelProgram) {
     console.error('[Renderer] Failed to create voxel shader program!');
@@ -159,15 +159,17 @@ export function initRenderer(gl) {
   }
   voxelUniforms = getVoxelUniforms(gl, voxelProgram);
   voxelAttribs = getVoxelAttribs(gl, voxelProgram);
-  console.log('[Renderer] Voxel shader program created');
-  console.log('[Renderer] Attribs:', voxelAttribs);
-  console.log('[Renderer] Uniforms:', {
-    uModelViewProjection: !!voxelUniforms.uModelViewProjection,
-    uModelMatrix: !!voxelUniforms.uModelMatrix,
-    uLightDirection: !!voxelUniforms.uLightDirection,
-    uTextureAtlas: voxelUniforms.uTextureAtlas,
-    uTextureAtlasIsNull: voxelUniforms.uTextureAtlas === null
-  });
+  if (DEBUG) {
+    console.log('[Renderer] Voxel shader program created');
+    console.log('[Renderer] Attribs:', voxelAttribs);
+    console.log('[Renderer] Uniforms:', {
+      uModelViewProjection: !!voxelUniforms.uModelViewProjection,
+      uModelMatrix: !!voxelUniforms.uModelMatrix,
+      uLightDirection: !!voxelUniforms.uLightDirection,
+      uTextureAtlas: voxelUniforms.uTextureAtlas,
+      uTextureAtlasIsNull: voxelUniforms.uTextureAtlas === null
+    });
+  }
 
   gl.useProgram(voxelProgram);
   gl.uniform3fv(voxelUniforms.uLightDirection, DEFAULT_LIGHT_DIRECTION);
@@ -200,7 +202,7 @@ export function initRenderer(gl) {
  * @returns {WebGLTexture|null} The loaded texture or null on failure
  */
 export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
-  console.log(`[Renderer] Loading texture atlas: ${url}`);
+  if (DEBUG) console.log(`[Renderer] Loading texture atlas: ${url}`);
   
   textureAtlas = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
@@ -212,7 +214,7 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
   const image = new Image();
   image.crossOrigin = 'anonymous';
   image.onload = () => {
-    console.log(`[Renderer] Texture image loaded: ${image.width}x${image.height}`);
+    if (DEBUG) console.log(`[Renderer] Texture image loaded: ${image.width}x${image.height}`);
     gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     
@@ -224,7 +226,7 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
     textureAtlasLoaded = true;
-    console.log(`[Renderer] ✓ Texture atlas loaded and ready: ${image.width}x${image.height}`);
+    if (DEBUG) console.log(`[Renderer] ✓ Texture atlas loaded and ready: ${image.width}x${image.height}`);
   };
   image.onerror = (e) => {
     console.error(`[Renderer] ✗ Failed to load texture atlas: ${url}`, e);
@@ -273,7 +275,7 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
           gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
         }
         // Debug: log on first successful bind
-        if (!renderChunk._loggedTextureBinding) {
+        if (DEBUG && !renderChunk._loggedTextureBinding) {
           console.log(`[Renderer] Texture bound (loaded=${textureAtlasLoaded})`);
           renderChunk._loggedTextureBinding = true;
         }
@@ -444,7 +446,7 @@ export function createMockChunkMesh(gl) {
   const uMax = (stoneAtlasX + TILE) / ATLAS_W;  // 16/1024 = 0.0156
   const vMax = (stoneAtlasY + TILE) / ATLAS_H;  // 16/512 = 0.03125
 
-  console.log(`[TestCube] Stone UVs: [${uMin}, ${vMin}] to [${uMax}, ${vMax}]`);
+  if (DEBUG) console.log(`[TestCube] Stone UVs: [${uMin}, ${vMin}] to [${uMax}, ${vMax}]`);
 
   for (let i = 0; i < vertexCount; i++) {
     const base = i * VERTEX_FORMAT.FLOATS_PER_VERTEX;

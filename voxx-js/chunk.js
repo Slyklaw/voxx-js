@@ -4,7 +4,7 @@
 
 import { getBlockColor, BLOCK_TYPES, BLOCKS, getBlockAtlasPositions } from './blocks.js';
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
-// Three.js removed - src/ uses raw WebGL2
+import { DEBUG } from './config.js';
 // generateMeshData() returns plain arrays compatible with src/gl/buffers.js
 
 // Chunk constants
@@ -19,11 +19,6 @@ export class Chunk {
 
     // Voxel data
     this.voxels = new Uint8Array(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH);
-
-    // Three.js objects
-    this.mesh = null;
-    this.geometry = null;
-    this.material = null;
 
     // Mesh generation state
     this.needsUpdate = true;
@@ -310,8 +305,7 @@ export class Chunk {
                   tileU0, tileV0
                 );
 
-                // Debug logging for first few faces
-                if (uvLogCount < UV_LOG_MAX) {
+                if (DEBUG && uvLogCount < UV_LOG_MAX) {
                   const blockName = Object.keys(BLOCK_TYPES).find(k => BLOCK_TYPES[k] === blockIndex) || 'UNKNOWN';
                   const faceDir = normal[1] > 0 ? 'top' : (normal[1] < 0 ? 'bottom' : 'side');
                   console.log(`[Texture] ${blockName} ${faceDir}: atlas=[${atlasX},${atlasY}], size=${w}x${h}, UV=[${scaledU0.toFixed(4)},${scaledV0.toFixed(4)}]-[${scaledU1.toFixed(4)},${scaledV1.toFixed(4)}]`);
