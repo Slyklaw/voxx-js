@@ -21,10 +21,10 @@ Requirements for tech debt cleanup. Each maps to roadmap phases.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Fix block selection mismatch — mousewheel uses count=5 but keys 1-9 work
-- [ ] **BUG-02**: Connect render distance UI buttons to actual render distance parameter
-- [ ] **BUG-03**: Implement WebGL context loss/restore handler in `context.js`
-- [ ] **BUG-04**: Fix block selector UI to update with scroll changes
+- [x] **BUG-01**: Fix block selection mismatch — mousewheel uses count=5 but keys 1-9 work
+- [x] **BUG-02**: Connect render distance UI buttons to actual render distance parameter
+- [x] **BUG-03**: Implement WebGL context loss/restore handler in `context.js`
+- [x] **BUG-04**: Fix block selector UI to update with scroll changes
 
 ### Performance
 
@@ -72,10 +72,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLEAN-04 | Phase 1 | Complete |
 | DEDUP-01 | Phase 2 | Complete |
 | DEDUP-02 | Phase 2 | Complete |
-| BUG-01 | Phase 3 | Pending |
-| BUG-02 | Phase 3 | Pending |
-| BUG-03 | Phase 3 | Pending |
-| BUG-04 | Phase 3 | Pending |
+| BUG-01 | Phase 3 | Complete |
+| BUG-02 | Phase 3 | Complete |
+| BUG-03 | Phase 3 | Complete |
+| BUG-04 | Phase 3 | Complete |
 | PERF-01 | Phase 4 | Pending |
 | PERF-02 | Phase 4 | Pending |
 | PERF-03 | Phase 4 | Pending |
@@ -84,8 +84,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 15
-- Unmapped: 0 ✓
+- Complete: 10
+- Pending: 5 (PERF-01, PERF-02, PERF-03, VAL-01, VAL-02)
 
 ---
 *Requirements defined: 2026-03-18*
