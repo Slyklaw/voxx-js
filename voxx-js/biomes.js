@@ -1,6 +1,6 @@
 import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
 import { BLOCK_TYPES } from './blocks.js';
-import { SUN_CYCLE_CONFIG } from './config.js';
+import { SUN_CYCLE_CONFIG, BIOME_TUNING } from './config.js';
 
 // World configuration constants
 export const SEA_LEVEL = 64; // Adjusted for taller world
@@ -78,27 +78,27 @@ export function generateBiomeHeight(worldX, worldZ, biome, noise) {
 export function getBiomeBlockType(y, surfaceHeight, biome) {
   const depthFromSurface = surfaceHeight - y;
 
-  if (biome.id === 0) { // LOWLAND
-    if (depthFromSurface === 1) {
+    if (biome.id === 0) { // LOWLAND
+    if (depthFromSurface === BIOME_TUNING.LOWLAND_DEPTH_GRASS) {
       return BLOCK_TYPES.GRASS; // GRASS on surface
-    } else if (depthFromSurface <= 4) {
+    } else if (depthFromSurface <= BIOME_TUNING.LOWLAND_DEPTH_DIRT) {
       return BLOCK_TYPES.DIRT; // DIRT layer
     } else {
       return BLOCK_TYPES.STONE; // STONE below
     }
   } else if (biome.id === 1) { // MOUNTAINS
     if (surfaceHeight > SUN_CYCLE_CONFIG.SNOW_LINE_HEIGHT) { // Snow line for high peaks
-      if (depthFromSurface <= 3) {
+      if (depthFromSurface <= BIOME_TUNING.MOUNTAIN_SNOW_DEPTH) {
         return BLOCK_TYPES.SNOW; // SNOW on high peaks
-      } else if (depthFromSurface <= 6) {
+      } else if (depthFromSurface <= BIOME_TUNING.MOUNTAIN_DIRT_DEPTH) {
         return BLOCK_TYPES.DIRT; // DIRT below snow
       } else {
         return BLOCK_TYPES.STONE; // STONE
       }
     } else {
-      if (depthFromSurface === 1) {
+      if (depthFromSurface === BIOME_TUNING.LOWLAND_DEPTH_GRASS) {
         return BLOCK_TYPES.GRASS; // GRASS
-      } else if (depthFromSurface <= 3) {
+      } else if (depthFromSurface <= BIOME_TUNING.MOUNTAIN_SNOW_DEPTH) {
         return BLOCK_TYPES.DIRT; // DIRT (thinner on mountains)
       } else {
         return BLOCK_TYPES.STONE; // STONE
@@ -128,10 +128,10 @@ export class BiomeCalculator {
     // Apply bias to reduce mountain frequency:
     biomeValue = Math.max(-1, Math.min(1, biomeValue - BIOME_CONFIG.MOUNTAIN_BIAS));
 
-    const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
+    const normalizedBiome = (biomeValue + 1) * BIOME_TUNING.NOISE_NORMALIZE_FACTOR; // Convert from [-1,1] to [0,1]
 
     // Determine primary and secondary biomes for blending
-    const biomeIndex = normalizedBiome * (this.biomeList.length - 0.001);
+    const biomeIndex = normalizedBiome * (this.biomeList.length - BIOME_TUNING.BIOME_INDEX_OFFSET);
     const primaryBiomeIdx = Math.floor(biomeIndex);
     const secondaryBiomeIdx = Math.min(primaryBiomeIdx + 1, this.biomeList.length - 1);
     const blendFactor = biomeIndex - primaryBiomeIdx;
