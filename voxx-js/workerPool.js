@@ -1,3 +1,5 @@
+import { WORKER_CONFIG, DEBUG } from './config.js';
+
 export class WorkerPool {
   constructor(workerScript, poolSize = navigator.hardwareConcurrency || 4) {
     this.poolSize = poolSize;
@@ -8,12 +10,13 @@ export class WorkerPool {
     this.callbackIdCounter = 0;
     this.initWorkers();
     
-    // Staged dispatch settings
-    this.maxDispatchesPerFrame = 4; // Max chunks to dispatch per frame
-    this.dispatchBudgetMs = 4; // Max additional frame time to spend dispatching
+    // Staged dispatch settings - use WORKER_CONFIG constants
+    this.maxDispatchesPerFrame = WORKER_CONFIG.MAX_DISPATCHES_PER_FRAME;
+    this.dispatchBudgetMs = WORKER_CONFIG.DISPATCH_BUDGET_MS;
     this.dispatchQueue = []; // Results waiting to be dispatched to main thread
     this.lastDispatchTime = 0;
-    this.frameTimeThreshold = 16; // ~60fps threshold
+    this.frameTimeThreshold = WORKER_CONFIG.FRAME_TIME_THRESHOLD_MS; // ~60fps threshold
+    this.staleRequestMaxDistance = WORKER_CONFIG.STALE_REQUEST_MAX_DISTANCE;
     
     // Start the staged dispatch loop
     this._startStagedDispatch();
@@ -23,8 +26,54 @@ export class WorkerPool {
     for (let i = 0; i < this.poolSize; i++) {
       const worker = new Worker(this.workerScript, { type: 'module' });
       worker.onmessage = (event) => this.handleWorkerResponse(worker, event);
-      worker.onerror = (error) => this.handleWorkerError(worker, error);
-      this.workers.push({ worker, busy: false });
+      worker.onerror = (error) => this.handleWorkerError(worker, i, error);
+      this.workers.push({ worker, busy: false, index: i });
+    }
+  }
+
+  /**
+   * Recreate a worker that has failed
+   * @param {number} workerIndex - Index of the worker to recreate
+   * @returns {boolean} True if recreation successful
+   */
+  recreateWorker(workerIndex) {
+    if (workerIndex < 0 || workerIndex >= this.workers.length) {
+      if (DEBUG) console.error(`[WorkerPool] Invalid worker index: ${workerIndex}`);
+      return false;
+    }
+
+    const oldEntry = this.workers[workerIndex];
+    if (oldEntry.worker) {
+      oldEntry.worker.terminate();
+    }
+
+    try {
+      const newWorker = new Worker(this.workerScript, { type: 'module' });
+      newWorker.onmessage = (event) => this.handleWorkerResponse(newWorker, event);
+      newWorker.onerror = (error) => this.handleWorkerError(newWorker, workerIndex, error);
+      newWorker.onmessageerror = (event) => this.handleWorkerMessageError(newWorker, workerIndex, event);
+      
+      this.workers[workerIndex] = {
+        worker: newWorker,
+        busy: false,
+        index: workerIndex
+      };
+
+      if (DEBUG) console.log(`[WorkerPool] Worker ${workerIndex} recreated successfully`);
+      return true;
+    } catch (err) {
+      if (DEBUG) console.error(`[WorkerPool] Failed to recreate worker ${workerIndex}:`, err);
+      return false;
+    }
+  }
+
+  handleWorkerMessageError(worker, workerIndex, event) {
+    if (DEBUG) {
+      console.error(`[WorkerPool] Worker ${workerIndex} message error:`, event);
+    }
+    const workerEntry = this.workers.find(w => w.worker === worker);
+    if (workerEntry) {
+      workerEntry.busy = false;
     }
   }
 
@@ -46,18 +95,28 @@ export class WorkerPool {
     if (event.data.type === 'chunkGenerated') {
       const { chunkData, callbackId } = event.data;
       // Directly call the callback with the chunk data
-      const callback = this.pendingCallbacks.get(callbackId);
-      if (callback) {
-        callback(chunkData);
+      const callbackInfo = this.pendingCallbacks.get(callbackId);
+      if (callbackInfo) {
+        callbackInfo.callback(chunkData);
         this.pendingCallbacks.delete(callbackId);
       }
     } else if (event.data.type === 'error') {
-      console.error('[WorkerPool] Worker error:', event.data.error);
-      const { callbackId } = event.data;
-      const callback = this.pendingCallbacks.get(callbackId);
-      if (callback) {
-        callback(null); // Call with null to indicate failure
+      const { callbackId, error } = event.data;
+      const callbackInfo = this.pendingCallbacks.get(callbackId);
+      
+      // Try error callback first, then fall back to null callback
+      if (callbackInfo?.errorCallback) {
+        callbackInfo.errorCallback(error, callbackId);
+      } else if (callbackInfo?.callback) {
+        callbackInfo.callback(null); // Call with null to indicate failure
+      }
+      
+      if (callbackInfo) {
         this.pendingCallbacks.delete(callbackId);
+      }
+      
+      if (DEBUG) {
+        console.error(`[WorkerPool] Worker error for callback ${callbackId}:`, error);
       }
     }
   }
@@ -69,11 +128,30 @@ export class WorkerPool {
     return this.taskQueue.shift();
   }
 
-  handleWorkerError(worker, error) {
-    console.error('Worker error:', error);
+  handleWorkerError(worker, workerIndex, error) {
+    // Enhanced error handling with worker context
+    const errorContext = {
+      workerIndex,
+      errorType: error.constructor?.name || 'Error',
+      message: error.message || String(error),
+      timestamp: Date.now()
+    };
+
+    if (DEBUG) {
+      console.error(`[WorkerPool] Worker ${workerIndex} error:`, errorContext);
+    } else {
+      console.error(`[WorkerPool] Worker ${workerIndex} error: ${errorContext.message}`);
+    }
+
     const workerEntry = this.workers.find(w => w.worker === worker);
     if (workerEntry) {
       workerEntry.busy = false;
+    }
+
+    // Attempt to recreate the failed worker
+    const recreated = this.recreateWorker(workerIndex);
+    if (!recreated && DEBUG) {
+      console.error(`[WorkerPool] Could not recreate worker ${workerIndex}`);
     }
   }
 
@@ -88,9 +166,9 @@ export class WorkerPool {
     }
   }
 
-  enqueueTask(message, callback, priority = 0) {
+  enqueueTask(message, callback, priority = 0, errorCallback = null) {
     const callbackId = ++this.callbackIdCounter;
-    this.pendingCallbacks.set(callbackId, callback);
+    this.pendingCallbacks.set(callbackId, { callback, errorCallback });
 
     const availableWorker = this.workers.find(w => !w.busy);
     if (availableWorker) {
@@ -98,22 +176,24 @@ export class WorkerPool {
     } else {
       this.taskQueue.push({ message, callbackId, priority });
     }
+    return callbackId;
   }
 
   /**
    * Check if a chunk generation request is still relevant (player hasn't moved too far).
    * Call this to abort stale loads during fast player movement.
    */
-  isRequestStale(chunkX, chunkZ, playerChunkX, playerChunkZ, maxDistance = 2) {
+  isRequestStale(chunkX, chunkZ, playerChunkX, playerChunkZ, maxDistance = null) {
+    const maxDist = maxDistance ?? this.staleRequestMaxDistance;
     const dx = Math.abs(chunkX - playerChunkX);
     const dz = Math.abs(chunkZ - playerChunkZ);
-    return dx > maxDistance || dz > maxDistance;
+    return dx > maxDist || dz > maxDist;
   }
 
   /**
    * Clear stale requests from the queue based on current player position.
    */
-  clearStaleRequests(playerChunkX, playerChunkZ, maxDistance = 2) {
+  clearStaleRequests(playerChunkX, playerChunkZ, maxDistance = null) {
     const removed = [];
     this.taskQueue = this.taskQueue.filter(task => {
       const { chunkX, chunkZ } = task.message;
@@ -124,6 +204,19 @@ export class WorkerPool {
       return true;
     });
     return removed;
+  }
+
+  /**
+   * Register an error callback for a callbackId to handle failures gracefully
+   * @param {number} callbackId - The callback ID
+   * @param {Function} errorCallback - Called when worker reports an error
+   */
+  setErrorCallback(callbackId, errorCallback) {
+    const callbackInfo = this.pendingCallbacks.get(callbackId);
+    if (callbackInfo) {
+      callbackInfo.errorCallback = errorCallback;
+      this.pendingCallbacks.set(callbackId, callbackInfo);
+    }
   }
 
   /**
