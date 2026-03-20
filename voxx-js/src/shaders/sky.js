@@ -28,9 +28,9 @@ precision highp float;
 in vec3 vPosition;
 
 uniform float uTimeOfDay;
-uniform vec3 uTopStops[5];
-uniform vec3 uBottomStops[5];
-uniform float uStopPositions[5];
+uniform vec3 uTopStops[9];
+uniform vec3 uBottomStops[9];
+uniform float uStopPositions[9];
 
 out vec4 fragColor;
 
@@ -42,15 +42,22 @@ void main() {
   vec3 topColor = uTopStops[0];
   vec3 bottomColor = uBottomStops[0];
   
-  for (int i = 0; i < 4; i++) {
+  // Find the interval and interpolate
+  for (int i = 0; i < 8; i++) {
     float start = uStopPositions[i];
-    float end = uStopPositions[i+1];
-    if (t >= start && t <= end) {
+    float end = uStopPositions[i + 1];
+    if (t >= start && t < end) {
       float factor = (t - start) / (end - start);
-      topColor = mix(uTopStops[i], uTopStops[i+1], factor);
-      bottomColor = mix(uBottomStops[i], uBottomStops[i+1], factor);
+      topColor = mix(uTopStops[i], uTopStops[i + 1], factor);
+      bottomColor = mix(uBottomStops[i], uBottomStops[i + 1], factor);
       break;
     }
+  }
+  
+  // Handle wraparound: if t >= last stop, use last color
+  if (t >= uStopPositions[8]) {
+    topColor = uTopStops[8];
+    bottomColor = uBottomStops[8];
   }
   
   // Apply dithering

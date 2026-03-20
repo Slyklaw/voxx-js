@@ -54,20 +54,30 @@ export const SKY_COLORS = {
 };
 
 // Sky gradient stops for multi-stop interpolation
-export const SKY_STOP_POSITIONS = [0.0, 0.2, 0.5, 0.8, 1.0]; // night, dawn, day, dusk, night
+// Aligned to clock: 8am-8pm is day, 8pm-8am is night
+// Stop positions are hours (0-24)
+export const SKY_STOP_POSITIONS = [0, 6, 8, 10, 12, 14, 18, 20, 24]; // midnight, dawn, day start, morning, noon, afternoon, dusk, night start, midnight
 export const SKY_TOP_COLOR_STOPS = [
-  [0.043, 0.063, 0.149],   // night top
-  [0.4, 0.3, 0.5],         // dawn top (purple)
-  [0.53, 0.81, 0.92],      // day top (sky blue)
-  [0.3, 0.15, 0.4],        // dusk top (dark purple)
-  [0.043, 0.063, 0.149]    // night top again
+  [0.043, 0.063, 0.149],   // 0:00 midnight - night
+  [0.2, 0.15, 0.3],        // 6:00 dawn - purple
+  [0.53, 0.81, 0.92],      // 8:00 day starts - sky blue
+  [0.6, 0.75, 0.95],       // 10:00 morning - light blue
+  [0.53, 0.81, 0.92],      // 12:00 noon - full day blue
+  [0.6, 0.75, 0.95],       // 14:00 afternoon - light blue
+  [0.3, 0.2, 0.4],         // 18:00 dusk - purple
+  [0.043, 0.063, 0.149],   // 20:00 night starts - dark
+  [0.043, 0.063, 0.149]    // 24:00 midnight - night
 ];
 export const SKY_BOTTOM_COLOR_STOPS = [
-  [0.106, 0.153, 0.271],   // night bottom
-  [0.8, 0.4, 0.2],         // dawn bottom (orange)
-  [1.0, 1.0, 1.0],         // day bottom (white)
-  [0.8, 0.3, 0.2],         // dusk bottom (red-orange)
-  [0.106, 0.153, 0.271]    // night bottom again
+  [0.106, 0.153, 0.271],   // 0:00 midnight - night
+  [0.8, 0.4, 0.2],         // 6:00 dawn - orange
+  [1.0, 0.98, 0.9],        // 8:00 day starts - warm white
+  [1.0, 0.98, 0.9],        // 10:00 morning - warm white
+  [1.0, 1.0, 1.0],         // 12:00 noon - white
+  [1.0, 0.98, 0.9],        // 14:00 afternoon - warm white
+  [0.8, 0.3, 0.2],         // 18:00 dusk - red-orange
+  [0.106, 0.153, 0.271],   // 20:00 night starts - dark
+  [0.106, 0.153, 0.271]    // 24:00 midnight - night
 ];
 
 // UI configuration
