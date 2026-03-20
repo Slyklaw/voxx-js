@@ -1,10 +1,10 @@
 import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DIRECTION, DEFAULT_AMBIENT, DEFAULT_DIFFUSE } from '../shaders/voxel.js';
-import { createSkyProgram, getSkyUniforms, getSkyAttribs, getDefaultColors } from '../shaders/sky.js';
+import { createSkyProgram, getSkyUniforms, getSkyAttribs } from '../shaders/sky.js';
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
-import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG } from '../../config.js';
+import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS } from '../../config.js';
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -33,7 +33,7 @@ let currentDebugMode = false;
 
 const SKY_BLUE = [0.53, 0.81, 0.92, 1.0];
 
-const skyColors = getDefaultColors();
+
 
 function createCubeMesh() {
   const positions = [
@@ -112,10 +112,9 @@ function initSky(gl) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
   gl.useProgram(skyProgram);
-  gl.uniform3fv(skyUniforms.uDayTopColor, skyColors.dayTop);
-  gl.uniform3fv(skyUniforms.uDayBottomColor, skyColors.dayBottom);
-  gl.uniform3fv(skyUniforms.uNightTopColor, skyColors.nightTop);
-  gl.uniform3fv(skyUniforms.uNightBottomColor, skyColors.nightBottom);
+  gl.uniform1fv(skyUniforms.uStopPositions, SKY_STOP_POSITIONS);
+  gl.uniform3fv(skyUniforms.uTopStops, SKY_TOP_COLOR_STOPS.flat());
+  gl.uniform3fv(skyUniforms.uBottomStops, SKY_BOTTOM_COLOR_STOPS.flat());
   gl.useProgram(null);
 }
 
