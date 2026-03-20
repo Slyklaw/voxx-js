@@ -53,6 +53,23 @@ export const SKY_COLORS = {
   SUNRISE: 0xffa500 // Orange
 };
 
+// Sky gradient stops for multi-stop interpolation
+export const SKY_STOP_POSITIONS = [0.0, 0.2, 0.5, 0.8, 1.0]; // night, dawn, day, dusk, night
+export const SKY_TOP_COLOR_STOPS = [
+  [0.043, 0.063, 0.149],   // night top
+  [0.4, 0.3, 0.5],         // dawn top (purple)
+  [0.53, 0.81, 0.92],      // day top (sky blue)
+  [0.3, 0.15, 0.4],        // dusk top (dark purple)
+  [0.043, 0.063, 0.149]    // night top again
+];
+export const SKY_BOTTOM_COLOR_STOPS = [
+  [0.106, 0.153, 0.271],   // night bottom
+  [0.8, 0.4, 0.2],         // dawn bottom (orange)
+  [1.0, 1.0, 1.0],         // day bottom (white)
+  [0.8, 0.3, 0.2],         // dusk bottom (red-orange)
+  [0.106, 0.153, 0.271]    // night bottom again
+];
+
 // UI configuration
 export const UI_CONFIG = {
   BIOME_UPDATE_INTERVAL: 0.1, // Update biome display every 100ms

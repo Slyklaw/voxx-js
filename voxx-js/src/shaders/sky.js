@@ -28,18 +28,39 @@ precision highp float;
 in vec3 vPosition;
 
 uniform float uTimeOfDay;
-uniform vec3 uDayTopColor;
-uniform vec3 uDayBottomColor;
-uniform vec3 uNightTopColor;
-uniform vec3 uNightBottomColor;
+uniform vec3 uTopStops[5];
+uniform vec3 uBottomStops[5];
+uniform float uStopPositions[5];
 
 out vec4 fragColor;
 
 void main() {
-  vec3 dayColor = mix(uDayBottomColor, uDayTopColor, max(0.0, vPosition.y * 0.5 + 0.5));
-  vec3 nightColor = mix(uNightBottomColor, uNightTopColor, max(0.0, vPosition.y * 0.5 + 0.5));
+  // Dithering to reduce banding
+  float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   
-  vec3 skyColor = mix(nightColor, dayColor, uTimeOfDay);
+  float t = uTimeOfDay;
+  vec3 topColor = uTopStops[0];
+  vec3 bottomColor = uBottomStops[0];
+  
+  for (int i = 0; i < 4; i++) {
+    float start = uStopPositions[i];
+    float end = uStopPositions[i+1];
+    if (t >= start && t <= end) {
+      float factor = (t - start) / (end - start);
+      topColor = mix(uTopStops[i], uTopStops[i+1], factor);
+      bottomColor = mix(uBottomStops[i], uBottomStops[i+1], factor);
+      break;
+    }
+  }
+  
+  // Apply dithering
+  topColor += (dither - 0.5) * 0.02;
+  bottomColor += (dither - 0.5) * 0.02;
+  
+  // Vertical gradient: mix between bottom and top based on vertical position
+  float verticalFactor = max(0.0, vPosition.y * 0.5 + 0.5);
+  vec3 skyColor = mix(bottomColor, topColor, verticalFactor);
+  
   fragColor = vec4(skyColor, 1.0);
 }`;
 
@@ -53,10 +74,9 @@ export function getSkyUniforms(gl, program) {
     'uViewMatrix',
     'uProjectionMatrix',
     'uTimeOfDay',
-    'uDayTopColor',
-    'uDayBottomColor',
-    'uNightTopColor',
-    'uNightBottomColor'
+    'uTopStops',
+    'uBottomStops',
+    'uStopPositions'
   ]);
 }
 
