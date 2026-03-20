@@ -36,7 +36,7 @@ out vec4 fragColor;
 
 void main() {
   // Dithering to reduce banding
-  float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+  float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453;
   
   float t = uTimeOfDay;
   vec3 topColor = uTopStops[0];

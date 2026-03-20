@@ -882,11 +882,11 @@ function render(currentTime) {
   
   clear(gl, canvas);
 
-  const timeOfDay = (sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) % 1;
-  renderSky(gl, viewMatrix, projectionMatrix, timeOfDay);
+  const timeOfDayHours = (sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) * 24;
+  renderSky(gl, viewMatrix, projectionMatrix, timeOfDayHours);
 
   updateCamera(gl, viewMatrix, projectionMatrix);
-  updateTimeOfDay(gl, sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24);
+  updateTimeOfDay(gl, timeOfDayHours);
 
   const visibleChunks = world.getVisibleChunks();
   
