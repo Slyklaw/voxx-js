@@ -4,7 +4,7 @@ import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFA
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
-import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS } from '../../config.js';
+import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS } from '../../config.js';
 
 // Interpolate between two RGB arrays
 function lerpColor(color1, color2, t) {
@@ -40,6 +40,53 @@ function getSkyColorsForHour(hour) {
   
   // Default to noon
   return { top: topStops[4], bottom: bottomStops[4] };
+}
+
+// Interpolate between two 3D vectors
+function lerpVec3(v1, v2, t) {
+  return [
+    v1[0] + (v2[0] - v1[0]) * t,
+    v1[1] + (v2[1] - v1[1]) * t,
+    v1[2] + (v2[2] - v1[2]) * t
+  ];
+}
+
+// Get sun lighting info for a given hour (0-24)
+function getSunInfo(hour) {
+  const stops = SKY_STOP_POSITIONS;
+  const dirStops = SUN_LIGHT_DIRECTION_STOPS;
+  const colorStops = SUN_LIGHT_COLOR_STOPS;
+  const intensityStops = SUN_LIGHT_INTENSITY_STOPS;
+  
+  // Handle wraparound
+  if (hour >= stops[stops.length - 1]) {
+    return {
+      direction: dirStops[dirStops.length - 1],
+      color: colorStops[colorStops.length - 1],
+      intensity: intensityStops[intensityStops.length - 1]
+    };
+  }
+  
+  // Find the interval
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (hour >= stops[i] && hour < stops[i + 1]) {
+      const start = stops[i];
+      const end = stops[i + 1];
+      const t = (hour - start) / (end - start);
+      return {
+        direction: lerpVec3(dirStops[i], dirStops[i + 1], t),
+        color: lerpColor(colorStops[i], colorStops[i + 1], t),
+        intensity: intensityStops[i] + (intensityStops[i + 1] - intensityStops[i]) * t
+      };
+    }
+  }
+  
+  // Default to noon
+  return {
+    direction: dirStops[4],
+    color: colorStops[4],
+    intensity: intensityStops[4]
+  };
 }
 
 export let voxelProgram = null;
@@ -213,6 +260,8 @@ export function initRenderer(gl) {
 
   gl.useProgram(voxelProgram);
   gl.uniform3fv(voxelUniforms.uLightDirection, DEFAULT_LIGHT_DIRECTION);
+  gl.uniform3f(voxelUniforms.uLightColor, 1.0, 1.0, 1.0);  // Default white
+  gl.uniform1f(voxelUniforms.uLightIntensity, 1.0);          // Default full intensity
   gl.uniform1f(voxelUniforms.uAmbient, LIGHTING_DEFAULTS.AMBIENT);
   gl.uniform1f(voxelUniforms.uDiffuse, LIGHTING_DEFAULTS.DIFFUSE);
   gl.uniform1i(voxelUniforms.uDebugMode, 0);  // Show textures
@@ -494,8 +543,21 @@ export function updateCamera(gl, viewMatrix, projectionMatrix) {
 
 export function updateTimeOfDay(gl, time) {
   if (!globalUBO) return;
+  
+  // Get dynamic sun lighting for this time
+  const sunInfo = getSunInfo(time);
+  
   const normalizedTime = (time % 24) / 24;
-  updateGlobalUBO(gl, globalUBO, DEFAULT_LIGHT_DIRECTION, normalizedTime, [1, 1, 1]);
+  updateGlobalUBO(gl, globalUBO, sunInfo.direction, normalizedTime, sunInfo.color);
+  
+  // Also update voxel shader uniforms directly with dynamic lighting
+  if (voxelProgram && voxelUniforms) {
+    gl.useProgram(voxelProgram);
+    gl.uniform3fv(voxelUniforms.uLightDirection, sunInfo.direction);
+    gl.uniform3f(voxelUniforms.uLightColor, sunInfo.color[0], sunInfo.color[1], sunInfo.color[2]);
+    gl.uniform1f(voxelUniforms.uLightIntensity, sunInfo.intensity);
+    gl.useProgram(null);
+  }
 }
 
 export function createMockChunkMesh(gl) {

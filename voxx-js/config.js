@@ -80,6 +80,44 @@ export const SKY_BOTTOM_COLOR_STOPS = [
   [0.106, 0.153, 0.271]    // 24:00 midnight - night
 ];
 
+// Sun/light configuration - matches sky stop positions
+// Direction: normalized direction vector (pointing toward light source)
+// Color: RGB light color
+// Intensity: multiplier for light strength
+export const SUN_LIGHT_DIRECTION_STOPS = [
+  [0.3, 0.7, 0.3],   // 0:00 midnight - moon from above
+  [1.0, 0.0, 0.0],   // 6:00 dawn - sun at horizon (east)
+  [0.5, 0.5, 0.5],   // 8:00 morning - rising
+  [0.0, 1.0, 0.0],   // 10:00 - high
+  [0.0, 1.0, 0.0],   // 12:00 noon - overhead
+  [0.0, 1.0, 0.0],   // 14:00 afternoon - high
+  [-0.5, 0.5, 0.5],  // 18:00 dusk - setting (west)
+  [0.3, 0.7, 0.3],   // 20:00 night - moon from above
+  [0.3, 0.7, 0.3]    // 24:00 midnight - moon from above
+];
+export const SUN_LIGHT_COLOR_STOPS = [
+  [0.3, 0.3, 0.5],   // 0:00 midnight - blue moonlight
+  [1.0, 0.6, 0.3],   // 6:00 dawn - orange/red sunrise
+  [1.0, 0.95, 0.8],  // 8:00 morning - warm white
+  [1.0, 1.0, 0.95],  // 10:00 - bright warm
+  [1.0, 1.0, 1.0],   // 12:00 noon - white sunlight
+  [1.0, 1.0, 0.95],  // 14:00 afternoon - bright warm
+  [1.0, 0.7, 0.4],   // 18:00 dusk - orange/golden
+  [0.3, 0.3, 0.5],   // 20:00 night - blue moonlight
+  [0.3, 0.3, 0.5]    // 24:00 midnight - blue moonlight
+];
+export const SUN_LIGHT_INTENSITY_STOPS = [
+  0.35,  // 0:00 midnight - dim
+  0.3,   // 6:00 dawn - low
+  0.7,   // 8:00 morning - rising
+  0.9,   // 10:00 - bright
+  1.0,   // 12:00 noon - full
+  0.9,   // 14:00 afternoon - bright
+  0.5,   // 18:00 dusk - dimming
+  0.35,  // 20:00 night - dim
+  0.35   // 24:00 midnight - dim
+];
+
 // UI configuration
 export const UI_CONFIG = {
   BIOME_UPDATE_INTERVAL: 0.1, // Update biome display every 100ms

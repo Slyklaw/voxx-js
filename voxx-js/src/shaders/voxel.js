@@ -42,6 +42,8 @@ in vec2 vTileBase;    // Tile base UV (same for all vertices)
 in float vTriangleVariant;  // 0.0 or 1.0 to distinguish triangles
 
 uniform vec3 uLightDirection;
+uniform vec3 uLightColor;
+uniform float uLightIntensity;
 uniform float uAmbient;
 uniform float uDiffuse;
 uniform sampler2D uTextureAtlas;
@@ -86,7 +88,7 @@ void main() {
     baseColor = texColor.rgb;
   }
   
-  vec3 finalColor = baseColor * (ambient + diffuse);
+  vec3 finalColor = baseColor * (ambient + diffuse * uLightIntensity) * uLightColor;
   fragColor = vec4(finalColor, 1.0);
 }`;
 
@@ -99,6 +101,8 @@ export function getVoxelUniforms(gl, program) {
     'uModelViewProjection',
     'uModelMatrix',
     'uLightDirection',
+    'uLightColor',
+    'uLightIntensity',
     'uAmbient',
     'uDiffuse',
     'uTextureAtlas',

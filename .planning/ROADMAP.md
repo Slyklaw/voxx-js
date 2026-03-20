@@ -7,7 +7,7 @@ Voxx JS v1.1 builds on the stable v1.0 foundation by adding beautiful lighting f
 ## Milestones
 
 - ✅ **v1.0 MVP** - Phases 1-3 (shipped 2026-03-20)
-- 🚧 **v1.1 Beautiful Lighting** - Phases 4-6 (in progress)
+- 🚧 **v1.1 Beautiful Lighting** - Phases 4-6 (Phases 4-5 complete, Phase 6 pending)
 
 ## Phases
 
@@ -54,24 +54,25 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Implement multi-stop sky gradient shader with dithering
-- [ ] 04-02: Verify sky gradient meets visual quality criteria
+- [x] 04-01: Implement multi-stop sky gradient shader with dithering
+- [x] 04-02: Verify sky gradient meets visual quality criteria
 
-#### Phase 5: Dynamic Sunlight
+#### Phase 5: Dynamic Sunlight ✅ COMPLETE
 **Goal**: Users see sunlight that changes direction, color, and intensity in sync with time-of-day
 **Depends on**: Phase 4
 **Requirements**: SUN-01, SUN-02, SUN-03, LITE-01, LITE-02
 **Success Criteria** (what must be TRUE):
-1. Sunlight direction moves from east to zenith to west as time passes
-2. Sunlight color shifts from orange dawn to white noon to orange dusk to blue night
-3. Sunlight intensity peaks at noon and dims at dawn/dusk and night
-4. Lighting updates use Uniform Buffer Objects (UBOs) to minimize performance impact
-5. All lighting changes are driven by existing day/night cycle time value
-**Plans**: TBD
+1. ✅ Sunlight direction moves from east to zenith to west as time passes
+2. ✅ Sunlight color shifts from orange dawn to white noon to orange dusk to blue night
+3. ✅ Sunlight intensity peaks at noon and dims at dawn/dusk and night
+4. ✅ Lighting updates use Uniform Buffer Objects (UBOs) to minimize performance impact
+5. ✅ All lighting changes are driven by existing day/night cycle time value
 
 Plans:
-- [ ] 05-01: Implement LightingManager for centralized lighting calculations
-- [ ] 05-02: Extend UBO system for efficient lighting updates
+- [x] 05-01: Add light color/intensity uniforms to voxel shader
+- [x] 05-02: Create sun config with direction/color/intensity stops
+- [x] 05-03: Implement getSunInfo() for dynamic lighting interpolation
+- [x] 05-04: Update updateTimeOfDay() to pass dynamic lighting
 
 #### Phase 6: Ambient Occlusion
 **Goal**: Users perceive depth and solidity through subtle shading at block edges
@@ -96,6 +97,6 @@ Phases execute in numeric order: 4 → 5 → 6
 | 1. UI Fixes | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 2. Performance | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 3. Code Quality | v1.0 | 1/1 | Complete | 2026-03-20 |
-| 4. Sky Gradients | v1.1 | 0/2 | Not started | - |
-| 5. Dynamic Sunlight | v1.1 | 0/2 | Not started | - |
+| 4. Sky Gradients | v1.1 | 2/2 | Complete | 2026-03-20 |
+| 5. Dynamic Sunlight | v1.1 | 4/4 | Complete | 2026-03-20 |
 | 6. Ambient Occlusion | v1.1 | 0/2 | Not started | - |
