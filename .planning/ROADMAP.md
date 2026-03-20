@@ -51,10 +51,11 @@ Plans:
 1. User sees at least 5 distinct color stops in the sky (night, dawn, day, dusk, night)
 2. Sky colors interpolate smoothly as time progresses (no abrupt changes)
 3. Horizon area shows tinting that blends with sky colors
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 04-01: Implement multi-stop sky gradient shader with dithering
+- [ ] 04-02: Verify sky gradient meets visual quality criteria
 
 #### Phase 5: Dynamic Sunlight
 **Goal**: Users see sunlight that changes direction, color, and intensity in sync with time-of-day
@@ -95,6 +96,6 @@ Phases execute in numeric order: 4 → 5 → 6
 | 1. UI Fixes | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 2. Performance | v1.0 | 2/2 | Complete | 2026-03-20 |
 | 3. Code Quality | v1.0 | 1/1 | Complete | 2026-03-20 |
-| 4. Sky Gradients | v1.1 | 0/1 | Not started | - |
+| 4. Sky Gradients | v1.1 | 0/2 | Not started | - |
 | 5. Dynamic Sunlight | v1.1 | 0/2 | Not started | - |
 | 6. Ambient Occlusion | v1.1 | 0/2 | Not started | - |
