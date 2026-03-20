@@ -9,9 +9,9 @@ Requirements for Beautiful Lighting milestone. Each maps to roadmap phases.
 
 ### Sky Rendering
 
-- [ ] **SKY-01**: Sky gradient displays with at least 5 color stops (night, dawn, day, dusk, night)
-- [ ] **SKY-02**: Sky colors smoothly interpolate based on time-of-day progression
-- [ ] **SKY-03**: Sky gradient includes visible horizon color tinting
+- [x] **SKY-01**: Sky gradient displays with at least 5 color stops (night, dawn, day, dusk, night)
+- [x] **SKY-02**: Sky colors smoothly interpolate based on time-of-day progression
+- [x] **SKY-03**: Sky gradient includes visible horizon color tinting
 
 ### Dynamic Sunlight
 
@@ -61,9 +61,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SKY-01 | Phase 4 | Pending |
-| SKY-02 | Phase 4 | Pending |
-| SKY-03 | Phase 4 | Pending |
+| SKY-01 | Phase 4 | Complete |
+| SKY-02 | Phase 4 | Complete |
+| SKY-03 | Phase 4 | Complete |
 | SUN-01 | Phase 5 | Pending |
 | SUN-02 | Phase 5 | Pending |
 | SUN-03 | Phase 5 | Pending |

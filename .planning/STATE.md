@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 
 ## Current Position
 
-**Milestone:** v1.1 Beautiful Lighting — Phase 4 ready to plan
+**Milestone:** v1.1 Beautiful Lighting — Phase 4 executing
 Phase: 4 of 6 (Sky Gradients)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-20 — Roadmap created for v1.1
+Plan: 2 of 2 in current phase
+Status: Ready to execute
+Last activity: 2026-03-20 — Completed plan 04-01, ready for plan 04-02
 
-Progress: [█████░░░░░] 50% (5/10 plans across all phases)
+Progress: [██████░░░░] 60% (6/10 plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: ~7 min
-- Total execution time: 0.5 hours
+- Total execution time: 0.52 hours
 
 **By Phase:**
 
@@ -49,6 +49,7 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 - Phase 3: No constraints on refactoring approach
 - v1.1: Phases derived from requirements (SKY, SUN, AO, LITE) — no arbitrary grouping
 - v1.1: Phase ordering: Sky Gradients → Dynamic Sunlight → Ambient Occlusion (research-backed risk progression)
+- Phase 4 Plan 1: Implemented multi-stop sky gradient shader with uniform arrays and dithering
 
 ### Pending Todos
 
@@ -65,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Roadmap created for v1.1 Beautiful Lighting
+Stopped at: Completed plan 04-01 (sky gradient shader), ready for plan 04-02 (verification)
 Resume file: None
