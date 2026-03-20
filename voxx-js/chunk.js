@@ -4,7 +4,7 @@
 
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
-import { DEBUG } from './config.js';
+import { DEBUG, BIOME_TUNING } from './config.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
 import { generateMeshData } from './greedyMesh.js';
 // generateMeshData() returns plain arrays compatible with src/gl/buffers.js
@@ -99,10 +99,10 @@ export class Chunk {
 
         // Sample biome noise to determine biome blend
         const biomeValue = biomeNoise(worldX / BIOME_CONFIG.BIOME_SCALE, worldZ / BIOME_CONFIG.BIOME_SCALE);
-        const normalizedBiome = (biomeValue + 1) * 0.5; // Convert from [-1,1] to [0,1]
+        const normalizedBiome = (biomeValue + 1) * BIOME_TUNING.NOISE_NORMALIZE_FACTOR; // Convert from [-1,1] to [0,1]
 
         // Determine primary and secondary biomes for blending
-        const biomeIndex = normalizedBiome * (biomeList.length - 0.001); // Slight offset to avoid edge case
+        const biomeIndex = normalizedBiome * (biomeList.length - BIOME_TUNING.BIOME_INDEX_OFFSET); // Slight offset to avoid edge case
         const primaryBiomeIdx = Math.floor(biomeIndex);
         const secondaryBiomeIdx = Math.min(primaryBiomeIdx + 1, biomeList.length - 1);
         const blendFactor = biomeIndex - primaryBiomeIdx;
