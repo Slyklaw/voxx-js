@@ -9,11 +9,11 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 
 ## Current Position
 
-**Milestone:** v1.0 MVP — ✅ COMPLETE
-Phase: 3 of 3
-Plan: 5 of 5
-Status: ✅ All complete
-Last activity: 2026-03-20 — Milestone v1.0 shipped
+**Milestone:** v1.1 Beautiful Lighting — Planning
+Phase: Not started
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-20 — Starting v1.1
 
 Progress: [██████████] 100% (v1.0 MVP)
 
