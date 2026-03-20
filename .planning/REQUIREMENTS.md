@@ -24,7 +24,7 @@ Requirements for initial quality enhancement release. Each maps to roadmap phase
 
 ### Testing
 
-- [ ] **TEST-01**: Add unit tests for chunk generation and meshing algorithms
+- [x] **TEST-01**: Add unit tests for chunk generation and meshing algorithms
 
 ## v2 Requirements
 
@@ -70,15 +70,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-02 | Phase 2 | ✅ Complete |
 | REFA-01 | Phase 3 | ✅ Complete |
 | REFA-02 | Phase 3 | ✅ Complete |
-| TEST-01 | Phase 3 | Pending |
+| TEST-01 | Phase 3 | ✅ Complete |
 
 **Coverage:**
 - v1 requirements: 7 total
 - Mapped to phases: 7
-- Complete: 6
-- Pending: 1 (TEST-01)
+- Complete: 7
+- Pending: 0
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-20 after Phase 3 Plan 01 completion*
+*Last updated: 2026-03-20 after Phase 3 Plan 02 completion — ALL v1 REQUIREMENTS COMPLETE*
