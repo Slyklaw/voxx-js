@@ -345,6 +345,14 @@ function setupControls() {
   document.getElementById('time-noon')?.addEventListener('click', () => setTimeOfDay(12));
   document.getElementById('time-dusk')?.addEventListener('click', () => setTimeOfDay(18));
   document.getElementById('time-night')?.addEventListener('click', () => setTimeOfDay(20));
+  
+  // Time pause toggle
+  const timePauseBtn = document.getElementById('time-pause');
+  timePauseBtn?.addEventListener('click', () => {
+    timePaused = !timePaused;
+    timePauseBtn.textContent = timePaused ? 'Play' : 'Pause';
+    timePauseBtn.style.backgroundColor = timePaused ? '#4a4' : '';
+  });
 }
 
 // Set time of day (hour: 0-24)
@@ -435,8 +443,18 @@ function createViewMatrix() {
 }
 
 function lookAt(eye, center, up) {
-  const z = normalize([eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]]);
-  const x = normalize(cross(up, z));
+  let z = [eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]];
+  const zLen = Math.sqrt(z[0]*z[0] + z[1]*z[1] + z[2]*z[2]);
+  if (zLen < 0.0001) z = [0, 0, -1]; // Handle looking at self
+  else z = [z[0]/zLen, z[1]/zLen, z[2]/zLen];
+  
+  // Handle gimbal lock: if looking straight up/down, use different up vector
+  let upVec = [...up];
+  if (Math.abs(z[1]) > 0.99) {
+    upVec = [1, 0, 0]; // Use right vector when looking up/down
+  }
+  
+  const x = normalize(cross(upVec, z));
   const y = cross(z, x);
   
   return new Float32Array([
@@ -589,6 +607,7 @@ biomeCalculator = new BiomeCalculator(noiseSeed);
 
 let lastTime = 0;
 let sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8/24);
+let timePaused = false;
 
 // Update targeted block based on camera direction
 function updateTargetedBlock() {
@@ -812,9 +831,12 @@ function render(currentTime) {
   // Update block targeting each frame
   updateTargetedBlock();
 
-  sunCycleTime += deltaTime * SUN_CYCLE_CONFIG.TIME_SCALE;
-  if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
-    sunCycleTime = 0;
+  // Update sun cycle (unless paused)
+  if (!timePaused) {
+    sunCycleTime += deltaTime * SUN_CYCLE_CONFIG.TIME_SCALE;
+    if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
+      sunCycleTime = 0;
+    }
   }
 
   const hours = Math.floor(sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24);

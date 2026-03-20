@@ -28,44 +28,21 @@ precision highp float;
 in vec3 vPosition;
 
 uniform float uTimeOfDay;
-uniform vec3 uTopStops[9];
-uniform vec3 uBottomStops[9];
-uniform float uStopPositions[9];
+uniform vec3 uTopColor;
+uniform vec3 uBottomColor;
 
 out vec4 fragColor;
 
 void main() {
   // Dithering to reduce banding
-  float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453;
-  
-  float t = uTimeOfDay;
-  vec3 topColor = uTopStops[0];
-  vec3 bottomColor = uBottomStops[0];
-  
-  // Find the interval and interpolate
-  for (int i = 0; i < 8; i++) {
-    float start = uStopPositions[i];
-    float end = uStopPositions[i + 1];
-    if (t >= start && t < end) {
-      float factor = (t - start) / (end - start);
-      topColor = mix(uTopStops[i], uTopStops[i + 1], factor);
-      bottomColor = mix(uBottomStops[i], uBottomStops[i + 1], factor);
-      break;
-    }
-  }
-  
-  // Handle wraparound: if t >= last stop, use last color
-  if (t >= uStopPositions[8]) {
-    topColor = uTopStops[8];
-    bottomColor = uBottomStops[8];
-  }
+  float dither = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   
   // Apply dithering
-  topColor += (dither - 0.5) * 0.02;
-  bottomColor += (dither - 0.5) * 0.02;
+  vec3 topColor = uTopColor + (dither - 0.5) * 0.02;
+  vec3 bottomColor = uBottomColor + (dither - 0.5) * 0.02;
   
-  // Vertical gradient: mix between bottom and top based on vertical position
-  float verticalFactor = max(0.0, vPosition.y * 0.5 + 0.5);
+  // Vertical gradient: map y from [-100,100] to [0,1]
+  float verticalFactor = clamp((vPosition.y + 100.0) / 200.0, 0.0, 1.0);
   vec3 skyColor = mix(bottomColor, topColor, verticalFactor);
   
   fragColor = vec4(skyColor, 1.0);
@@ -81,9 +58,8 @@ export function getSkyUniforms(gl, program) {
     'uViewMatrix',
     'uProjectionMatrix',
     'uTimeOfDay',
-    'uTopStops',
-    'uBottomStops',
-    'uStopPositions'
+    'uTopColor',
+    'uBottomColor'
   ]);
 }
 

@@ -60,10 +60,10 @@ export const SKY_STOP_POSITIONS = [0, 6, 8, 10, 12, 14, 18, 20, 24]; // midnight
 export const SKY_TOP_COLOR_STOPS = [
   [0.043, 0.063, 0.149],   // 0:00 midnight - night
   [0.2, 0.15, 0.3],        // 6:00 dawn - purple
-  [0.53, 0.81, 0.92],      // 8:00 day starts - sky blue
-  [0.6, 0.75, 0.95],       // 10:00 morning - light blue
-  [0.53, 0.81, 0.92],      // 12:00 noon - full day blue
-  [0.6, 0.75, 0.95],       // 14:00 afternoon - light blue
+  [0.25, 0.5, 1.0],        // 8:00 day starts - sky blue
+  [0.3, 0.55, 1.0],        // 10:00 morning - light blue
+  [0.25, 0.5, 1.0],        // 12:00 noon - full day blue
+  [0.3, 0.55, 1.0],        // 14:00 afternoon - light blue
   [0.3, 0.2, 0.4],         // 18:00 dusk - purple
   [0.043, 0.063, 0.149],   // 20:00 night starts - dark
   [0.043, 0.063, 0.149]    // 24:00 midnight - night
@@ -71,10 +71,10 @@ export const SKY_TOP_COLOR_STOPS = [
 export const SKY_BOTTOM_COLOR_STOPS = [
   [0.106, 0.153, 0.271],   // 0:00 midnight - night
   [0.8, 0.4, 0.2],         // 6:00 dawn - orange
-  [1.0, 0.98, 0.9],        // 8:00 day starts - warm white
-  [1.0, 0.98, 0.9],        // 10:00 morning - warm white
+  [0.95, 0.95, 1.0],       // 8:00 day starts - warm white
+  [0.98, 0.98, 1.0],       // 10:00 morning - warm white
   [1.0, 1.0, 1.0],         // 12:00 noon - white
-  [1.0, 0.98, 0.9],        // 14:00 afternoon - warm white
+  [0.98, 0.98, 1.0],       // 14:00 afternoon - warm white
   [0.8, 0.3, 0.2],         // 18:00 dusk - red-orange
   [0.106, 0.153, 0.271],   // 20:00 night starts - dark
   [0.106, 0.153, 0.271]    // 24:00 midnight - night

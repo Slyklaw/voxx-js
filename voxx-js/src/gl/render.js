@@ -6,6 +6,42 @@ import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginD
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS } from '../../config.js';
 
+// Interpolate between two RGB arrays
+function lerpColor(color1, color2, t) {
+  return [
+    color1[0] + (color2[0] - color1[0]) * t,
+    color1[1] + (color2[1] - color1[1]) * t,
+    color1[2] + (color2[2] - color1[2]) * t
+  ];
+}
+
+// Get sky colors for a given hour (0-24)
+function getSkyColorsForHour(hour) {
+  const stops = SKY_STOP_POSITIONS;
+  const topStops = SKY_TOP_COLOR_STOPS;
+  const bottomStops = SKY_BOTTOM_COLOR_STOPS;
+  
+  // Handle wraparound (hour >= 24)
+  if (hour >= stops[stops.length - 1]) {
+    return { top: topStops[topStops.length - 1], bottom: bottomStops[bottomStops.length - 1] };
+  }
+  
+  // Find the interval
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (hour >= stops[i] && hour < stops[i + 1]) {
+      const start = stops[i];
+      const end = stops[i + 1];
+      const t = (hour - start) / (end - start);
+      const top = lerpColor(topStops[i], topStops[i + 1], t);
+      const bottom = lerpColor(bottomStops[i], bottomStops[i + 1], t);
+      return { top, bottom };
+    }
+  }
+  
+  // Default to noon
+  return { top: topStops[4], bottom: bottomStops[4] };
+}
+
 export let voxelProgram = null;
 export let voxelUniforms = null;
 export let voxelAttribs = null;
@@ -112,9 +148,9 @@ function initSky(gl) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
   gl.useProgram(skyProgram);
-  gl.uniform1fv(skyUniforms.uStopPositions, SKY_STOP_POSITIONS);
-  gl.uniform3fv(skyUniforms.uTopStops, SKY_TOP_COLOR_STOPS.flat());
-  gl.uniform3fv(skyUniforms.uBottomStops, SKY_BOTTOM_COLOR_STOPS.flat());
+  // Initialize with default colors (noon)
+  gl.uniform3f(skyUniforms.uTopColor, 0.53, 0.81, 0.92);
+  gl.uniform3f(skyUniforms.uBottomColor, 1.0, 1.0, 1.0);
   gl.useProgram(null);
 }
 
@@ -407,6 +443,9 @@ export function setupRenderState(gl) {
 export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
   if (!skyProgram) return;
 
+  // Compute sky colors for this time of day
+  const colors = getSkyColorsForHour(timeOfDay);
+
   gl.depthMask(false);
   gl.useProgram(skyProgram);
 
@@ -421,6 +460,10 @@ export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
   gl.uniformMatrix4fv(skyUniforms.uViewMatrix, false, viewMatrix);
   gl.uniformMatrix4fv(skyUniforms.uProjectionMatrix, false, projectionMatrix);
   gl.uniform1f(skyUniforms.uTimeOfDay, timeOfDay);
+  
+  // Pass computed sky colors
+  gl.uniform3f(skyUniforms.uTopColor, colors.top[0], colors.top[1], colors.top[2]);
+  gl.uniform3f(skyUniforms.uBottomColor, colors.bottom[0], colors.bottom[1], colors.bottom[2]);
 
   gl.bindVertexArray(skyVAO);
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
