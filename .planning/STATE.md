@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** The core voxel engine provides a stable, performant foundation for exploration and building.
-**Current focus:** Milestone v1.0 complete — planning next milestone
+**Current focus:** Phase 4: Sky Gradients (v1.1 Beautiful Lighting)
 
 ## Current Position
 
-**Milestone:** v1.1 Beautiful Lighting — Planning
-Phase: Not started
+**Milestone:** v1.1 Beautiful Lighting — Phase 4 ready to plan
+Phase: 4 of 6 (Sky Gradients)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-20 — Starting v1.1
+Status: Ready to plan
+Last activity: 2026-03-20 — Roadmap created for v1.1
 
-Progress: [██████████] 100% (v1.0 MVP)
+Progress: [█████░░░░░] 50% (5/10 plans across all phases)
 
 ## Performance Metrics
 
@@ -37,7 +37,6 @@ Progress: [██████████] 100% (v1.0 MVP)
 - Trend: On track
 
 *Updated after each plan completion*
-| Phase 03-code-quality P02 | 5 min | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -47,10 +46,9 @@ Decisions are logged in PROJECT.md Key Decisions table. Recent decisions affecti
 
 - Phase 1: Fix UI before major refactoring (User's primary goal is to get compass/clock working)
 - Phase 2: Performance improvements as secondary priority
-- Phase 2: Frustum culling reduces off-screen rendering; buffer pool reduces GL allocation churn; staged dispatch prevents frame drops; hot chunk retention keeps frequently-used terrain loaded
 - Phase 3: No constraints on refactoring approach
-- Phase 3: Centralized all magic numbers in config.js for easy tuning and documentation
-- Phase 3: Vitest chosen for ESM-native testing; simplex-noise installed locally for Node.js compatibility
+- v1.1: Phases derived from requirements (SKY, SUN, AO, LITE) — no arbitrary grouping
+- v1.1: Phase ordering: Sky Gradients → Dynamic Sunlight → Ambient Occlusion (research-backed risk progression)
 
 ### Pending Todos
 
@@ -67,5 +65,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Phase 3 complete — all plans finished
+Stopped at: Roadmap created for v1.1 Beautiful Lighting
 Resume file: None
