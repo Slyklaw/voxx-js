@@ -339,6 +339,18 @@ function setupControls() {
     if (DEBUG) console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
     updateDebugUI();
   });
+
+  // Time of day buttons
+  document.getElementById('time-dawn')?.addEventListener('click', () => setTimeOfDay(6));
+  document.getElementById('time-noon')?.addEventListener('click', () => setTimeOfDay(12));
+  document.getElementById('time-dusk')?.addEventListener('click', () => setTimeOfDay(18));
+  document.getElementById('time-night')?.addEventListener('click', () => setTimeOfDay(20));
+}
+
+// Set time of day (hour: 0-24)
+function setTimeOfDay(hour) {
+  sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (hour / 24);
+  if (DEBUG) console.log(`[Debug] Time set to ${hour}:00`);
 }
 
 function updateMovement(deltaTime) {
