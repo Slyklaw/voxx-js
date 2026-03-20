@@ -19,8 +19,8 @@ Requirements for initial quality enhancement release. Each maps to roadmap phase
 
 ### Code Quality
 
-- [ ] **REFA-01**: Extract magic numbers and hardcoded values to named constants
-- [ ] **REFA-02**: Improve error handling in worker communication and chunk generation
+- [x] **REFA-01**: Extract magic numbers and hardcoded values to named constants
+- [x] **REFA-02**: Improve error handling in worker communication and chunk generation
 
 ### Testing
 
@@ -68,15 +68,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-02 | Phase 1 | ✅ Complete |
 | PERF-01 | Phase 2 | ✅ Complete |
 | PERF-02 | Phase 2 | ✅ Complete |
-| REFA-01 | Phase 3 | Pending |
-| REFA-02 | Phase 3 | Pending |
+| REFA-01 | Phase 3 | ✅ Complete |
+| REFA-02 | Phase 3 | ✅ Complete |
 | TEST-01 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 7 total
 - Mapped to phases: 7
+- Complete: 6
+- Pending: 1 (TEST-01)
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after Phase 2 completion*
+*Last updated: 2026-03-20 after Phase 3 Plan 01 completion*
