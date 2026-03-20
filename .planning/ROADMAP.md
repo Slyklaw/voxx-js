@@ -1,74 +1,22 @@
 # Roadmap: Voxx JS
 
-## Overview
+## Milestones
 
-This roadmap transforms the existing functional voxel engine into a polished, maintainable quality release. We start by fixing the broken UI features (compass and clock), then optimize performance for smoother gameplay, and finally improve code quality and add test coverage for long-term maintainability.
+- ✅ **v1.0 MVP** — Phases 1-3 (shipped 2026-03-20)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v1.0 MVP (Phases 1-3) — SHIPPED 2026-03-20</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] Phase 1: UI Fixes (1/1 plans) — completed 2026-03-19
+- [x] Phase 2: Performance Optimization (2/2 plans) — completed 2026-03-19
+- [x] Phase 3: Code Quality & Testing (2/2 plans) — completed 2026-03-20
 
-- [x] **Phase 1: UI Fixes** - Get compass and clock UI elements fully functional
-- [x] **Phase 2: Performance Optimization** - Improve rendering pipeline and reduce memory footprint
-- [x] **Phase 3: Code Quality & Testing** - Refactor for maintainability and add unit tests
+</details>
 
-## Phase Details
+---
 
-### Phase 1: UI Fixes
-**Goal**: Functional compass and clock UI elements that provide real-time feedback to the player
-**Depends on**: Nothing (first phase)
-**Requirements**: UI-01, UI-02
-**Success Criteria** (what must be TRUE):
-   1. User can see compass needle pointing to cardinal direction (N/S/E/W) as they rotate camera
-   2. User can see player facing direction indicator (e.g., "NW", "SE") updating in real-time
-   3. User can see clock display showing day/night cycle progress (e.g., "Dawn", "Day", "Dusk", "Night")
-   4. User can observe visual indicator of time progression (e.g., sun/moon position in sky)
-**Plans:** 1 plan
+**Next milestone:** Run `/gsd-new-milestone` to plan v1.1
 
-Plans:
-- [x] 01-01-PLAN.md — Implement compass and clock UI elements
-
-### Phase 2: Performance Optimization
-**Goal**: Improved performance for smoother rendering and reduced memory usage
-**Depends on**: Phase 1
-**Requirements**: PERF-01, PERF-02
-**Success Criteria** (what must be TRUE):
-   1. User experiences higher and more stable frame rates while exploring the world
-   2. User observes reduced stuttering during chunk loading
-   3. User can verify memory usage is lower over extended play sessions (via browser dev tools)
-   4. User sees fewer draw calls reported in debug mode (if enabled)
-**Plans**: 2 plans
-
-Plans:
-- [x] 02-01-PLAN.md — Optimize rendering pipeline with frustum culling and draw call reduction
-- [x] 02-02-PLAN.md — Reduce memory footprint through buffer pooling and proper cleanup
-
-### Phase 3: Code Quality & Testing
-**Goal**: Maintainable codebase with basic test coverage
-**Depends on**: Phase 2
-**Requirements**: REFA-01, REFA-02, TEST-01
-**Success Criteria** (what must be TRUE):
-   1. Developer can easily locate and understand magic numbers (they are now named constants)
-   2. Developer sees proper error messages when worker communication fails
-   3. Developer can run unit tests for chunk generation and meshing algorithms and see results
-   4. Developer can refactor code without breaking existing functionality (tests pass)
-**Plans**: 2 plans
-
-Plans:
-- [x] 03-01-PLAN.md — Extract magic numbers to named constants + improve error handling
-- [x] 03-02-PLAN.md — Add unit tests for chunk generation and meshing
-
-## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. UI Fixes | 1/1 | ✅ Complete | 2026-03-19 |
-| 2. Performance Optimization | 2/2 | ✅ Complete | 2026-03-19 |
-| 3. Code Quality & Testing | 2/2 | ✅ Complete | 2026-03-20 |
+---

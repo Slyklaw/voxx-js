@@ -2,19 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** The core voxel engine provides a stable, performant foundation for exploration and building.
-**Current focus:** Phase 3: Code Quality & Testing — COMPLETE
+**Current focus:** Milestone v1.0 complete — planning next milestone
 
 ## Current Position
 
-Phase: 3 of 3 (Code Quality & Testing)
-Plan: 2 of 2 in current phase
-Status: ✅ Complete
-Last activity: 2026-03-20 — Vitest test suite with 34 tests covering Chunk, biome, and mesh functions
+**Milestone:** v1.0 MVP — ✅ COMPLETE
+Phase: 3 of 3
+Plan: 5 of 5
+Status: ✅ All complete
+Last activity: 2026-03-20 — Milestone v1.0 shipped
 
-Progress: [██████████] 100% (Phase 3)
+Progress: [██████████] 100% (v1.0 MVP)
 
 ## Performance Metrics
 

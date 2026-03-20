@@ -6,31 +6,23 @@ A browser-based 3D voxel engine built with WebGL2 and Web Workers, featuring pro
 
 ## Core Value
 
-The core voxel engine provides a stable, performant foundation for exploration and building. While enhancing quality and fixing UI features, the engine's performance and reliability must be maintained.
+The core voxel engine provides a stable, performant foundation for exploration and building. The v1.0 release delivers a polished, maintainable foundation with working UI, optimized performance, and test coverage.
 
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
-<!-- Existing capabilities confirmed by codebase analysis. -->
-
-- ✓ Chunk-based world with procedural terrain generation (via Web Workers)
-- ✓ WebGL2 rendering with greedy meshing algorithm
-- ✓ Block placement and destruction with immediate mesh updates
-- ✓ Dynamic day/night lighting cycle
-- ✓ Multi-threaded chunk generation using worker pool
-- ✓ Configurable render distance, performance settings, and debug modes
-- ✓ Input handling for movement, camera control, and block editing
+- ✓ **UI-01**: Compass displays cardinal directions and player facing direction
+- ✓ **UI-02**: Clock displays day/night cycle progress with visual indicator
+- ✓ **PERF-01**: Optimized rendering pipeline with buffer pooling and draw call tracking
+- ✓ **PERF-02**: Reduced memory footprint through buffer pooling and proper cleanup
+- ✓ **REFA-01**: Magic numbers extracted to named constants (MESH_CONFIG, ATLAS_CONFIG, WORKER_CONFIG, BLOCK_CONFIG, BIOME_TUNING)
+- ✓ **REFA-02**: Improved error handling in worker pool with worker recreation support
+- ✓ **TEST-01**: 34 unit tests for chunk generation, biomes, and greedy mesh algorithms
 
 ### Active
 
-<!-- Current scope for this quality enhancement initiative. -->
-
-- [ ] **UI-01**: Hook up compass feature to display cardinal directions and player facing
-- [ ] **UI-02**: Hook up clock feature to display day/night cycle progress
-- [ ] **PERF-01**: Identify and optimize performance bottlenecks in chunk loading and rendering
-- [ ] **REFA-01**: Refactor codebase for better maintainability and readability
-- [ ] **TEST-01**: Add test coverage for critical components (chunk generation, meshing, worker communication)
+<!-- Next milestone goals - to be defined -->
 
 ### Out of Scope
 
@@ -42,7 +34,9 @@ The core voxel engine provides a stable, performant foundation for exploration a
 
 ## Context
 
-This is a brownfield project with an existing codebase that implements a functional voxel engine. The engine has known issues (see `.planning/codebase/CONCERNS.md`) including commented debug code, hardcoded test terrain, and potential race conditions. The UI features (compass and clock) were partially implemented but are currently non-functional due to missing data connections. Performance improvements should focus on chunk loading and rendering pipeline.
+**Current state (v1.0):** The voxel engine now has fully functional UI elements (compass, clock), performance optimizations (buffer pooling, staged loading, hot chunk retention), and test coverage. The codebase is more maintainable with named constants and improved error handling.
+
+**Tech stack:** Pure JavaScript with ES6 modules, WebGL2, Web Workers, CDN dependencies (simplex-noise)
 
 ## Constraints
 
@@ -55,10 +49,10 @@ This is a brownfield project with an existing codebase that implements a functio
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Keep existing architecture (Web Workers, chunk system) | Core performance is solid; improvements should be incremental | — Pending |
-| Fix UI before major refactoring | User's primary goal is to get compass/clock working | — Pending |
-| Performance improvements as secondary priority | User indicated performance as most important other quality improvement | — Pending |
-| No constraints on refactoring approach | User explicitly selected "No constraints" | — Pending |
+| Keep existing architecture (Web Workers, chunk system) | Core performance is solid; improvements should be incremental | ✓ Confirmed in v1.0 |
+| Fix UI before major refactoring | User's primary goal is to get compass/clock working | ✓ Completed |
+| Performance improvements as secondary priority | User indicated performance as most important other quality improvement | ✓ Completed |
+| No constraints on refactoring approach | User explicitly selected "No constraints" | ✓ 6 files updated with constants |
 
 ---
-*Last updated: 2026-03-19 after initialization*
+*Last updated: 2026-03-20 after v1.0 milestone*
