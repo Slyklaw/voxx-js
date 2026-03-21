@@ -71,7 +71,7 @@ Requirements for v1.1 milestone - technical debt and bug fixes.
 - [x] **FIX-01**: Remove forced flat terrain hack in biomes.js (lines 48-51)
 - [x] **FIX-02**: Fix biome blending for smooth terrain transitions between biomes
 - [x] **FIX-03**: Fix manual mesh regeneration after block edit (blocks appear after chunk refresh)
-- [ ] **FIX-04**: Fix stale worker requests not clearing on fast camera movement
+- [x] **FIX-04**: Fix stale worker requests not clearing on fast camera movement
 
 ### Reliability
 
@@ -166,7 +166,7 @@ Requirements for v1.1 milestone - technical debt and bug fixes.
 | FIX-01 | Phase 7 | Complete |
 | FIX-02 | Phase 7 | Complete |
 | FIX-03 | Phase 7 | Complete |
-| FIX-04 | Phase 7 | Pending |
+| FIX-04 | Phase 7 | Complete |
 | RELI-01 | Phase 8 | Pending |
 | RELI-02 | Phase 8 | Pending |
 | RELI-03 | Phase 8 | Pending |
