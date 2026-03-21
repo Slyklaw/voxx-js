@@ -55,6 +55,30 @@
 - [ ] **MOBS-04**: Player can kill mobs by placing blocks on them
 - [ ] **MOBS-05**: Mob spawn count scales with difficulty
 
+## v1.1 Requirements (Code Cleanup)
+
+Requirements for v1.1 milestone - technical debt and bug fixes.
+
+### Code Structure
+
+- [ ] **STRUCT-01**: Consolidate chunk.js and chunkCore.js into single Chunk class with separate terrain generator module
+- [ ] **STRUCT-02**: Split main.js (997 lines) into separate modules: InputHandler, BlockEditor, Camera, Renderer interface
+- [ ] **STRUCT-03**: Extract BlockEditor class with shared mesh update logic for placeBlock/destroyBlock
+- [ ] **STRUCT-04**: Create shared math utilities module (src/math/utils.js) for matrix operations
+
+### Bug Fixes
+
+- [ ] **FIX-01**: Remove forced flat terrain hack in biomes.js (lines 48-51)
+- [ ] **FIX-02**: Fix biome blending for smooth terrain transitions between biomes
+- [ ] **FIX-03**: Fix manual mesh regeneration after block edit (blocks appear after chunk refresh)
+- [ ] **FIX-04**: Fix stale worker requests not clearing on fast camera movement
+
+### Reliability
+
+- [ ] **RELI-01**: Bundle simplex-noise@4.0.3 locally via npm instead of CDN
+- [ ] **RELI-02**: Add structured logging utility with levels (debug, info, warn, error)
+- [ ] **RELI-03**: Replace scattered DEBUG console.log with proper logger calls
+
 ## v2 Requirements
 
 ### Crafting
@@ -87,8 +111,14 @@
 | Ore generation | Defer to v1.x, requires cave system first |
 | Custom textures | UI/UX polish, not core to survival loop |
 | Mobile touch controls | Desktop-first, mobile later |
+| TypeScript migration | Big change, JSDoc is interim solution |
+| Frustum culling | Performance optimization, defer to feature work |
+| Shadow LOD | Performance optimization, defer to feature work |
+| Test coverage | Add after structure stabilized |
 
 ## Traceability
+
+### v1.0 Requirements (Phases 1-5)
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -125,12 +155,28 @@
 | MOBS-04 | Phase 5 | Pending |
 | MOBS-05 | Phase 5 | Pending |
 
+### v1.1 Requirements (Code Cleanup)
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| STRUCT-01 | Phase 6 | Pending |
+| STRUCT-02 | Phase 6 | Pending |
+| STRUCT-03 | Phase 6 | Pending |
+| STRUCT-04 | Phase 6 | Pending |
+| FIX-01 | Phase 7 | Pending |
+| FIX-02 | Phase 7 | Pending |
+| FIX-03 | Phase 7 | Pending |
+| FIX-04 | Phase 7 | Pending |
+| RELI-01 | Phase 8 | Pending |
+| RELI-02 | Phase 8 | Pending |
+| RELI-03 | Phase 8 | Pending |
+
 **Coverage:** ✓ Validated
-- v1 requirements: 31 total
-- Mapped to phases: 31
+- v1.0 requirements: 31 total (Phases 1-5)
+- v1.1 requirements: 11 total (Phases 6-8)
+- Mapped to phases: 42
 - Unmapped: 0 ✓
-- Traceability verified against ROADMAP.md
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after roadmap creation*
+*Last updated: 2026-03-21 after v1.1 milestone started*
