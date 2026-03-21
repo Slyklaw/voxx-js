@@ -11,7 +11,7 @@
 - [ ] **Phase 3: Inventory System** - Hotbar (1-9), slot selection, block placement, block pickup, stack merging, persistence
 - [ ] **Phase 4: Day/Night Cycle** - Game time progression, ambient lighting, sky transitions, shadow direction, SSAO scaling, time persistence
 - [ ] **Phase 5: Hostile Mobs** - Night spawning, pathfinding, contact damage, block-kill, difficulty scaling
-- [ ] **Phase 6: Code Structure** - Consolidate chunks, split main.js, extract BlockEditor, create math utils
+- [x] **Phase 6: Code Structure** - Consolidate chunks, split main.js, extract BlockEditor, create math utils (completed 2026-03-21)
 - [ ] **Phase 7: Bug Fixes** - Remove flat terrain hack, fix biome blending, fix mesh regeneration, fix stale worker
 - [ ] **Phase 8: Reliability** - Bundle simplex-noise locally, add logging utility, replace DEBUG console.log
 
@@ -137,7 +137,7 @@
 4. Math utilities module exists at src/math/utils.js with matrix operations
 5. All modules import correctly and voxel engine runs without module errors
 
-**Plans:** 2/2 plans executed ✓
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 06-01-PLAN.md — Foundation: constants.js and math utils (wave 1) ✓
@@ -190,7 +190,7 @@ Plans:
 | 3. Inventory System | 0/6 | Not started | - |
 | 4. Day/Night Cycle | 0/6 | Not started | - |
 | 5. Hostile Mobs | 0/5 | Not started | - |
-| 6. Code Structure | 2/2 | Complete | 2026-03-21 |
+| 6. Code Structure | 2/2 | Complete    | 2026-03-21 |
 | 7. Bug Fixes | 0/4 | Not started | - |
 | 8. Reliability | 0/4 | Not started | - |
 

@@ -7,11 +7,11 @@
 
 ### Persistence
 
-- [ ] **PERS-01**: World state saves automatically to IndexedDB every 5 seconds
-- [ ] **PERS-02**: Player can manually save via pause menu or hotkey
-- [ ] **PERS-03**: World state loads on page refresh, resuming exact position
-- [ ] **PERS-04**: Storage quota is monitored and user is warned at >80% usage
-- [ ] **PERS-05**: `navigator.storage.persist()` is called at startup for durability
+- [x] **PERS-01**: World state saves automatically to IndexedDB every 5 seconds
+- [x] **PERS-02**: Player can manually save via pause menu or hotkey
+- [x] **PERS-03**: World state loads on page refresh, resuming exact position
+- [x] **PERS-04**: Storage quota is monitored and user is warned at >80% usage
+- [x] **PERS-05**: `navigator.storage.persist()` is called at startup for durability
 
 ### Player State
 
@@ -122,11 +122,11 @@ Requirements for v1.1 milestone - technical debt and bug fixes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERS-01 | Phase 1 | Pending |
-| PERS-02 | Phase 1 | Pending |
-| PERS-03 | Phase 1 | Pending |
-| PERS-04 | Phase 1 | Pending |
-| PERS-05 | Phase 1 | Pending |
+| PERS-01 | Phase 1 | Complete |
+| PERS-02 | Phase 1 | Complete |
+| PERS-03 | Phase 1 | Complete |
+| PERS-04 | Phase 1 | Complete |
+| PERS-05 | Phase 1 | Complete |
 | PLAY-01 | Phase 2 | Pending |
 | PLAY-02 | Phase 2 | Pending |
 | PLAY-03 | Phase 2 | Pending |
