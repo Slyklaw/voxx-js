@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Chunk } from '../../chunk.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../src/constants.js';
 
 describe('Chunk', () => {
   let chunk;

@@ -4,7 +4,7 @@
  * AABB (Axis-Aligned Bounding Box) visibility for chunk culling.
  */
 
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../src/constants.js';
 
 /**
  * Represents a frustum plane.

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { generateMeshData } from '../../greedyMesh.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../src/constants.js';
 import { BLOCK_TYPES } from '../../blocks.js';
 
 describe('greedyMesh.js', () => {

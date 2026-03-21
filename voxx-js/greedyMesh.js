@@ -1,5 +1,5 @@
 import { BLOCKS, BLOCK_TYPES, getBlockColor } from './blocks.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './src/constants.js';
 import { DEBUG, ATLAS_CONFIG } from './config.js';
 
 /**

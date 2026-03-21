@@ -5,7 +5,7 @@
 import { BIOMES, BIOME_CONFIG, generateBiomeHeight, getBiomeBlockType, SEA_LEVEL } from './biomes.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { DEBUG, BIOME_TUNING } from './config.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './chunkCore.js';
+import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './src/constants.js';
 import { generateMeshData } from './greedyMesh.js';
 // generateMeshData() returns plain arrays compatible with src/gl/buffers.js
 
