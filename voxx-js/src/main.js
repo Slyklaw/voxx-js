@@ -1,5 +1,5 @@
 import { gl, canvas, isContextLost, registerContextResources } from './gl/context.js';
-import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, setDebugMode } from './gl/render.js';
+import { initRenderer, setupRenderState, clear, renderSky, renderChunks, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, setDebugMode, updateSSAOSettings, renderVoxelsToGBuffer } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
@@ -160,9 +160,6 @@ function initBlockOutline() {
 function renderBlockOutline(mvpMatrix) {
   if (!targetedBlock || !outlineProgram) return;
   
-  // Disable depth test so outline is always visible
-  gl.disable(gl.DEPTH_TEST);
-  
   gl.useProgram(outlineProgram);
   
   // Create model matrix for targeted block position
@@ -226,7 +223,8 @@ function setupControls() {
     const sensitivity = 0.002;
     cameraRotation.y -= event.movementX * sensitivity;
     cameraRotation.x -= event.movementY * sensitivity;
-    const clampedPitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotation.x));
+    const maxPitch = (Math.PI / 2) - 0.001;
+    const clampedPitch = Math.max(-maxPitch, Math.min(maxPitch, cameraRotation.x));
     if (clampedPitch !== cameraRotation.x) {
       cameraRotation.x = clampedPitch;
       if (DEBUG) console.log('[Camera] Pitch clamped to bounds');
@@ -353,6 +351,29 @@ function setupControls() {
     timePauseBtn.textContent = timePaused ? 'Play' : 'Pause';
     timePauseBtn.style.backgroundColor = timePaused ? '#4a4' : '';
   });
+
+  // SSAO toggle
+  document.getElementById('ssao-toggle')?.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    updateSSAOSettings(gl, { enabled });
+    if (DEBUG) console.log(`[SSAO] ${enabled ? 'Enabled' : 'Disabled'}`);
+  });
+
+  // SSAO intensity slider
+  document.getElementById('ssao-intensity')?.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value) / 100;
+    const valueEl = document.getElementById('ssao-intensity-value');
+    if (valueEl) valueEl.textContent = value.toFixed(1);
+    updateSSAOSettings(gl, { intensity: value });
+  });
+
+  // SSAO radius slider
+  document.getElementById('ssao-radius')?.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value) / 10;
+    const valueEl = document.getElementById('ssao-radius-value');
+    if (valueEl) valueEl.textContent = value.toFixed(1);
+    updateSSAOSettings(gl, { radius: value });
+  });
 }
 
 // Set time of day (hour: 0-24)
@@ -448,13 +469,8 @@ function lookAt(eye, center, up) {
   if (zLen < 0.0001) z = [0, 0, -1]; // Handle looking at self
   else z = [z[0]/zLen, z[1]/zLen, z[2]/zLen];
   
-  // Handle gimbal lock: if looking straight up/down, use different up vector
-  let upVec = [...up];
-  if (Math.abs(z[1]) > 0.99) {
-    upVec = [1, 0, 0]; // Use right vector when looking up/down
-  }
-  
-  const x = normalize(cross(upVec, z));
+  // Process right and up vectors naturally - pitch clamping prevents true zero normals
+  const x = normalize(cross(up, z));
   const y = cross(z, x);
   
   return new Float32Array([
@@ -578,6 +594,40 @@ function createProjectionMatrix() {
     0, 0, near * far * rangeInv * 2, 0
   ]);
 }
+
+function createOrthoMatrix(left, right, bottom, top, near, far) {
+  return new Float32Array([
+    2 / (right - left), 0, 0, 0,
+    0, 2 / (top - bottom), 0, 0,
+    0, 0, -2 / (far - near), 0,
+    -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1
+  ]);
+}
+
+function createLightSpaceMatrix(cameraPos, sunDir) {
+  // Center of shadow frustum follows player
+  const center = [cameraPos.x, cameraPos.y, cameraPos.z];
+  // Calculate light origin relatively far back along the sun direction
+  const dist = 150.0;
+  const lightPos = [
+    center[0] + sunDir[0] * dist,
+    center[1] + sunDir[1] * dist,
+    center[2] + sunDir[2] * dist
+  ];
+  
+  // Look down the sun vector at the player, protecting against exactly vertical sun rays causing gimbal-lock NaNs
+  const sunNormY = Math.abs(sunDir[1] / Math.sqrt(sunDir[0]*sunDir[0] + sunDir[1]*sunDir[1] + sunDir[2]*sunDir[2]));
+  const upVec = sunNormY > 0.99 ? [1, 0, 0] : [0, 1, 0];
+  const view = lookAt(lightPos, center, upVec);
+  
+  // Ortho projection covers roughly the visible surrounding area
+  const size = 64.0; // Span 64 units off center in all directions (128x128 footprint)
+  const proj = createOrthoMatrix(-size, size, -size, size, 1.0, dist * 2.0);
+  
+  return multiplyMatrices(proj, view);
+}
+
+window.createLightSpaceMatrix = createLightSpaceMatrix;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -905,17 +955,21 @@ function render(currentTime) {
   clear(gl, canvas);
 
   const timeOfDayHours = (sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) * 24;
-  renderSky(gl, viewMatrix, projectionMatrix, timeOfDayHours);
+  // Sky is rendered into the G-buffer albedo inside renderVoxelsToGBuffer
 
   updateCamera(gl, viewMatrix, projectionMatrix);
   updateTimeOfDay(gl, timeOfDayHours);
 
   const visibleChunks = world.getVisibleChunks();
+  const mvpMatrix = multiplyMatrices(projectionMatrix, viewMatrix);
   
-  // Render chunks with textures or wireframe
-  // Pass Chunk objects (with _webglMesh) for culling and rendering
+  // Render chunks with textures or wireframe (sky rendered inside as part of G-buffer pass)
   if (visibleChunks.length > 0) {
-    renderChunks(gl, visibleChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode);
+    renderVoxelsToGBuffer(gl, canvas, visibleChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode, timeOfDayHours, () => renderBlockOutline(mvpMatrix), cameraPosition);
+  } else {
+    // No chunks yet: at least render the sky directly
+    renderSky(gl, viewMatrix, projectionMatrix, timeOfDayHours);
+    renderBlockOutline(mvpMatrix);
   }
   
   // Check for WebGL errors
@@ -929,10 +983,6 @@ function render(currentTime) {
   if (DEBUG) {
     console.log(`[Performance] Draw calls this frame: ${getDrawCalls()}`);
   }
-  
-  // Render block outline on top of chunks
-  const mvpMatrix = multiplyMatrices(projectionMatrix, viewMatrix);
-  renderBlockOutline(mvpMatrix);
   
   endRenderTiming();
 

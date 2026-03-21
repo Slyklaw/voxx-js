@@ -1,10 +1,15 @@
 import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DIRECTION, DEFAULT_AMBIENT, DEFAULT_DIFFUSE } from '../shaders/voxel.js';
 import { createSkyProgram, getSkyUniforms, getSkyAttribs } from '../shaders/sky.js';
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
+import { createSSAOProgram, getSSAOUniforms, generateKernelSamples, createNoiseTexture } from '../shaders/ssao.js';
+import { createBlurProgram, getBlurUniforms } from '../shaders/blur.js';
+import { createCompositeProgram, getCompositeUniforms } from '../shaders/composite.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
-import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS } from '../../config.js';
+import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
+import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
+import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
 
 // Interpolate between two RGB arrays
 function lerpColor(color1, color2, t) {
@@ -89,6 +94,8 @@ function getSunInfo(hour) {
   };
 }
 
+let currentLightSpaceMatrix = null;
+
 export let voxelProgram = null;
 export let voxelUniforms = null;
 export let voxelAttribs = null;
@@ -110,6 +117,36 @@ let cameraUBO = null;
 let globalUBO = null;
 let textureAtlas = null;
 let textureAtlasLoaded = false;
+
+// G-buffer for deferred rendering / SSAO
+let gbuffer = null;
+let gbufferSupported = false;
+let gbufferSupportInfo = null;
+let gbufferActive = false;
+
+// SSAO resources
+let ssaoProgram = null;
+let ssaoUniforms = null;
+let ssaoBuffer = null;
+let ssaoBlurBuffer = null;  // Separate buffer for blur output (prevents feedback loop)
+let ssaoKernel = null;
+let ssaoNoiseTexture = null;
+let blurProgram = null;
+let blurUniforms = null;
+let compositeProgram = null;
+let compositeUniforms = null;
+
+// Shadow Mapping resources
+let shadowProgram = null;
+let shadowUniforms = null;
+export let shadowMapObj = null;
+
+export let ssaoSettings = {
+  enabled: SSAO_CONFIG.ENABLED,
+  intensity: SSAO_CONFIG.INTENSITY,
+  radius: SSAO_CONFIG.RADIUS,
+  bias: SSAO_CONFIG.BIAS
+};
 
 let currentWireframeMode = false;
 let currentDebugMode = false;
@@ -233,6 +270,164 @@ function initSelection(gl) {
   gl.useProgram(null);
 }
 
+function drawFullscreenQuad(gl) {
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+
+function initSSAO(gl) {
+  // Generate kernel samples
+  ssaoKernel = generateKernelSamples(32);
+  // Create noise texture
+  ssaoNoiseTexture = createNoiseTexture(gl, 4);
+  // Compile SSAO shader
+  ssaoProgram = createSSAOProgram(gl);
+  ssaoUniforms = getSSAOUniforms(gl, ssaoProgram);
+  // Upload kernel samples to uniform array
+  gl.useProgram(ssaoProgram);
+  for (let i = 0; i < ssaoKernel.length; ++i) {
+    gl.uniform3fv(gl.getUniformLocation(ssaoProgram, `samples[${i}]`), ssaoKernel[i]);
+  }
+  // Create SSAO buffers at half resolution
+  if (gbufferSupported) {
+    ssaoBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);
+    ssaoBlurBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);  // Separate buffer for blur output
+  }
+  // Create blur shader
+  blurProgram = createBlurProgram(gl);
+  blurUniforms = getBlurUniforms(gl, blurProgram);
+  // Create composite shader
+  compositeProgram = createCompositeProgram(gl);
+  compositeUniforms = getCompositeUniforms(gl, compositeProgram);
+  gl.useProgram(null);
+}
+
+export function updateSSAOSettings(gl, settings) {
+  Object.assign(ssaoSettings, settings);
+  
+  if (ssaoProgram && ssaoUniforms) {
+    gl.useProgram(ssaoProgram);
+    if (settings.radius !== undefined) gl.uniform1f(ssaoUniforms.radius, ssaoSettings.radius);
+    if (settings.bias !== undefined) gl.uniform1f(ssaoUniforms.bias, ssaoSettings.bias);
+  }
+  
+  if (compositeProgram && compositeUniforms) {
+    gl.useProgram(compositeProgram);
+    if (settings.intensity !== undefined) gl.uniform1f(compositeUniforms.uAOIntensity, ssaoSettings.intensity);
+  }
+}
+
+function renderSSAOPass(gl, projectionMatrix) {
+  if (!gbuffer || !ssaoProgram || !ssaoBuffer || !ssaoSettings.enabled) return;
+  
+  // Bind SSAO FBO
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ssaoBuffer.fbo);
+  gl.viewport(0, 0, ssaoBuffer.width, ssaoBuffer.height);
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  // Reset state
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  
+  // Use SSAO program
+  gl.useProgram(ssaoProgram);
+  
+  // Bind G-buffer textures
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[1]); // oct-encoded normals
+  gl.uniform1i(ssaoUniforms.gNormal, 0);
+  
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[2]); // view-space position
+  gl.uniform1i(ssaoUniforms.gPosition, 1);
+  
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, ssaoNoiseTexture);
+  gl.uniform1i(ssaoUniforms.texNoise, 2);
+  
+  // Upload projection matrix (needed to project sample positions to clip space)
+  if (projectionMatrix && ssaoUniforms.projection !== null) {
+    gl.uniformMatrix4fv(ssaoUniforms.projection, false, projectionMatrix);
+  }
+  
+  // Set uniforms
+  gl.uniform2f(ssaoUniforms.noiseScale, 
+    ssaoBuffer.width / 4.0, ssaoBuffer.height / 4.0);
+  gl.uniform1f(ssaoUniforms.radius, ssaoSettings.radius);
+  gl.uniform1f(ssaoUniforms.bias, ssaoSettings.bias);
+  
+  // Draw fullscreen quad
+  drawFullscreenQuad(gl);
+  
+  gl.useProgram(null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+function renderBlurPass(gl) {
+  if (!ssaoBuffer || !ssaoBlurBuffer || !blurProgram) return;
+  
+  // Bind blur FBO (separate from SSAO to avoid feedback loop)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, ssaoBlurBuffer.fbo);
+  gl.viewport(0, 0, ssaoBlurBuffer.width, ssaoBlurBuffer.height);
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  // Reset state
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  
+  gl.useProgram(blurProgram);
+  
+  // Bind SSAO output texture as input
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, ssaoBuffer.texture);
+  gl.uniform1i(blurUniforms.ssaoInput, 0);
+
+  // Bind G-buffer positions to detect edges during blur (prevents bleeding)
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[2]);
+  gl.uniform1i(blurUniforms.gPosition, 1);
+  
+  drawFullscreenQuad(gl);
+  
+  gl.useProgram(null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+function renderCompositePass(gl, canvas) {
+  if (!compositeProgram || !gbuffer || !ssaoBlurBuffer) return;
+  
+  // Bind default framebuffer (screen)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  
+  // Reset state that might leak from previous passes
+  gl.disable(gl.SCISSOR_TEST);
+  gl.disable(gl.BLEND);
+  gl.disable(gl.DEPTH_TEST);
+  
+  gl.useProgram(compositeProgram);
+  
+  // Bind G-buffer albedo (color[0]) to texture unit 0
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]);
+  gl.uniform1i(compositeUniforms.gAlbedo, 0);
+  
+  // Bind blurred AO to texture unit 1
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, ssaoBlurBuffer.texture);
+  gl.uniform1i(compositeUniforms.ssaoBlur, 1);
+  
+  // Set intensity uniform
+  gl.uniform1f(compositeUniforms.uAOIntensity, ssaoSettings.intensity);
+  
+  drawFullscreenQuad(gl);
+  
+  gl.useProgram(null);
+}
+
 export function initRenderer(gl) {
   if (DEBUG) console.log('[Renderer] Initializing voxel renderer...');
   
@@ -250,7 +445,8 @@ export function initRenderer(gl) {
     console.log('[Renderer] Voxel shader program created');
     console.log('[Renderer] Attribs:', voxelAttribs);
     console.log('[Renderer] Uniforms:', {
-      uModelViewProjection: !!voxelUniforms.uModelViewProjection,
+      uViewMatrix: !!voxelUniforms.uViewMatrix,
+      uProjectionMatrix: !!voxelUniforms.uProjectionMatrix,
       uModelMatrix: !!voxelUniforms.uModelMatrix,
       uLightDirection: !!voxelUniforms.uLightDirection,
       uTextureAtlas: voxelUniforms.uTextureAtlas,
@@ -269,11 +465,48 @@ export function initRenderer(gl) {
   gl.uniform2f(voxelUniforms.uTileSpan, ATLAS_CONFIG.UV_SCALE_U, ATLAS_CONFIG.UV_SCALE_V);
   gl.useProgram(null);
 
+  // Bind CameraUBO to voxel shader if block exists
+  const cameraUBOBlockIndex = gl.getUniformBlockIndex(voxelProgram, 'CameraUBO');
+  if (cameraUBOBlockIndex !== gl.INVALID_INDEX) {
+    gl.uniformBlockBinding(voxelProgram, cameraUBOBlockIndex, 0); // binding point 0
+    if (DEBUG) console.log('[Renderer] CameraUBO bound to voxel shader');
+  }
+
   cameraUBO = createCameraUBO(gl);
   globalUBO = createGlobalUBO(gl);
 
   initSky(gl);
   initSelection(gl);
+
+  // Initialize G-buffer for deferred rendering
+  gbufferSupportInfo = checkFloatTextureSupport(gl);
+  gbufferSupported = gbufferSupportInfo.supported;
+  if (gbufferSupported) {
+    try {
+      gbuffer = createGBufferFBO(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);
+      if (DEBUG) console.log('[Renderer] G-buffer initialized');
+    } catch (e) {
+      console.error('[Renderer] Failed to create G-buffer:', e);
+      gbufferSupported = false;
+    }
+  } else {
+    console.warn('[Renderer] Float textures not supported, SSAO disabled');
+  }
+
+  // Initialize Shadow Map (High Resolution 4096)
+  try {
+    shadowMapObj = createShadowMapFBO(gl, 4096);
+    shadowProgram = createShadowProgram(gl);
+    shadowUniforms = getShadowUniforms(gl, shadowProgram);
+    if (DEBUG) console.log('[Renderer] Shadow Map initialized');
+  } catch (e) {
+    console.error('[Renderer] Failed to init Shadow Map:', e);
+  }
+
+  // Initialize SSAO resources
+  if (gbufferSupported) {
+    initSSAO(gl);
+  }
 
   return {
     program: voxelProgram,
@@ -345,10 +578,29 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   ]);
   
   if (voxelUniforms && viewMatrix && projectionMatrix) {
-    const mvp = new Float32Array(16);
-    multiplyMatrices(mvp, projectionMatrix, viewMatrix, identity);
-    gl.uniformMatrix4fv(voxelUniforms.uModelViewProjection, false, mvp);
+    // Pass separate view and projection matrices (for view-space transforms)
+    if (voxelUniforms.uViewMatrix !== undefined && voxelUniforms.uViewMatrix !== null) {
+      gl.uniformMatrix4fv(voxelUniforms.uViewMatrix, false, viewMatrix);
+    }
+    if (voxelUniforms.uProjectionMatrix !== undefined && voxelUniforms.uProjectionMatrix !== null) {
+      gl.uniformMatrix4fv(voxelUniforms.uProjectionMatrix, false, projectionMatrix);
+    }
     gl.uniformMatrix4fv(voxelUniforms.uModelMatrix, false, identity);
+  }
+  
+  // Set float texture fallback uniform if exists
+  if (voxelUniforms.uUseFloatTextures !== undefined && voxelUniforms.uUseFloatTextures !== null) {
+    gl.uniform1i(voxelUniforms.uUseFloatTextures, gbufferActive ? 1 : 0);
+  }
+  
+  // Set shadow uniforms if they exist
+  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix !== undefined) {
+    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+  }
+  if (shadowMapObj && voxelUniforms.uShadowMap !== undefined && shadowMapObj.texture) {
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, shadowMapObj.texture);
+    gl.uniform1i(voxelUniforms.uShadowMap, 2);
   }
   
   // Set debug mode uniform
@@ -695,4 +947,194 @@ export function renderLoop(canvasEl, gl, renderFn) {
   };
 }
 
+export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe = false, debugMode = false, timeOfDay = 0.5, renderOutlineCallback = null, cameraPos = null) {
+  // DEBUG: Skip G-buffer and render directly to test if voxels work
+  if (window.__DEBUG_SKIP_GBUFFER) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(0.5, 0.7, 1.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    return;
+  }
+  
+  if (!isGBufferSupported() || !gbuffer) {
+    // Fallback: render directly to screen
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    return;
+  }
+  
+  // ── PASS 0: Shadow Map ──────────────────────────────────────────────────
+  currentLightSpaceMatrix = null;
+  if (shadowMapObj && shadowProgram && window.createLightSpaceMatrix && cameraPos) {
+    const sunInfo = getSunInfo(timeOfDay);
+    currentLightSpaceMatrix = window.createLightSpaceMatrix(cameraPos, sunInfo.direction);
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, shadowMapObj.fbo);
+    gl.viewport(0, 0, shadowMapObj.size, shadowMapObj.size);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    
+    // Disable culling entirely for the shadow pass because voxel meshes only contain outer shell faces!
+    // Front face culling here would delete the only geometry available to cast the shadows.
+    gl.disable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    
+    // Disable color rendering during depth pass
+    gl.colorMask(false, false, false, false);
+    
+    gl.useProgram(shadowProgram);
+    gl.uniformMatrix4fv(shadowUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+    
+    // Draw all chunks rapidly to depth buffer
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkMesh = chunks[i];
+      // Skip chunks that don't have valid geometry structures
+      if (!chunkMesh || !chunkMesh.vao || !chunkMesh.ibo || !chunkMesh.indexCount) continue;
+      bindChunk(gl, chunkMesh.vao);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
+      gl.drawElements(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+      unbindChunk(gl);
+    }
+    
+    // Restore generic state
+    gl.disable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.colorMask(true, true, true, true);
+  }
+  
+  // Bind G-buffer FBO
+  const bound = bindGBuffer(gl);
+  if (!bound) {
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    return;
+  }
+  
+  gbufferActive = true;
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.depthMask(true);
+  
+  // Clear all G-buffer channels and depth
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  
+  // ── Pass 1a: Sky into albedo only ─────────────────────────────────────────
+  // Render sky to albedo attachment only; normals+position remain zero (sky detection)
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+  renderSky(gl, viewMatrix, projectionMatrix, timeOfDay);
+  
+  // ── Pass 1b: Geometry to full MRT ─────────────────────────────────────────
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
+  gl.depthMask(true);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+  
+  if (renderOutlineCallback) {
+    // Only draw wireframe outline to albedo attachment (COLOR_ATTACHMENT0) so it doesn't mess with SSAO normal/depth passes
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    gl.enable(gl.DEPTH_TEST);
+    renderOutlineCallback();
+  }
+  
+  // Unbind G-buffer
+  unbindGBuffer(gl, canvas);
+  gbufferActive = false;
+  
+  if (ssaoSettings.enabled && ssaoProgram && ssaoBuffer && ssaoBlurBuffer) {
+    // ── Pass 2: SSAO ────────────────────────────────────────────────────────
+    renderSSAOPass(gl, projectionMatrix);
+    
+    // ── Pass 3: Blur ────────────────────────────────────────────────────────
+    renderBlurPass(gl);
+    
+    // ── Pass 4: Composite (albedo × AO → screen) ────────────────────────────
+    renderCompositePass(gl, canvas);
+  } else {
+    // SSAO disabled: blit albedo directly to screen without AO
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    if (compositeProgram && compositeUniforms) {
+      gl.useProgram(compositeProgram);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]);
+      gl.uniform1i(compositeUniforms.gAlbedo, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]); // dummy AO
+      gl.uniform1i(compositeUniforms.ssaoBlur, 1);
+      gl.uniform1f(compositeUniforms.uAOIntensity, 0.0); // 0 = passthrough albedo
+      drawFullscreenQuad(gl);
+      gl.useProgram(null);
+    }
+  }
+}
+
 export { getFPS, getMetrics, logPerformance };
+
+// G-buffer management functions
+export function bindGBuffer(gl) {
+  if (!gbuffer) return false;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, gbuffer.fbo);
+  gl.viewport(0, 0, gbuffer.width, gbuffer.height);
+  // CRITICAL: Must set drawBuffers for MRT - not persisted across FBO binds
+  gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
+  // Fix pixel alignment for non-4-aligned widths
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.pixelStorei(gl.PACK_ALIGNMENT, 1);
+  return true;
+}
+
+export function unbindGBuffer(gl, canvas) {
+  // Unbind framebuffer first
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  // Then reset draw buffers for the default framebuffer
+  gl.drawBuffers([gl.BACK]);
+  if (canvas) {
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+}
+
+export function getGBufferTextures() {
+  if (!gbuffer) return null;
+  return {
+    albedo: gbuffer.color[0],
+    normal: gbuffer.color[1],
+    depth: gbuffer.depth
+  };
+}
+
+export function isGBufferSupported() {
+  return gbufferSupported;
+}
+
+export function getSSAOProgram() {
+  return ssaoProgram;
+}
+
+export function getSSAOUniformsState() {
+  return ssaoUniforms;
+}
+
+export function getSSAOBuffer() {
+  return ssaoBuffer;
+}
+
+export function getGBuffer() {
+  return gbuffer;
+}
+
+export function resizeGBufferForCanvas(gl, canvas) {
+  if (gbuffer && canvas.width > 0 && canvas.height > 0) {
+    if (gbuffer.width !== canvas.width || gbuffer.height !== canvas.height) {
+      const newGbuffer = createGBufferFBO(gl, canvas.width, canvas.height, gbufferSupportInfo);
+      disposeGBuffer(gl, gbuffer);
+      gbuffer = newGbuffer;
+      if (DEBUG) console.log(`[Renderer] G-buffer resized to ${canvas.width}x${canvas.height}`);
+    }
+  }
+}

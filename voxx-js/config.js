@@ -21,8 +21,8 @@ export const LIGHTING_CONFIG = {
 
 // Lighting defaults for voxel shader
 export const LIGHTING_DEFAULTS = {
-  AMBIENT: 0.6,
-  DIFFUSE: 0.4
+  AMBIENT: 0.4,
+  DIFFUSE: 0.8
 };
 
 // Player configuration
@@ -30,6 +30,15 @@ export const PLAYER_CONFIG = {
   MOVE_SPEED: 20,
   MAX_REACH: 10,
   SPAWN_POSITION: { x: 16, y: 225, z: 16 }
+};
+
+// SSAO configuration
+export const SSAO_CONFIG = {
+  ENABLED: true,
+  INTENSITY: 1.0,
+  RADIUS: 0.5,
+  BIAS: 0.025,
+  KERNEL_SIZE: 32
 };
 
 // Sun cycle configuration

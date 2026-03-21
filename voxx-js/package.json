@@ -10,6 +10,7 @@
     "test:run": "vitest run"
   },
   "devDependencies": {
+    "jsdom": "^29.0.1",
     "simplex-noise": "^4.0.3",
     "vitest": "^1.6.0"
   }
