@@ -159,7 +159,12 @@ Plans:
 3. Block edits appear immediately in world (no manual chunk refresh needed)
 4. Fast camera movement doesn't cause visual glitches from stale worker requests
 
-**Plans:** TBD
+**Plans:** 3/3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Terrain fixes: natural variation + biome blending (wave 1)
+- [ ] 07-02-PLAN.md — Mesh regeneration: immediate block edit updates (wave 1)
+- [ ] 07-03-PLAN.md — Stale worker: AbortController cancellation (wave 1)
 
 ---
 
@@ -191,7 +196,7 @@ Plans:
 | 4. Day/Night Cycle | 0/6 | Not started | - |
 | 5. Hostile Mobs | 0/5 | Not started | - |
 | 6. Code Structure | 2/2 | Complete    | 2026-03-21 |
-| 7. Bug Fixes | 0/4 | Not started | - |
+| 7. Bug Fixes | 0/3 | Not started | - |
 | 8. Reliability | 0/4 | Not started | - |
 
 ---
