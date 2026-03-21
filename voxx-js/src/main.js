@@ -380,6 +380,10 @@ function render(currentTime) {
   // Update camera movement using InputHandler keys
   camera.updateMovement(deltaTime, inputHandler.getKeys());
   
+  // Sync rotation from InputHandler to Camera (mouselook)
+  const inputRotation = inputHandler.getRotation();
+  camera.setRotation(inputRotation.x, inputRotation.y);
+  
   // Update block targeting using BlockEditor
   blockEditor.updateTargetedBlock(camera.getPosition(), camera.getRotation());
   targetedBlock = blockEditor.getTargetedBlock();

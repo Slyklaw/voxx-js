@@ -39,7 +39,7 @@ Track project milestones and what shipped.
 - Bundle simplex-noise locally
 - Add logging utility
 
-**Requirements:** TBD (defining now)
+**Requirements:** 11 requirements defined (STRUCT-01 to STRUCT-04, FIX-01 to FIX-04, RELI-01 to RELI-03)
 
 ---
 
