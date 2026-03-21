@@ -61,10 +61,10 @@ Requirements for v1.1 milestone - technical debt and bug fixes.
 
 ### Code Structure
 
-- [ ] **STRUCT-01**: Consolidate chunk.js and chunkCore.js into single Chunk class with separate terrain generator module
+- [x] **STRUCT-01**: Consolidate chunk.js and chunkCore.js into single Chunk class with separate terrain generator module
 - [ ] **STRUCT-02**: Split main.js (997 lines) into separate modules: InputHandler, BlockEditor, Camera, Renderer interface
 - [ ] **STRUCT-03**: Extract BlockEditor class with shared mesh update logic for placeBlock/destroyBlock
-- [ ] **STRUCT-04**: Create shared math utilities module (src/math/utils.js) for matrix operations
+- [x] **STRUCT-04**: Create shared math utilities module (src/math/utils.js) for matrix operations
 
 ### Bug Fixes
 
@@ -159,10 +159,10 @@ Requirements for v1.1 milestone - technical debt and bug fixes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STRUCT-01 | Phase 6 | Pending |
+| STRUCT-01 | Phase 6 | Complete |
 | STRUCT-02 | Phase 6 | Pending |
 | STRUCT-03 | Phase 6 | Pending |
-| STRUCT-04 | Phase 6 | Pending |
+| STRUCT-04 | Phase 6 | Complete |
 | FIX-01 | Phase 7 | Pending |
 | FIX-02 | Phase 7 | Pending |
 | FIX-03 | Phase 7 | Pending |
