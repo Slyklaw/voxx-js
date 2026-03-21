@@ -169,9 +169,12 @@ export class World {
     this._playerChunkX = camChunkX;
     this._playerChunkZ = camChunkZ;
 
-    // Clear stale worker requests for chunks that are now far away
-    if (this.pool && this.pool.clearStaleRequests) {
-      this.pool.clearStaleRequests(camChunkX, camChunkZ, renderDistance);
+    // Cancel stale worker requests for chunks that are now far away
+    if (this.pool && this.pool.cancelStaleRequests) {
+      const cancelled = this.pool.cancelStaleRequests(camChunkX, camChunkZ, renderDistance);
+      if (DEBUG && cancelled > 0) {
+        console.log(`[World] Cancelled ${cancelled} stale chunk requests`);
+      }
     }
 
     const chunksToKeep = new Set();

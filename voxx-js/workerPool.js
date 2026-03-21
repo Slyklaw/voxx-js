@@ -7,6 +7,7 @@ export class WorkerPool {
     this.workers = [];
     this.taskQueue = []; // Priority queue: { message, callback, priority, callbackId }
     this.pendingCallbacks = new Map();
+    this.activeRequests = new Map(); // callbackId -> { abortController, message, priority }
     this.callbackIdCounter = 0;
     this.initWorkers();
     
@@ -93,15 +94,33 @@ export class WorkerPool {
     }
 
     if (event.data.type === 'chunkGenerated') {
-      const { chunkData, callbackId } = event.data;
+      const { chunkData, callbackId, error } = event.data;
+      
+      // Handle AbortError - request was cancelled, ignore it
+      if (error && error.message && error.message.includes('aborted')) {
+        this.activeRequests.delete(callbackId);
+        this.pendingCallbacks.delete(callbackId);
+        return;
+      }
+      
       // Directly call the callback with the chunk data
       const callbackInfo = this.pendingCallbacks.get(callbackId);
       if (callbackInfo) {
         callbackInfo.callback(chunkData);
         this.pendingCallbacks.delete(callbackId);
       }
+      // Clean up activeRequests when worker completes
+      this.activeRequests.delete(callbackId);
     } else if (event.data.type === 'error') {
       const { callbackId, error } = event.data;
+      
+      // Handle AbortError - request was cancelled, ignore it
+      if (error && error.message && error.message.includes('aborted')) {
+        this.activeRequests.delete(callbackId);
+        this.pendingCallbacks.delete(callbackId);
+        return;
+      }
+      
       const callbackInfo = this.pendingCallbacks.get(callbackId);
       
       // Try error callback first, then fall back to null callback
@@ -114,6 +133,9 @@ export class WorkerPool {
       if (callbackInfo) {
         this.pendingCallbacks.delete(callbackId);
       }
+      
+      // Clean up activeRequests on error
+      this.activeRequests.delete(callbackId);
       
       if (DEBUG) {
         console.error(`[WorkerPool] Worker error for callback ${callbackId}:`, error);
@@ -168,6 +190,10 @@ export class WorkerPool {
 
   enqueueTask(message, callback, priority = 0, errorCallback = null) {
     const callbackId = ++this.callbackIdCounter;
+    const abortController = new AbortController();
+    
+    // Track the request with its AbortController for cancellation
+    this.activeRequests.set(callbackId, { abortController, message, priority });
     this.pendingCallbacks.set(callbackId, { callback, errorCallback });
 
     const availableWorker = this.workers.find(w => !w.busy);
@@ -207,6 +233,54 @@ export class WorkerPool {
   }
 
   /**
+   * Cancel a specific request by callbackId.
+   * @param {number} callbackId - The callback ID to cancel
+   * @returns {boolean} True if cancelled, false if not found
+   */
+  cancelRequest(callbackId) {
+    const request = this.activeRequests.get(callbackId);
+    if (request) {
+      request.abortController.abort();
+      this.activeRequests.delete(callbackId);
+      this.pendingCallbacks.delete(callbackId);
+      if (DEBUG) console.log(`[WorkerPool] Cancelled stale request ${callbackId}`);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Cancel all stale in-flight requests based on current camera position.
+   * @param {number} camChunkX - Current camera chunk X
+   * @param {number} camChunkZ - Current camera chunk Z
+   * @param {number} maxDistance - Maximum distance for requests to remain valid
+   * @returns {number} Number of requests cancelled
+   */
+  cancelStaleRequests(camChunkX, camChunkZ, maxDistance = null) {
+    const maxDist = maxDistance ?? this.staleRequestMaxDistance;
+    let cancelledCount = 0;
+    
+    for (const [callbackId, request] of this.activeRequests) {
+      const { message } = request;
+      const chunkX = message.chunkX;
+      const chunkZ = message.chunkZ;
+      
+      const dx = Math.abs(chunkX - camChunkX);
+      const dz = Math.abs(chunkZ - camChunkZ);
+      
+      if (dx > maxDist || dz > maxDist) {
+        request.abortController.abort();
+        this.activeRequests.delete(callbackId);
+        this.pendingCallbacks.delete(callbackId);
+        cancelledCount++;
+        if (DEBUG) console.log(`[WorkerPool] Cancelled stale request ${callbackId} (chunk ${chunkX},${chunkZ})`);
+      }
+    }
+    
+    return cancelledCount;
+  }
+
+  /**
    * Register an error callback for a callbackId to handle failures gracefully
    * @param {number} callbackId - The callback ID
    * @param {Function} errorCallback - Called when worker reports an error
@@ -239,5 +313,6 @@ export class WorkerPool {
     this.taskQueue = [];
     this.dispatchQueue = [];
     this.pendingCallbacks.clear();
+    this.activeRequests.clear();
   }
 }
