@@ -137,7 +137,11 @@
 4. Math utilities module exists at src/math/utils.js with matrix operations
 5. All modules import correctly and voxel engine runs without module errors
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Foundation: constants.js and math utils (wave 1)
+- [ ] 06-02-PLAN.md — Class extraction: InputHandler, BlockEditor, Camera (wave 2)
 
 ---
 
