@@ -8,7 +8,7 @@
 
 **Extension goal:** Add survival mechanics (health, hunger, inventory, day/night, mobs) on top of existing voxel engine.
 
-**Current phase:** v1.1 Phase 7 (Bug Fixes) - Plan 01 complete
+**Current phase:** v1.1 Phase 7 (Bug Fixes) - Plans 01-03 complete
 
 ---
 
@@ -18,8 +18,8 @@
 |-------|-------|
 | Milestone | v1.1 Code Cleanup |
 | Current Phase | Phase 7: Bug Fixes |
-| Current Plan | 07-01 complete (of 4+ plans) |
-| Status | Plan 01 of Phase 7 complete |
+| Current Plan | 07-03 complete (of 4+ plans) |
+| Status | Plans 01-03 of Phase 7 complete |
 | Progress | 5/8 phases complete (v1.0: Phases 1-5) |
 
 **Progress Bar:** [█████░░░░░] 62.5% (5 of 8 phases)
@@ -66,7 +66,7 @@ This milestone addresses technical debt before feature development.
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
 | 6 | Code Structure | STRUCT-01 to STRUCT-04 | Plans 01-02 complete (STRUCT-01, STRUCT-02, STRUCT-03, STRUCT-04 done) |
-| 7 | Bug Fixes | FIX-01 to FIX-04 | Plan 01 complete (FIX-01, FIX-02 done) |
+| 7 | Bug Fixes | FIX-01 to FIX-04 | Plans 01-03 complete (FIX-01, FIX-02, FIX-03, FIX-04 done) |
 | 8 | Reliability | RELI-01 to RELI-03 | Not started |
 
 ---
@@ -134,7 +134,17 @@ This milestone addresses technical debt before feature development.
 - Transition zone threshold at 30-70% blend factor for gradual biome boundaries
 - Deep blocks (stone) remain biome-dominant for underground consistency
 
-**Next action:** Phase 7 Plan 01 complete - ready for FIX-03 (mesh regeneration) and FIX-04 (stale worker requests)
+**Phase 7-02 decisions:**
+- Added syncChunkToWebGL() calls immediately after mesh clearing for same-frame updates
+- Applied same pattern to neighbor chunks at chunk boundaries
+
+**Phase 7-03 decisions:**
+- Used AbortController for cancellation (Web standard)
+- Race conditions accepted - stale chunks may briefly appear but are replaced
+- All completions still handled - no orphaned callbacks
+- Diagnostic logging for cancelled requests
+
+**Next action:** Phase 7 Plan 03 complete - FIX-04 (stale worker requests) done, ready for Phase 8 (Reliability)
 
 ---
 
@@ -150,4 +160,4 @@ This milestone addresses technical debt before feature development.
 
 ---
 
-*State updated: 2026-03-21 after Phase 7 Plan 01 complete (FIX-01, FIX-02)*
+*State updated: 2026-03-21 after Phase 7 Plan 02 complete (FIX-03)*
