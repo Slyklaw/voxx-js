@@ -111,6 +111,13 @@ This milestone addresses technical debt before feature development.
 
 ## Session Continuity
 
+**Last session:** 2026-03-21 - Phase 6 context gathered
+
+**Context decisions:**
+- Incremental import routing with no compat layer
+- Manual game testing after each module extraction
+- Class-based for stateful components, functional for utils
+
 **Next action:** `/gsd-plan-phase 6` to plan Code Structure phase
 
 ---
@@ -123,7 +130,8 @@ This milestone addresses technical debt before feature development.
 - `.planning/STATE.md` - Current state with v1.1 tracking
 - `.planning/MILESTONES.md` - Milestone history
 - `.planning/research/SUMMARY.md` - v1.0 research findings
+- `.planning/phases/06-code-structure/06-CONTEXT.md` - Phase 6 decisions
 
 ---
 
-*State updated: 2026-03-21 after v1.1 roadmap created*
+*State updated: 2026-03-21 after Phase 6 context gathered*
