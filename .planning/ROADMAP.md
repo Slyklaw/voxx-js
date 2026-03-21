@@ -12,7 +12,7 @@
 - [ ] **Phase 4: Day/Night Cycle** - Game time progression, ambient lighting, sky transitions, shadow direction, SSAO scaling, time persistence
 - [ ] **Phase 5: Hostile Mobs** - Night spawning, pathfinding, contact damage, block-kill, difficulty scaling
 - [x] **Phase 6: Code Structure** - Consolidate chunks, split main.js, extract BlockEditor, create math utils (completed 2026-03-21)
-- [x] **Phase 7: Bug Fixes** - Remove flat terrain hack, fix biome blending, fix mesh regeneration, fix stale worker (in progress)
+- [x] **Phase 7: Bug Fixes** - Remove flat terrain hack, fix biome blending, fix mesh regeneration, fix stale worker (completed 2026-03-21)
 - [ ] **Phase 8: Reliability** - Bundle simplex-noise locally, add logging utility, replace DEBUG console.log
 
 ---
@@ -159,12 +159,12 @@ Plans:
 3. Block edits appear immediately in world (no manual chunk refresh needed)
 4. Fast camera movement doesn't cause visual glitches from stale worker requests
 
-**Plans:** 2/3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 07-01-PLAN.md — Terrain fixes: natural variation + biome blending (wave 1) ✓
 - [x] 07-02-PLAN.md — Mesh regeneration: immediate block edit updates (wave 1) ✓
-- [ ] 07-03-PLAN.md — Stale worker: AbortController cancellation (wave 1)
+- [x] 07-03-PLAN.md — Stale worker: AbortController cancellation (wave 1) ✓
 
 ---
 
@@ -196,7 +196,7 @@ Plans:
 | 4. Day/Night Cycle | 0/6 | Not started | - |
 | 5. Hostile Mobs | 0/5 | Not started | - |
 | 6. Code Structure | 2/2 | Complete    | 2026-03-21 |
-| 7. Bug Fixes | 2/3 | In Progress | - |
+| 7. Bug Fixes | 3/3 | Complete    | 2026-03-21 |
 | 8. Reliability | 0/4 | Not started | - |
 
 ---
@@ -230,4 +230,4 @@ Plans:
 
 ---
 
-*Last updated: 2026-03-21 after Phase 7 Plans 01-02 complete (FIX-01, FIX-02, FIX-03)*
+*Last updated: 2026-03-21 after Phase 7 Plans 01-03 complete (FIX-01, FIX-02, FIX-03, FIX-04)*
