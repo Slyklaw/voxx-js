@@ -16,16 +16,31 @@
 
 | Field | Value |
 |-------|-------|
-| Phase | Roadmap (pre-Phase 1) |
-| Current Plan | None (roadmap created) |
+| Phase | Milestone v1.1 (Code Cleanup) |
+| Current Plan | Defining requirements |
 | Status | Not started |
-| Progress | 0/5 phases complete |
+| Progress | 0/5 phases complete (v1.0) |
 
 **Progress Bar:** [░░░░░░░░░░] 0% (0 of 5 phases)
 
 ---
 
-## Phase Status
+## v1.1 Milestone: Code Cleanup
+
+This milestone addresses technical debt before feature development.
+
+**Scope:**
+- Consolidate duplicate chunk classes
+- Split main.js into modules
+- Extract BlockEditor class
+- Create math utilities
+- Fix terrain generation bugs
+- Bundle simplex-noise locally
+- Add logging utility
+
+---
+
+## Phase Status (v1.0 Roadmap)
 
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
@@ -67,17 +82,17 @@
 
 ## Session Continuity
 
-**Next action:** `/gsd-plan-phase 1` to plan Persistence Foundation
+**Next action:** `/gsd-plan-phase 6` to plan v1.1 Code Cleanup
 
 ---
 
 ## Files
 
-- `.planning/PROJECT.md` - Core project context
-- `.planning/REQUIREMENTS.md` - 31 v1 requirements
-- `.planning/ROADMAP.md` - This roadmap
-- `.planning/research/SUMMARY.md` - Research findings
+- `.planning/PROJECT.md` - Core project context (updated for v1.1)
+- `.planning/REQUIREMENTS.md` - v1.0 requirements + v1.1 requirements
+- `.planning/ROADMAP.md` - v1.0 roadmap + v1.1 roadmap
+- `.planning/research/SUMMARY.md` - v1.0 research findings
 
 ---
 
-*State initialized: 2026-03-21*
+*State updated: 2026-03-21 after v1.1 milestone started*

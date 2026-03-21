@@ -37,6 +37,26 @@ Building toward these features:
 - [ ] Day/night cycle
 - [ ] Multiplayer foundation (client architecture)
 
+## Current Milestone: v1.1 Code Cleanup
+
+**Goal:** Address technical debt to improve maintainability and fix critical bugs before feature development.
+
+**Target features:**
+- Consolidate duplicate chunk classes into single Chunk class
+- Split monolithic main.js into separate modules (InputHandler, BlockEditor, Camera, Renderer)
+- Extract BlockEditor class for shared mesh update logic
+- Create shared math utilities module
+- Remove forced flat terrain hack in biomes.js
+- Fix biome blending for smooth terrain transitions
+- Bundle simplex-noise locally (remove CDN dependency)
+- Add structured logging utility with levels
+
+**v1.0 Delivered:**
+- WebGL2 multi-pass rendering with deferred shading
+- Procedural terrain generation with simplex noise
+- Block placement and destruction
+- Camera controls and chunk loading
+
 ### Out of Scope
 
 - Server-side persistence (future work)
@@ -83,4 +103,4 @@ Building toward these features:
 | Greedy meshing | Reduce draw calls for large worlds | ✓ Working |
 
 ---
-*Last updated: 2026-03-21 after project initialization*
+*Last updated: 2026-03-21 after v1.1 Code Cleanup milestone started*
