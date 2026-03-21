@@ -153,6 +153,9 @@ export class BlockEditor {
       // Delete old WebGL mesh so it gets recreated
       this.clearChunkWebGLMesh(chunk);
       
+      // Immediately recreate WebGL mesh
+      this.syncChunkToWebGL(chunk);
+      
       // Mark neighbor chunks for update if block is on boundary
       this.markNeighborChunksForUpdate(
         this.targetedBlock.chunkX, this.targetedBlock.chunkZ,
@@ -198,6 +201,9 @@ export class BlockEditor {
           // Delete old WebGL mesh so it gets recreated
           this.clearChunkWebGLMesh(chunk);
           
+          // Immediately recreate WebGL mesh
+          this.syncChunkToWebGL(chunk);
+          
           // Mark neighbor chunks for update if block is on boundary
           this.markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
           
@@ -237,6 +243,8 @@ export class BlockEditor {
       if (neighborChunk && neighborChunk.hasVoxelData) {
         neighborChunk.meshData = neighborChunk.generateMeshData();
         neighborChunk.needsUpdate = true;
+        // Recreate WebGL mesh for neighbor chunk
+        this.syncChunkToWebGL(neighborChunk);
         if (DEBUG) console.log(`[BlockEdit] Marked neighbor chunk ${n.x},${n.z} for update`);
       }
     }
