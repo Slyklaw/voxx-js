@@ -2,7 +2,7 @@
 
 **Created:** 2026-03-21
 **Depth:** standard
-**Coverage:** 31/31 v1 requirements mapped
+**Coverage:** 31/31 v1 requirements mapped + 11/11 v1.1 requirements mapped
 
 ## Phases
 
@@ -11,8 +11,13 @@
 - [ ] **Phase 3: Inventory System** - Hotbar (1-9), slot selection, block placement, block pickup, stack merging, persistence
 - [ ] **Phase 4: Day/Night Cycle** - Game time progression, ambient lighting, sky transitions, shadow direction, SSAO scaling, time persistence
 - [ ] **Phase 5: Hostile Mobs** - Night spawning, pathfinding, contact damage, block-kill, difficulty scaling
+- [ ] **Phase 6: Code Structure** - Consolidate chunks, split main.js, extract BlockEditor, create math utils
+- [ ] **Phase 7: Bug Fixes** - Remove flat terrain hack, fix biome blending, fix mesh regeneration, fix stale worker
+- [ ] **Phase 8: Reliability** - Bundle simplex-noise locally, add logging utility, replace DEBUG console.log
 
-## Phase Details
+---
+
+## v1.0 Phase Details
 
 ### Phase 1: Persistence Foundation
 
@@ -115,6 +120,63 @@
 
 ---
 
+## v1.1 Phase Details (Code Cleanup)
+
+### Phase 6: Code Structure
+
+**Goal:** Codebase is modular with clear separation of concerns
+
+**Depends on:** Nothing (independent of v1.0 phases)
+
+**Requirements:** STRUCT-01, STRUCT-02, STRUCT-03, STRUCT-04
+
+**Success Criteria** (what must be TRUE):
+1. Single Chunk class exists (src/chunk.js) without duplicate chunkCore.js
+2. main.js (997 lines) is split into separate modules: InputHandler, BlockEditor, Camera, Renderer
+3. BlockEditor class handles shared mesh update logic for placeBlock/destroyBlock
+4. Math utilities module exists at src/math/utils.js with matrix operations
+5. All modules import correctly and voxel engine runs without module errors
+
+**Plans:** TBD
+
+---
+
+### Phase 7: Bug Fixes
+
+**Goal:** Terrain generation and block editing work correctly without known issues
+
+**Depends on:** Phase 6 (requires modular structure to safely refactor)
+
+**Requirements:** FIX-01, FIX-02, FIX-03, FIX-04
+
+**Success Criteria** (what must be TRUE):
+1. Terrain varies with elevation naturally (forced flat terrain hack removed from biomes.js)
+2. Biome transitions are smooth with gradual blending (no harsh visual edges)
+3. Block edits appear immediately in world (no manual chunk refresh needed)
+4. Fast camera movement doesn't cause visual glitches from stale worker requests
+
+**Plans:** TBD
+
+---
+
+### Phase 8: Reliability
+
+**Goal:** External dependencies are bundled locally and logging is consistent
+
+**Depends on:** Phase 6 (requires module structure for new logger module)
+
+**Requirements:** RELI-01, RELI-02, RELI-03
+
+**Success Criteria** (what must be TRUE):
+1. simplex-noise@4.0.3 is installed locally via npm (no CDN script tag in index.html)
+2. Logger utility exists with levels: debug, info, warn, error
+3. All DEBUG console.log calls are replaced with proper logger.debug() or logger.info()
+4. Application runs in browser with structured logs showing level prefixes
+
+**Plans:** TBD
+
+---
+
 ## Progress Table
 
 | Phase | Plans Complete | Status | Completed |
@@ -124,10 +186,15 @@
 | 3. Inventory System | 0/6 | Not started | - |
 | 4. Day/Night Cycle | 0/6 | Not started | - |
 | 5. Hostile Mobs | 0/5 | Not started | - |
+| 6. Code Structure | 0/5 | Not started | - |
+| 7. Bug Fixes | 0/4 | Not started | - |
+| 8. Reliability | 0/4 | Not started | - |
 
 ---
 
 ## Coverage
+
+### v1.0 Requirements
 
 | Category | Requirements | Phase |
 |----------|--------------|-------|
@@ -138,8 +205,20 @@
 | Day/Night | DAY-01, DAY-02, DAY-03, DAY-04, DAY-05, DAY-06 | Phase 4 |
 | Mobs | MOBS-01, MOBS-02, MOBS-03, MOBS-04, MOBS-05 | Phase 5 |
 
-**Total:** 31/31 requirements mapped ✓
+**Total:** 31/31 v1 requirements mapped ✓
+
+### v1.1 Requirements (Code Cleanup)
+
+| Category | Requirements | Phase |
+|----------|--------------|-------|
+| Code Structure | STRUCT-01, STRUCT-02, STRUCT-03, STRUCT-04 | Phase 6 |
+| Bug Fixes | FIX-01, FIX-02, FIX-03, FIX-04 | Phase 7 |
+| Reliability | RELI-01, RELI-02, RELI-03 | Phase 8 |
+
+**Total:** 11/11 v1.1 requirements mapped ✓
+
+**Grand Total:** 42/42 requirements mapped ✓
 
 ---
 
-*Last updated: 2026-03-21 after roadmap creation*
+*Last updated: 2026-03-21 after v1.1 roadmap created*

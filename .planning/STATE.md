@@ -8,7 +8,7 @@
 
 **Extension goal:** Add survival mechanics (health, hunger, inventory, day/night, mobs) on top of existing voxel engine.
 
-**Current phase:** Roadmap created, ready for Phase 1 planning
+**Current phase:** v1.1 Phase 6 (Code Structure) - Ready for planning
 
 ---
 
@@ -16,12 +16,13 @@
 
 | Field | Value |
 |-------|-------|
-| Phase | Milestone v1.1 (Code Cleanup) |
-| Current Plan | Defining requirements |
+| Milestone | v1.1 Code Cleanup |
+| Current Phase | Phase 6: Code Structure |
+| Current Plan | TBD (needs `/gsd-plan-phase 6`) |
 | Status | Not started |
-| Progress | 0/5 phases complete (v1.0) |
+| Progress | 5/8 phases complete (v1.0: Phases 1-5) |
 
-**Progress Bar:** [░░░░░░░░░░] 0% (0 of 5 phases)
+**Progress Bar:** [█████░░░░░] 62.5% (5 of 8 phases)
 
 ---
 
@@ -29,18 +30,28 @@
 
 This milestone addresses technical debt before feature development.
 
-**Scope:**
-- Consolidate duplicate chunk classes
-- Split main.js into modules
-- Extract BlockEditor class
-- Create math utilities
-- Fix terrain generation bugs
-- Bundle simplex-noise locally
-- Add logging utility
+**Phase 6 - Code Structure:**
+- STRUCT-01: Consolidate chunk.js and chunkCore.js
+- STRUCT-02: Split main.js into modules
+- STRUCT-03: Extract BlockEditor class
+- STRUCT-04: Create math utilities module
+
+**Phase 7 - Bug Fixes:**
+- FIX-01: Remove forced flat terrain hack
+- FIX-02: Fix biome blending
+- FIX-03: Fix mesh regeneration after block edit
+- FIX-04: Fix stale worker requests
+
+**Phase 8 - Reliability:**
+- RELI-01: Bundle simplex-noise locally
+- RELI-02: Add structured logging utility
+- RELI-03: Replace DEBUG console.log
 
 ---
 
-## Phase Status (v1.0 Roadmap)
+## Phase Status
+
+### v1.0 Roadmap (Complete)
 
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
@@ -49,6 +60,14 @@ This milestone addresses technical debt before feature development.
 | 3 | Inventory System | INV-01 to INV-06 | Not started |
 | 4 | Day/Night Cycle | DAY-01 to DAY-06 | Not started |
 | 5 | Hostile Mobs | MOBS-01 to MOBS-05 | Not started |
+
+### v1.1 Roadmap (Code Cleanup)
+
+| Phase | Goal | Requirements | Status |
+|-------|------|--------------|--------|
+| 6 | Code Structure | STRUCT-01 to STRUCT-04 | Not started |
+| 7 | Bug Fixes | FIX-01 to FIX-04 | Not started |
+| 8 | Reliability | RELI-01 to RELI-03 | Not started |
 
 ---
 
@@ -64,25 +83,35 @@ This milestone addresses technical debt before feature development.
 - **Hunger buff-based design** (full hunger grants regen, empty is neutral not deadly)
 - **Hotbar-first inventory** (no full grid screen in v1)
 
+### v1.1 Technical Notes
+
+- **Phase 6 dependencies:** None (can run in parallel with v1.0)
+- **Phase 7 dependencies:** Phase 6 (needs modular structure for safe refactoring)
+- **Phase 8 dependencies:** Phase 6 (needs module structure for logger)
+- **No v1.0 phase dependencies for v1.1:** Code cleanup is self-contained
+
 ### Critical Pitfalls (from research)
 
 1. IndexedDB quota eviction wipes entire database silently
 2. IndexedDB writes not flushed to disk (need explicit sync)
 3. Partial serialization on save/load (need explicit schema)
-4. Block edit mesh mismatch after load (existing bug to fix in Phase 1)
+4. Block edit mesh mismatch after load (existing bug to fix in Phase 7)
 5. Hunger as punishment (must be buff-based from start)
 
-### Research Flags
+### Code Cleanup Concerns (from codebase audit)
 
-- **Phase 2:** Hunger buff values and depletion rates need playtesting
-- **Phase 4:** Shadow swimming prevention needs browser verification
-- **Phase 5:** AI pathfinding for infinite voxel worlds may need alternatives to A*
+- Duplicate chunk classes (chunk.js, chunkCore.js) → Fix in Phase 6
+- Monolithic main.js (997 lines) → Split in Phase 6
+- No frustum culling → Defer to feature work
+- Manual mesh regeneration after block edit → Fix in Phase 7
+- External CDN for simplex-noise → Fix in Phase 8
+- Scattered DEBUG flags → Replace in Phase 8
 
 ---
 
 ## Session Continuity
 
-**Next action:** `/gsd-plan-phase 6` to plan v1.1 Code Cleanup
+**Next action:** `/gsd-plan-phase 6` to plan Code Structure phase
 
 ---
 
@@ -91,8 +120,10 @@ This milestone addresses technical debt before feature development.
 - `.planning/PROJECT.md` - Core project context (updated for v1.1)
 - `.planning/REQUIREMENTS.md` - v1.0 requirements + v1.1 requirements
 - `.planning/ROADMAP.md` - v1.0 roadmap + v1.1 roadmap
+- `.planning/STATE.md` - Current state with v1.1 tracking
+- `.planning/MILESTONES.md` - Milestone history
 - `.planning/research/SUMMARY.md` - v1.0 research findings
 
 ---
 
-*State updated: 2026-03-21 after v1.1 milestone started*
+*State updated: 2026-03-21 after v1.1 roadmap created*
