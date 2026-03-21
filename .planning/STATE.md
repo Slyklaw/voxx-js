@@ -8,7 +8,7 @@
 
 **Extension goal:** Add survival mechanics (health, hunger, inventory, day/night, mobs) on top of existing voxel engine.
 
-**Current phase:** v1.1 Phase 6 (Code Structure) - Plan 01 complete
+**Current phase:** v1.1 Phase 6 (Code Structure) - Plans 01-02 complete
 
 ---
 
@@ -18,8 +18,8 @@
 |-------|-------|
 | Milestone | v1.1 Code Cleanup |
 | Current Phase | Phase 6: Code Structure |
-| Current Plan | 06-01 complete (of 2+ plans) |
-| Status | Plan 01 complete |
+| Current Plan | 06-02 complete (of 2+ plans) |
+| Status | Plans 01-02 complete |
 | Progress | 5/8 phases complete (v1.0: Phases 1-5) |
 
 **Progress Bar:** [█████░░░░░] 62.5% (5 of 8 phases)
@@ -65,7 +65,7 @@ This milestone addresses technical debt before feature development.
 
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
-| 6 | Code Structure | STRUCT-01 to STRUCT-04 | Plan 01/02 complete (STRUCT-01, STRUCT-04 done) |
+| 6 | Code Structure | STRUCT-01 to STRUCT-04 | Plans 01-02 complete (STRUCT-01, STRUCT-02, STRUCT-03, STRUCT-04 done) |
 | 7 | Bug Fixes | FIX-01 to FIX-04 | Not started |
 | 8 | Reliability | RELI-01 to RELI-03 | Not started |
 
@@ -111,7 +111,7 @@ This milestone addresses technical debt before feature development.
 
 ## Session Continuity
 
-**Last session:** 2026-03-21 - Phase 6 Plan 01 complete
+**Last session:** 2026-03-21 - Phase 6 Plans 01-02 complete
 
 **Context decisions:**
 - Incremental import routing with no compat layer
@@ -123,7 +123,13 @@ This milestone addresses technical debt before feature development.
 - Chunk class over ChunkCore (replaced ChunkCore usage in chunkWorker.js)
 - Math utilities extracted to src/math/ module with barrel exports
 
-**Next action:** Continue with plan 06-02 (Split main.js into modules)
+**Phase 6-02 decisions:**
+- InputHandler as central input manager with callbacks for block events
+- BlockEditor handles raycasting and shared mesh update logic
+- Camera as pure stateful component for position/rotation/movement
+- main.js as orchestration layer using injected instances
+
+**Next action:** Phase 6 complete - ready for Phase 7 (Bug Fixes)
 
 ---
 
@@ -139,4 +145,4 @@ This milestone addresses technical debt before feature development.
 
 ---
 
-*State updated: 2026-03-21 after Phase 6 Plan 01 complete*
+*State updated: 2026-03-21 after Phase 6 Plans 01-02 complete*
