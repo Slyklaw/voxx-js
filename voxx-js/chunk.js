@@ -118,13 +118,65 @@ export class Chunk {
         const finalHeight = Math.floor(primaryHeight * (1 - blendFactor) + secondaryHeight * blendFactor);
         const clampedHeight = Math.max(0, Math.min(CHUNK_HEIGHT - 1, finalHeight));
 
-        // Determine which biome is dominant for block type selection
-        const dominantBiome = blendFactor < 0.5 ? primaryBiome : secondaryBiome;
+        // Calculate biome contributions for smooth blending
+        const primaryContribution = 1 - blendFactor;
+        const secondaryContribution = blendFactor;
+        
+        // Define transition zone boundaries (0.3 to 0.7 blend factor)
+        const TRANSITION_START = 0.3;
+        const TRANSITION_END = 0.7;
+        const inTransition = blendFactor > TRANSITION_START && blendFactor < TRANSITION_END;
+        
+        // Calculate blend amount within transition zone (0 to 1)
+        const transitionBlend = inTransition 
+          ? (blendFactor - TRANSITION_START) / (TRANSITION_END - TRANSITION_START)
+          : (blendFactor >= TRANSITION_END ? 1 : 0);
 
         // Generate terrain blocks
         for (let y = 0; y < CHUNK_HEIGHT; y++) {
           if (y < clampedHeight) {
-            const blockType = getBiomeBlockType(y, clampedHeight, dominantBiome);
+            let blockType;
+            
+            if (inTransition) {
+              // Get block types from both biomes for blending
+              const primaryBlockType = getBiomeBlockType(y, clampedHeight, primaryBiome);
+              const secondaryBlockType = getBiomeBlockType(y, clampedHeight, secondaryBiome);
+              
+              // Deep blocks (stone) use dominant biome, surface blocks blend
+              const depthFromSurface = clampedHeight - y;
+              const STONE_LAYER_START = 5; // Stone starts 5 blocks below surface
+              
+              if (depthFromSurface >= STONE_LAYER_START) {
+                // Deep blocks: use dominant biome
+                blockType = blendFactor < 0.5 ? primaryBlockType : secondaryBlockType;
+              } else if (depthFromSurface > 0) {
+                // Surface layers (grass/dirt): blend based on biome contributions
+                // Use smooth interpolation for gradual transitions
+                const blendAmount = primaryContribution > secondaryContribution 
+                  ? (1 - transitionBlend) * primaryContribution
+                  : transitionBlend * secondaryContribution;
+                
+                // Apply threshold: only blend if contribution difference is significant
+                const contributionDiff = Math.abs(primaryContribution - secondaryContribution);
+                if (contributionDiff < 0.3) {
+                  // Near equal contribution - blend the block types
+                  blockType = blendAmount > 0.5 ? primaryBlockType : secondaryBlockType;
+                } else {
+                  // Stronger biome influence - prefer dominant
+                  blockType = primaryContribution > secondaryContribution 
+                    ? primaryBlockType 
+                    : secondaryBlockType;
+                }
+              } else {
+                // Surface block (exact surface): use dominant biome for stability
+                blockType = blendFactor < 0.5 ? primaryBlockType : secondaryBlockType;
+              }
+            } else {
+              // Outside transition zone: use single biome
+              const dominantBiome = blendFactor < 0.5 ? primaryBiome : secondaryBiome;
+              blockType = getBiomeBlockType(y, clampedHeight, dominantBiome);
+            }
+            
             this.setVoxel(x, y, z, blockType);
           }
         }
