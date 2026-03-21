@@ -11,11 +11,11 @@ export const BIOMES = {
     id: 0,
     name: 'Lowland',
     baseHeight: SEA_LEVEL - 6, // Slightly closer to sea level
-    heightVariation: 6, // Much lower variation for near-flat terrain
-    octaves: 1, // Single octave to eliminate fractal roughness
-    persistence: 0.2,
-    lacunarity: 1.6,
-    scale: 6000 // Very large scale so changes are extremely gradual
+    heightVariation: 15, // Rolling hills with natural variation
+    octaves: 4, // Multiple octaves for natural-looking terrain
+    persistence: 0.5, // Balanced fractal detail
+    lacunarity: 2.0, // Standard octave scaling
+    scale: 2000 // More frequent variation across the landscape
   },
   MOUNTAINS: {
     id: 1,
@@ -45,11 +45,6 @@ export const BIOME_CONFIG = {
  * @returns {number} Generated height
  */
 export function generateBiomeHeight(worldX, worldZ, biome, noise) {
-  // TEST: Force perfectly flat Lowland to isolate any other sources of elevation.
-  if (biome.id === BIOMES.LOWLAND.id) {
-    return biome.baseHeight; // exactly flat
-  }
-
   let amplitude = 1;
   let frequency = 1;
   let height = 0;
