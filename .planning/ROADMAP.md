@@ -29,7 +29,12 @@
   2. Context loss is detected within 1 second and resources are recreated
   3. Frame rate stays above 50fps during normal gameplay
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Resource registration & memory management (GL-01)
+- [ ] 01-02-PLAN.md — Context loss handling with UI (GL-02)
+- [ ] 01-03-PLAN.md — Performance monitoring (GL-03)
 
 ---
 
@@ -105,7 +110,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. WebGL Foundation | 0/1 | Not started | - |
+| 1. WebGL Foundation | 0/3 | Not started | - |
 | 2. Worker System | 0/1 | Not started | - |
 | 3. Performance | 0/1 | Not started | - |
 | 4. User Experience | 0/1 | Not started | - |
