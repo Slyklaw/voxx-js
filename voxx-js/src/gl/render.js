@@ -708,6 +708,9 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
       // Bind the VAO first
       gl.bindVertexArray(chunkMesh.vao);
       
+      // Bind the voxel shader program - required before drawElementsInstanced
+      gl.useProgram(voxelProgram);
+      
       // Set up chunk offset attribute WHILE VAO is bound (location 6 = aChunkOffset in voxel.js)
       // This gets captured in VAO state so drawElementsInstanced works correctly
       const chunkOffsetLoc = 6; // matches layout(location = 6) in voxel.js
