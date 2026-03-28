@@ -9,6 +9,8 @@ import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginD
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
+import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInstanceBuffer } from '../chunk/chunkManager.js';
+import { CHUNK_SIZE } from '../chunk/chunkManager.js';
 import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
 
 // Interpolate between two RGB arrays
@@ -562,14 +564,15 @@ export function isTextureLoaded() {
   return textureAtlasLoaded;
 }
 
-export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix, wireframe = false, debugMode = false) {
+export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix, wireframe = false, debugMode = false, chunkX = 0, chunkZ = 0) {
   if (!chunkMesh || !chunkMesh.vao) {
     return;
   }
 
   gl.useProgram(voxelProgram);
   
-  // Use identity matrix - vertex positions are already in world space from worker
+  // Use identity matrix - vertex positions transformed by instance offset in shader
+  // PERF-01: Chunk world position computed in vertex shader using aChunkOffset
   const identity = new Float32Array([
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -677,12 +680,36 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
       return keyA.localeCompare(keyB);
     });
   
-  // Render each visible chunk
+  if (visibleChunks.length === 0) return;
+  
+  // PERF-01: Set up instance buffer with per-chunk world positions
+  // This moves matrix calculation from JavaScript to vertex shader
+  const instanceBuffer = createInstanceBuffer(gl, visibleChunks);
+  
+  // Set up chunk offset attribute (location 6 = aChunkOffset in voxel shader)
+  const chunkOffsetLoc = 6; // matches layout(location = 6) in voxel.js
+  if (instanceBuffer && voxelAttribs) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+    gl.enableVertexAttribArray(chunkOffsetLoc);
+    gl.vertexAttribPointer(chunkOffsetLoc, 3, gl.FLOAT, false, 0, 0);
+    // Set divisor to 1 so attribute advances once per instance (chunk), not per vertex
+    gl.vertexAttribDivisor(chunkOffsetLoc, 1);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
+  
+  // Render each visible chunk using instance attribute for position
   for (let i = 0; i < visibleChunks.length; i++) {
     const chunk = visibleChunks[i];
     // chunk._webglMesh is the WebGL mesh object created by createChunkMeshFromData
-    renderChunk(gl, chunk._webglMesh, null, viewMatrix, projectionMatrix, wireframe, debugMode);
+    // Pass chunk position as instance data - shader will use aChunkOffset attribute
+    renderChunk(gl, chunk._webglMesh, null, viewMatrix, projectionMatrix, wireframe, debugMode, chunk.chunkX, chunk.chunkZ);
     incrementDrawCalls(1);
+  }
+  
+  // Clean up instance attribute state (reset divisor for other renders)
+  if (instanceBuffer) {
+    gl.vertexAttribDivisor(chunkOffsetLoc, 0);
+    gl.disableVertexAttribArray(chunkOffsetLoc);
   }
   
   if (DEBUG && visibleChunks.length > 0) {
