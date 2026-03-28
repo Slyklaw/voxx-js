@@ -5,7 +5,7 @@ import { createSSAOProgram, getSSAOUniforms, generateKernelSamples, createNoiseT
 import { createBlurProgram, getBlurUniforms } from '../shaders/blur.js';
 import { createCompositeProgram, getCompositeUniforms } from '../shaders/composite.js';
 import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
-import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls } from './performance.js';
+import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls, checkFPSWarning } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
@@ -924,6 +924,9 @@ export function renderLoop(canvasEl, gl, renderFn) {
     if (currentViewMatrix && currentProjectionMatrix) {
       renderSky(glContext, currentViewMatrix, currentProjectionMatrix, currentTimeOfDay);
     }
+    
+    // Check FPS and warn if below threshold
+    checkFPSWarning();
     
     animationFrameId = requestAnimationFrame(frame);
   }
