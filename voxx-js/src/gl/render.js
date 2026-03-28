@@ -723,8 +723,14 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
       }
       
+      // Bind the element array buffer (IBO) - VAO doesn't capture ELEMENT_ARRAY_BUFFER state
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
+      
       // Single draw call for all chunks - instance count = visibleChunks.length
       gl.drawElementsInstanced(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0, visibleChunks.length);
+      
+      // Unbind IBO
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
       
       // Clean up instance attribute state (reset divisor for other renders)
       if (instanceBuffer) {
