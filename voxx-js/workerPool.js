@@ -9,6 +9,7 @@ export class WorkerPool {
     this.pendingCallbacks = new Map();
     this.activeRequests = new Map(); // callbackId -> { abortController, message, priority }
     this.callbackIdCounter = 0;
+    this.terminatingWorkers = new Map(); // workerIndex -> { resolve, jobs: Set }
     this.initWorkers();
     
     // Staged dispatch settings - use WORKER_CONFIG constants
@@ -35,19 +36,65 @@ export class WorkerPool {
   /**
    * Recreate a worker that has failed
    * @param {number} workerIndex - Index of the worker to recreate
-   * @returns {boolean} True if recreation successful
+   * @param {boolean} graceful - If true, wait for in-progress jobs to complete before terminating
+   * @returns {Promise<boolean>|boolean} True if recreation successful, or Promise that resolves when recreated
    */
-  recreateWorker(workerIndex) {
+  recreateWorker(workerIndex, graceful = true) {
     if (workerIndex < 0 || workerIndex >= this.workers.length) {
       if (DEBUG) console.error(`[WorkerPool] Invalid worker index: ${workerIndex}`);
       return false;
     }
 
     const oldEntry = this.workers[workerIndex];
+
+    // If graceful and worker is busy, wait for job completion
+    if (graceful && oldEntry.busy) {
+      return new Promise((resolve) => {
+        // Store callback to resolve after job completes
+        oldEntry._pendingCompletion = () => {
+          // Clean up orphaned callbacks for this worker
+          this.cleanupWorkerJobs(workerIndex);
+          
+          // Terminate the old worker
+          if (oldEntry.worker) {
+            oldEntry.worker.terminate();
+          }
+          
+          // Create new worker
+          this._createNewWorker(workerIndex);
+          
+          // Clear the pending completion
+          oldEntry._pendingCompletion = null;
+          
+          if (DEBUG) console.log(`[WorkerPool] Worker ${workerIndex} recreated gracefully`);
+          resolve(true);
+        };
+        
+        // Mark worker as terminating
+        this.terminatingWorkers.set(workerIndex, { resolve });
+      });
+    }
+
+    // Non-graceful or worker not busy: clean up and recreate immediately
+    this.cleanupWorkerJobs(workerIndex);
+    
     if (oldEntry.worker) {
       oldEntry.worker.terminate();
     }
 
+    const success = this._createNewWorker(workerIndex);
+    if (DEBUG && success) {
+      console.log(`[WorkerPool] Worker ${workerIndex} recreated successfully`);
+    }
+    return success;
+  }
+
+  /**
+   * Internal method to create a new worker and replace the old one
+   * @param {number} workerIndex - Index of the worker to create
+   * @returns {boolean} True if creation successful
+   */
+  _createNewWorker(workerIndex) {
     try {
       const newWorker = new Worker(this.workerScript, { type: 'module' });
       newWorker.onmessage = (event) => this.handleWorkerResponse(newWorker, event);
@@ -60,12 +107,48 @@ export class WorkerPool {
         index: workerIndex
       };
 
-      if (DEBUG) console.log(`[WorkerPool] Worker ${workerIndex} recreated successfully`);
       return true;
     } catch (err) {
-      if (DEBUG) console.error(`[WorkerPool] Failed to recreate worker ${workerIndex}:`, err);
+      if (DEBUG) console.error(`[WorkerPool] Failed to create worker ${workerIndex}:`, err);
       return false;
     }
+  }
+
+  /**
+   * Clean up orphaned callbacks when a worker is being terminated
+   * @param {number} workerIndex - Index of the worker being terminated
+   */
+  cleanupWorkerJobs(workerIndex) {
+    // Find all activeRequests that were assigned to this worker
+    const orphanedCallbackIds = [];
+    
+    for (const [callbackId, request] of this.activeRequests) {
+      // We need to find callbacks that were sent to this worker
+      // Since we don't directly track workerIndex in activeRequests, 
+      // we'll clean up based on pendingCallbacks that may have been orphaned
+      const pendingCallback = this.pendingCallbacks.get(callbackId);
+      if (pendingCallback) {
+        orphanedCallbackIds.push(callbackId);
+      }
+    }
+
+    // Call callbacks with null (indicating failure) and remove from maps
+    for (const callbackId of orphanedCallbackIds) {
+      const callbackInfo = this.pendingCallbacks.get(callbackId);
+      if (callbackInfo?.callback) {
+        callbackInfo.callback(null); // Indicate failure
+      }
+      if (callbackInfo?.errorCallback) {
+        callbackInfo.errorCallback(new Error('Worker terminated before job completed'), callbackId);
+      }
+      this.pendingCallbacks.delete(callbackId);
+      this.activeRequests.delete(callbackId);
+      
+      if (DEBUG) console.log(`[WorkerPool] Cleaned up orphaned callback ${callbackId} from worker ${workerIndex}`);
+    }
+    
+    // Clear terminating workers entry
+    this.terminatingWorkers.delete(workerIndex);
   }
 
   handleWorkerMessageError(worker, workerIndex, event) {
@@ -86,6 +169,12 @@ export class WorkerPool {
   handleWorkerResponse(worker, event) {
     const workerEntry = this.workers.find(w => w.worker === worker);
     if (workerEntry) {
+      // Check if we're waiting for graceful shutdown completion
+      if (workerEntry._pendingCompletion) {
+        workerEntry._pendingCompletion();
+        workerEntry._pendingCompletion = null;
+      }
+      
       workerEntry.busy = false;
       const task = this._dequeueTask();
       if (task) {
@@ -307,12 +396,45 @@ export class WorkerPool {
     this.dispatchBudgetMs = Math.max(1, ms);
   }
 
-  terminate() {
-    this.workers.forEach(({ worker }) => worker.terminate());
-    this.workers = [];
+  /**
+   * Terminate all workers gracefully, waiting for in-progress jobs to complete.
+   * @returns {Promise<void>} Resolves when all workers are terminated
+   */
+  async terminate() {
+    // First, clear the task queue to prevent new tasks
     this.taskQueue = [];
+    
+    // Collect all busy workers and wait for them to complete
+    const terminationPromises = [];
+    
+    for (let i = 0; i < this.workers.length; i++) {
+      const entry = this.workers[i];
+      if (entry.busy && entry._pendingCompletion) {
+        // Worker is busy and has pending completion handler
+        terminationPromises.push(
+          new Promise((resolve) => {
+            entry._pendingCompletion = () => {
+              if (entry.worker) {
+                entry.worker.terminate();
+              }
+              resolve();
+            };
+          })
+        );
+      } else if (entry.worker) {
+        // Worker not busy, terminate immediately
+        entry.worker.terminate();
+      }
+    }
+
+    // Wait for all graceful terminations to complete
+    await Promise.all(terminationPromises);
+
+    // Clear all state
+    this.workers = [];
     this.dispatchQueue = [];
     this.pendingCallbacks.clear();
     this.activeRequests.clear();
+    this.terminatingWorkers.clear();
   }
 }
