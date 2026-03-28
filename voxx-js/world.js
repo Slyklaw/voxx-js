@@ -120,26 +120,31 @@ export class World {
     chunk.setNeighbors(north, south, east, west);
 
     // Also update the neighbors to point back to this chunk
+    // Use cached getNeighbors() instead of creating new objects
     if (north) {
-      const northNeighbors = this.getChunkNeighbors(chunkX, chunkZ - 1);
+      const northNeighbors = north.getNeighbors();
       north.setNeighbors(northNeighbors.north, chunk, northNeighbors.east, northNeighbors.west);
     }
     if (south) {
-      const southNeighbors = this.getChunkNeighbors(chunkX, chunkZ + 1);
+      const southNeighbors = south.getNeighbors();
       south.setNeighbors(chunk, southNeighbors.south, southNeighbors.east, southNeighbors.west);
     }
     if (east) {
-      const eastNeighbors = this.getChunkNeighbors(chunkX + 1, chunkZ);
+      const eastNeighbors = east.getNeighbors();
       east.setNeighbors(eastNeighbors.north, eastNeighbors.south, eastNeighbors.east, chunk);
     }
     if (west) {
-      const westNeighbors = this.getChunkNeighbors(chunkX - 1, chunkZ);
+      const westNeighbors = west.getNeighbors();
       west.setNeighbors(westNeighbors.north, westNeighbors.south, chunk, westNeighbors.west);
     }
   }
 
-  // Helper method to get neighbors for a chunk
+  // Helper method to get neighbors for a chunk (uses cached references)
   getChunkNeighbors(chunkX, chunkZ) {
+    const chunk = this.chunks[`${chunkX},${chunkZ}`];
+    if (chunk) {
+      return chunk.getNeighbors();
+    }
     return {
       north: this.chunks[`${chunkX},${chunkZ - 1}`] || null,
       south: this.chunks[`${chunkX},${chunkZ + 1}`] || null,
@@ -231,6 +236,8 @@ export class World {
     for (const candidate of unloadCandidates) {
       const chunk = this.chunks[candidate.key];
       if (chunk) {
+        // Mark neighbors as dirty before disposing (they need mesh rebuild for exposed faces)
+        chunk.markNeighborsAsDirty();
         chunk.dispose(this._gl);
         delete this.chunks[candidate.key];
         this.pendingChunks.delete(candidate.key);

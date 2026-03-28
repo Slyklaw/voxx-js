@@ -32,6 +32,9 @@ export class Chunk {
       east: null,   // x + 1
       west: null    // x - 1
     };
+    
+    // Dirty flag to track when neighbor changes require mesh rebuild
+    this.neighborsDirty = false;
   }
 
   getVoxel(x, y, z) {
@@ -85,12 +88,58 @@ export class Chunk {
       this.neighborChunks.west && this.neighborChunks.west.hasVoxelData;
   }
 
-  // Set neighbor chunk references
+  // Set neighbor chunk references with dirty flag tracking
   setNeighbors(north, south, east, west) {
-    this.neighborChunks.north = north;
-    this.neighborChunks.south = south;
-    this.neighborChunks.east = east;
-    this.neighborChunks.west = west;
+    // Check if any neighbor reference changed
+    if (this.neighborChunks.north !== north ||
+        this.neighborChunks.south !== south ||
+        this.neighborChunks.east !== east ||
+        this.neighborChunks.west !== west) {
+      this.neighborChunks.north = north;
+      this.neighborChunks.south = south;
+      this.neighborChunks.east = east;
+      this.neighborChunks.west = west;
+      this.neighborsDirty = true;
+    }
+  }
+
+  // Get cached neighbor references
+  getNeighbors() {
+    return this.neighborChunks;
+  }
+
+  // Mark neighbors as clean after mesh rebuild
+  markNeighborsClean() {
+    this.neighborsDirty = false;
+  }
+
+  // Check if mesh needs rebuild due to own changes or neighbor changes
+  needsMeshRebuild() {
+    return this.needsUpdate || this.neighborsDirty;
+  }
+
+  // Clear neighbor references (for cleanup)
+  clearNeighbors() {
+    this.neighborChunks.north = null;
+    this.neighborChunks.south = null;
+    this.neighborChunks.east = null;
+    this.neighborChunks.west = null;
+  }
+
+  // Mark all neighbors as dirty (they need mesh rebuild for exposed faces)
+  markNeighborsAsDirty() {
+    if (this.neighborChunks.north) {
+      this.neighborChunks.north.neighborsDirty = true;
+    }
+    if (this.neighborChunks.south) {
+      this.neighborChunks.south.neighborsDirty = true;
+    }
+    if (this.neighborChunks.east) {
+      this.neighborChunks.east.neighborsDirty = true;
+    }
+    if (this.neighborChunks.west) {
+      this.neighborChunks.west.neighborsDirty = true;
+    }
   }
 
   /** Generate terrain data using biome-based noise functions */
@@ -224,6 +273,9 @@ export class Chunk {
       this.meshReady = true;
       this.needsUpdate = false;
       
+      // Mark neighbors as clean after successful mesh rebuild
+      this.markNeighborsClean();
+      
       // Set meshState to 'ready' after successful generation
       this.meshState = 'ready';
     } catch (error) {
@@ -237,11 +289,15 @@ export class Chunk {
   _createMeshFromData(meshData) {
     this.meshData = meshData;
     this.needsUpdate = false;
+    // Mark neighbors as clean after mesh update
+    this.markNeighborsClean();
   }
 
   _updateMeshInPlace(meshData) {
     this.meshData = meshData;
     this.needsUpdate = false;
+    // Mark neighbors as clean after mesh update
+    this.markNeighborsClean();
   }
 
   /**
