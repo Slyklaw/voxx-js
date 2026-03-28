@@ -33,7 +33,7 @@
 
 Plans:
 - [x] 01-01-PLAN.md — Resource registration & memory management (GL-01)
-- [ ] 01-02-PLAN.md — Context loss handling with UI (GL-02)
+- [x] 01-02-PLAN.md — Context loss handling with UI (GL-02)
 - [x] 01-03-PLAN.md — Performance monitoring (GL-03)
 
 ---
@@ -109,7 +109,7 @@ Plans:
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
-| 1. WebGL Foundation | 2/3 | In Progress | 2026-03-28 |
+| 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
 | 2. Worker System | 0/1 | Not started | - |
 | 3. Performance | 0/1 | Not started | - |
 | 4. User Experience | 0/1 | Not started | - |
