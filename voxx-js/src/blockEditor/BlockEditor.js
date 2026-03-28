@@ -145,6 +145,9 @@ export class BlockEditor {
     
     const chunk = this.world.getChunk(this.targetedBlock.chunkX, this.targetedBlock.chunkZ);
     if (chunk) {
+      // Lock meshState to prevent worker mesh overwrites during edit
+      chunk.meshState = 'generating';
+      
       chunk.setVoxel(this.targetedBlock.localX, this.targetedBlock.localY, this.targetedBlock.localZ, 0);
       
       // Shared mesh update logic: regenerate mesh data
@@ -161,6 +164,9 @@ export class BlockEditor {
         this.targetedBlock.chunkX, this.targetedBlock.chunkZ,
         this.targetedBlock.localX, this.targetedBlock.localY, this.targetedBlock.localZ
       );
+      
+      // Release lock - main thread mesh is ready
+      chunk.meshState = 'ready';
       
       if (DEBUG) console.log(`[BlockEdit] Destroyed block at ${this.targetedBlock.x},${this.targetedBlock.y},${this.targetedBlock.z}`);
     }
@@ -193,6 +199,9 @@ export class BlockEditor {
       if (placeY >= 0 && placeY < CHUNK_HEIGHT) {
         const existing = chunk.getVoxel(localX, placeY, localZ);
         if (existing === 0) {
+          // Lock meshState to prevent worker mesh overwrites during edit
+          chunk.meshState = 'generating';
+          
           chunk.setVoxel(localX, placeY, localZ, blockType);
           
           // Shared mesh update logic: regenerate mesh data
@@ -206,6 +215,9 @@ export class BlockEditor {
           
           // Mark neighbor chunks for update if block is on boundary
           this.markNeighborChunksForUpdate(chunkX, chunkZ, localX, placeY, localZ);
+          
+          // Release lock - main thread mesh is ready
+          chunk.meshState = 'ready';
           
           if (DEBUG) console.log(`[BlockEdit] Placed block type ${blockType} at ${placeX},${placeY},${placeZ}`);
         } else {
@@ -241,10 +253,17 @@ export class BlockEditor {
     for (const n of neighbors) {
       const neighborChunk = this.world.getChunk(n.x, n.z);
       if (neighborChunk && neighborChunk.hasVoxelData) {
+        // Lock meshState to prevent worker mesh overwrites during neighbor regeneration
+        neighborChunk.meshState = 'generating';
+        
         neighborChunk.meshData = neighborChunk.generateMeshData();
         neighborChunk.needsUpdate = true;
         // Recreate WebGL mesh for neighbor chunk
         this.syncChunkToWebGL(neighborChunk);
+        
+        // Release lock - main thread mesh is ready
+        neighborChunk.meshState = 'ready';
+        
         if (DEBUG) console.log(`[BlockEdit] Marked neighbor chunk ${n.x},${n.z} for update`);
       }
     }
