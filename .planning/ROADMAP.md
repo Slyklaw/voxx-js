@@ -72,7 +72,12 @@ Plans:
   2. Chunk visibility only updates when camera moves significantly
   3. Neighbor calculations are cached and don't repeat per chunk load
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Instanced rendering with shader-based transforms (PERF-01)
+- [ ] 03-02-PLAN.md — Grid-based visibility culling (PERF-02)
+- [ ] 03-03-PLAN.md — Neighbor calculation caching (PERF-03)
 
 ---
 
