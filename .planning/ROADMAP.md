@@ -72,7 +72,7 @@ Plans:
   2. Chunk visibility only updates when camera moves significantly
   3. Neighbor calculations are cached and don't repeat per chunk load
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Instanced rendering with shader-based transforms (PERF-01)
@@ -121,7 +121,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 | 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
 | 2. Worker System | 2/2 | Complete | 2026-03-28 |
-| 3. Performance | 4/4 | Complete | 2026-03-27 |
+| 3. Performance | 4/4 | Complete    | 2026-03-28 |
 | 4. User Experience | 0/1 | Not started | - |
 | 5. Code Quality | 0/1 | Not started | - |
 
