@@ -12,12 +12,14 @@ export function createInstanceBuffer(gl, chunks) {
   }
   
   // Create Float32Array with 3 floats per chunk (x, y, z offset)
+  // The chunk.x and chunk.z are the chunk grid coordinates (0, 1, 2, etc.)
   instanceData = new Float32Array(chunks.length * 3);
   
   chunks.forEach((chunk, i) => {
-    const offsetX = chunk.x * CHUNK_SIZE;
+    // Use chunk.x and chunk.z from the Chunk object (chunkManager.js)
+    const offsetX = (chunk.x || chunk.chunkX || 0) * CHUNK_SIZE;
     const offsetY = 0;
-    const offsetZ = chunk.z * CHUNK_SIZE;
+    const offsetZ = (chunk.z || chunk.chunkZ || 0) * CHUNK_SIZE;
     instanceData[i * 3 + 0] = offsetX;
     instanceData[i * 3 + 1] = offsetY;
     instanceData[i * 3 + 2] = offsetZ;

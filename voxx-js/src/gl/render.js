@@ -694,34 +694,67 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   
   if (visibleChunks.length === 0) return;
   
-  // PERF-01: Set up instance buffer with per-chunk world positions
-  // This moves matrix calculation from JavaScript to vertex shader
-  const instanceBuffer = createInstanceBuffer(gl, visibleChunks);
+  // Set up shader and uniforms once for all chunks
+  gl.useProgram(voxelProgram);
   
-  // PERF-01: Use single drawElementsInstanced call for all visible chunks
-  // The instance buffer provides per-chunk offset via aChunkOffset attribute
-  if (visibleChunks.length > 0) {
-    const chunk = visibleChunks[0];
+  // Bind texture atlas (required for voxel shader)
+  if (textureAtlas) {
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+    if (voxelUniforms.uTextureAtlas !== null && voxelUniforms.uTextureAtlas !== undefined) {
+      gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
+    }
+  }
+  
+  // Bind shadow map (required for shadow calculations)
+  if (shadowMapObj && voxelUniforms.uShadowMap !== undefined && shadowMapObj.texture) {
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, shadowMapObj.texture);
+    gl.uniform1i(voxelUniforms.uShadowMap, 2);
+  }
+  
+  // Render each chunk individually
+  // Note: Each chunk has its own mesh with world-space vertices from greedyMesh
+  // The instance buffer approach requires all chunks to share the same local vertex buffer
+  // which would need changes to greedyMesh. Using loop for now - still benefits from
+  // reduced state changes (shader/textures bound once).
+  for (const chunk of visibleChunks) {
     const chunkMesh = chunk._webglMesh;
+    if (!chunkMesh || !chunkMesh.vao) continue;
     
-    if (chunkMesh && chunkMesh.vao && chunkMesh.ibo && chunkMesh.indexCount > 0) {
-      // Bind the VAO first
-      gl.bindVertexArray(chunkMesh.vao);
-      
-      // Bind the voxel shader program - required before drawElementsInstanced
-      gl.useProgram(voxelProgram);
-      
-      // Set up chunk offset attribute WHILE VAO is bound (location 6 = aChunkOffset in voxel.js)
-      // This gets captured in VAO state so drawElementsInstanced works correctly
-      const chunkOffsetLoc = 6; // matches layout(location = 6) in voxel.js
-      if (instanceBuffer && voxelAttribs) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-        gl.enableVertexAttribArray(chunkOffsetLoc);
-        gl.vertexAttribPointer(chunkOffsetLoc, 3, gl.FLOAT, false, 0, 0);
-        // Set divisor to 1 so attribute advances once per instance (chunk), not per vertex
-        gl.vertexAttribDivisor(chunkOffsetLoc, 1);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    // Get chunk world position for model matrix
+    const chunkX = chunk.x || chunk.chunkX || 0;
+    const chunkZ = chunk.z || chunk.chunkZ || 0;
+    const modelMatrix = createModelMatrix(chunkX * CHUNK_SIZE, 0, chunkZ * CHUNK_SIZE);
+    
+    // Render chunk
+    gl.bindVertexArray(chunkMesh.vao);
+    
+    if (voxelUniforms && viewMatrix && projectionMatrix) {
+      if (voxelUniforms.uViewMatrix !== undefined && voxelUniforms.uViewMatrix !== null) {
+        gl.uniformMatrix4fv(voxelUniforms.uViewMatrix, false, viewMatrix);
       }
+      if (voxelUniforms.uProjectionMatrix !== undefined && voxelUniforms.uProjectionMatrix !== null) {
+        gl.uniformMatrix4fv(voxelUniforms.uProjectionMatrix, false, projectionMatrix);
+      }
+      if (voxelUniforms.uModelMatrix !== undefined && voxelUniforms.uModelMatrix !== null) {
+        gl.uniformMatrix4fv(voxelUniforms.uModelMatrix, false, modelMatrix);
+      }
+    }
+    
+    // Bind element buffer and draw
+    if (chunkMesh.ibo && chunkMesh.indexCount > 0) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
+      gl.drawElements(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    } else {
+      gl.drawArrays(gl.TRIANGLES, 0, chunkMesh.vertexCount || 0);
+    }
+    
+    gl.bindVertexArray(null);
+  }
+  
+  incrementDrawCalls(visibleChunks.length);
       
       // Bind texture atlas (required for voxel shader)
       if (textureAtlas) {
