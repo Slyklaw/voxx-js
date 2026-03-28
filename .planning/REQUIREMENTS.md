@@ -9,7 +9,7 @@ Requirements for addressing codebase concerns. Each maps to roadmap phases.
 
 ### WebGL & Rendering
 
-- [ ] **GL-01**: User experiences no memory leaks during extended gameplay sessions
+- [x] **GL-01**: User experiences no memory leaks during extended gameplay sessions
 - [ ] **GL-02**: WebGL context loss is detected and handled automatically without page reload
 - [ ] **GL-03**: Rendering pipeline maintains 60fps with default settings on mid-range hardware
 
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GL-01 | Phase 1 | Pending |
+| GL-01 | Phase 1 | Complete |
 | GL-02 | Phase 1 | Pending |
 | GL-03 | Phase 1 | Pending |
 | WRK-01 | Phase 2 | Pending |
