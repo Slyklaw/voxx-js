@@ -756,41 +756,6 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   
   incrementDrawCalls(visibleChunks.length);
       
-      // Bind texture atlas (required for voxel shader)
-      if (textureAtlas) {
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
-        if (voxelUniforms.uTextureAtlas !== null && voxelUniforms.uTextureAtlas !== undefined) {
-          gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
-        }
-      }
-      
-      // Bind shadow map (required for shadow calculations)
-      if (shadowMapObj && voxelUniforms.uShadowMap !== undefined && shadowMapObj.texture) {
-        gl.activeTexture(gl.TEXTURE2);
-        gl.bindTexture(gl.TEXTURE_2D, shadowMapObj.texture);
-        gl.uniform1i(voxelUniforms.uShadowMap, 2);
-      }
-      
-      // Bind the element array buffer (IBO) - VAO doesn't capture ELEMENT_ARRAY_BUFFER state
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
-      
-      // Single draw call for all chunks - instance count = visibleChunks.length
-      gl.drawElementsInstanced(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0, visibleChunks.length);
-      
-      // Unbind IBO
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-      
-      // Clean up instance attribute state (reset divisor for other renders)
-      if (instanceBuffer) {
-        gl.vertexAttribDivisor(chunkOffsetLoc, 0);
-        gl.disableVertexAttribArray(chunkOffsetLoc);
-      }
-      
-      gl.bindVertexArray(null);
-      incrementDrawCalls(1);  // Only 1 draw call total, not per-chunk
-    }
-  }
   
   if (DEBUG && visibleChunks.length > 0) {
     console.log(`[Renderer] Chunks: ${chunks.length} total, ${visibleChunks.length} visible (${chunks.length - visibleChunks.length} culled)`);
