@@ -9,8 +9,8 @@ layout(location = 2) in vec3 aNormal;
 layout(location = 3) in vec2 aUV;          // Scaled by face dimensions
 layout(location = 4) in vec2 aTileBase;    // Base UV coordinates in atlas
 layout(location = 5) in float aTriangleVariant;  // 0.0 or 1.0 to distinguish triangles
+layout(location = 6) in vec3 aChunkOffset; // Instance attribute: chunk world offset
 
-uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform vec2 uTileSpan;  // Size of one tile in UV space
@@ -28,21 +28,27 @@ out vec4 vFragPosLightSpace;
 
 void main() {
   vColor = aColor;
-  vNormal = mat3(uModelMatrix) * aNormal;
+  // Use identity model matrix (rotation/scale) but apply instance offset for position
+  // Instance offset is applied in world space - no model matrix rotation/scale
+  vNormal = aNormal;
   vTileBase = aTileBase;  // Pass through to fragment shader
   vTriangleVariant = aTriangleVariant;
   
   // Convert to tile units: left edge = 0, right edge = faceWidth
   vTileUnits = (aUV - aTileBase) / uTileSpan;
   
+  // Compute world position using instance attribute for chunk offset
+  // This moves matrix calculation from JavaScript to vertex shader (PERF-01)
+  vec3 worldPos = aPosition + aChunkOffset;
+  
   // View-space transforms for G-buffer
-  vec4 viewPos = uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+  vec4 viewPos = uViewMatrix * vec4(worldPos, 1.0);
   vViewPosition = viewPos.xyz;
-  vViewNormal = mat3(uViewMatrix) * mat3(uModelMatrix) * aNormal;
+  vViewNormal = mat3(uViewMatrix) * aNormal;
   
   
   gl_Position = uProjectionMatrix * viewPos;
-  vFragPosLightSpace = uLightSpaceMatrix * uModelMatrix * vec4(aPosition, 1.0);
+  vFragPosLightSpace = uLightSpaceMatrix * vec4(worldPos, 1.0);
 }`;
 
 const voxelFragmentShader = `#version 300 es
@@ -189,7 +195,8 @@ export function getVoxelAttribs(gl, program) {
     'aNormal',
     'aUV',
     'aTileBase',
-    'aTriangleVariant'
+    'aTriangleVariant',
+    'aChunkOffset'
   ]);
 }
 
