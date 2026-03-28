@@ -78,7 +78,7 @@ Plans:
 - [x] 03-01-PLAN.md — Instanced rendering with shader-based transforms (PERF-01)
 - [x] 03-02-PLAN.md — Grid-based visibility culling (PERF-02)
 - [x] 03-03-PLAN.md — Neighbor calculation caching (PERF-03)
-- [ ] 03-04-PLAN.md — Gap closure: drawElementsInstanced (PERF-01)
+- [x] 03-04-PLAN.md — Gap closure: drawElementsInstanced (PERF-01)
 
 ---
 
@@ -121,7 +121,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 | 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
 | 2. Worker System | 2/2 | Complete | 2026-03-28 |
-| 3. Performance | 3/3 | Complete | 2026-03-28 |
+| 3. Performance | 4/4 | Complete | 2026-03-27 |
 | 4. User Experience | 0/1 | Not started | - |
 | 5. Code Quality | 0/1 | Not started | - |
 
