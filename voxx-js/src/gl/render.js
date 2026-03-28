@@ -9,8 +9,8 @@ import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginD
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
-import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInstanceBuffer } from '../chunk/chunkManager.js';
-import { CHUNK_SIZE } from '../chunk/chunkManager.js';
+import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInstanceBuffer, getVisibleChunks } from '../chunk/chunkManager.js';
+import { CHUNK_SIZE, defaultChunkManager } from '../chunk/chunkManager.js';
 import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
 
 // Interpolate between two RGB arrays
@@ -660,25 +660,37 @@ export function setDebugMode(gl, enabled) {
   }
 }
 
-export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix, wireframe = false, debugMode = false) {
+export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projectionMatrix, wireframe = false, debugMode = false, cameraPos = null) {
   if (!chunks || chunks.length === 0) return;
   
   beginDrawCalls();
   
-  // Filter to visible chunks, then sort for deterministic rendering
-  // Note: frustum culling was removed due to issues with plane extraction math
-  const visibleChunks = chunks
-    .filter(chunk => {
-      // chunk is a Chunk object with .chunkX and .chunkZ properties
-      // Also check it has a ready WebGL mesh
-      return chunk && chunk._webglMesh;
-    })
-    .sort((a, b) => {
-      // Sort by key for deterministic draw order
-      const keyA = `${a.chunkX},${a.chunkZ}`;
-      const keyB = `${b.chunkX},${b.chunkZ}`;
-      return keyA.localeCompare(keyB);
-    });
+  // PERF-02: Use grid-based visibility check if camera position is provided
+  // Otherwise fall back to scanning all chunks (backward compatibility)
+  let visibleChunks;
+  if (cameraPos && typeof cameraPos[0] === 'number' && typeof cameraPos[2] === 'number') {
+    // Use O(1) spatial index lookup - only iterates render distance grid
+    const renderDistance = defaultChunkManager.getRenderDistance();
+    visibleChunks = getVisibleChunks(cameraPos[0], cameraPos[2], renderDistance);
+    // Still filter for chunks with WebGL mesh
+    visibleChunks = visibleChunks.filter(chunk => chunk && chunk._webglMesh);
+  } else {
+    // Fallback: filter all chunks (original behavior)
+    visibleChunks = chunks
+      .filter(chunk => {
+        // chunk is a Chunk object with .chunkX and .chunkZ properties
+        // Also check it has a ready WebGL mesh
+        return chunk && chunk._webglMesh;
+      });
+  }
+  
+  // Sort for deterministic draw order
+  visibleChunks = visibleChunks.sort((a, b) => {
+    // Sort by key for deterministic draw order
+    const keyA = `${a.chunkX},${a.chunkZ}`;
+    const keyB = `${b.chunkX},${b.chunkZ}`;
+    return keyA.localeCompare(keyB);
+  });
   
   if (visibleChunks.length === 0) return;
   
@@ -985,13 +997,13 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     gl.clearColor(0.5, 0.7, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
-    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode, cameraPos);
     return;
   }
   
   if (!isGBufferSupported() || !gbuffer) {
     // Fallback: render directly to screen
-    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode, cameraPos);
     return;
   }
   
@@ -1038,7 +1050,7 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
   // Bind G-buffer FBO
   const bound = bindGBuffer(gl);
   if (!bound) {
-    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+    renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode, cameraPos);
     return;
   }
   
@@ -1061,7 +1073,7 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
   gl.depthMask(true);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
-  renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode);
+  renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode, cameraPos);
   
   if (renderOutlineCallback) {
     // Only draw wireframe outline to albedo attachment (COLOR_ATTACHMENT0) so it doesn't mess with SSAO normal/depth passes

@@ -96,6 +96,8 @@ class Chunk {
 export class ChunkManager {
   constructor(renderDistance = 8) {
     this.chunks = new Map();
+    // PERF-02: Spatial index for O(1) chunk lookup by coordinates
+    this.spatialIndex = new Map();
     this.renderDistance = renderDistance;
     this.centerX = 0;
     this.centerZ = 0;
@@ -110,6 +112,31 @@ export class ChunkManager {
     return this.chunks.get(key) || null;
   }
   
+  // PERF-02: O(1) chunk lookup using spatial index
+  getChunkAt(x, z) {
+    return this.spatialIndex.get(`${x},${z}`) || null;
+  }
+  
+  // PERF-02: Grid-based visible chunk iteration - O(1) lookups within render distance
+  // Only iterates render distance grid (max 289 for distance=8) instead of all chunks
+  getVisibleChunks(cameraX, cameraZ, renderDistance = this.renderDistance) {
+    const visibleChunks = [];
+    const camChunkX = Math.floor(cameraX / CHUNK_SIZE);
+    const camChunkZ = Math.floor(cameraZ / CHUNK_SIZE);
+    
+    // Iterate only render distance range
+    for (let x = camChunkX - renderDistance; x <= camChunkX + renderDistance; x++) {
+      for (let z = camChunkZ - renderDistance; z <= camChunkZ + renderDistance; z++) {
+        const chunk = this.spatialIndex.get(`${x},${z}`);
+        if (chunk) {
+          visibleChunks.push(chunk);
+        }
+      }
+    }
+    
+    return visibleChunks;
+  }
+  
   createChunk(x, z) {
     const key = this.getKey(x, z);
     if (this.chunks.has(key)) {
@@ -117,6 +144,8 @@ export class ChunkManager {
     }
     const chunk = new Chunk(x, z);
     this.chunks.set(key, chunk);
+    // PERF-02: Also add to spatial index for O(1) lookup
+    this.spatialIndex.set(`${x},${z}`, chunk);
     return chunk;
   }
   
@@ -229,10 +258,13 @@ export class ChunkManager {
       }
     }
     this.chunks.delete(key);
+    // PERF-02: Also remove from spatial index
+    this.spatialIndex.delete(`${x},${z}`);
   }
   
   clear() {
     this.chunks.clear();
+    this.spatialIndex.clear();
   }
   
   getChunkCount() {
@@ -254,6 +286,7 @@ export class ChunkManager {
       }
     }
     this.chunks.clear();
+    this.spatialIndex.clear();
   }
 }
 
@@ -278,6 +311,11 @@ export function markDirty(key) {
 
 export function getRenderDistance() {
   return defaultChunkManager.getRenderDistance();
+}
+
+// PERF-02: Standalone function for render loop to get visible chunks
+export function getVisibleChunks(cameraX, cameraZ, renderDistance) {
+  return defaultChunkManager.getVisibleChunks(cameraX, cameraZ, renderDistance);
 }
 
 export { CHUNK_SIZE };
