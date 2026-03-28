@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** High-performance browser-based voxel world rendering with smooth frame rates and rich visual features
-**Current focus:** Phase 2: Worker System
+**Current focus:** Phase 3: Performance
 
 ## Current Position
 
-Phase: 2 of 5 (Worker System)
-Plan: 2 of 2 in current phase
+Phase: 3 of 5 (Performance)
+Plan: 1 of 3 in current phase
 Status: Complete
-Last activity: 2026-03-28 — Completed plan 02-02: Chunk mesh state machine for race condition prevention
+Last activity: 2026-03-28 — Completed plan 03-01: Instanced rendering with shader-based transforms
 
-Progress: ████████░░░ 67%
+Progress: ████░░░░░░░ 43%
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: ████████░░░ 67%
 | Phase | Plans | Total | Avg/Plan |
 | 1 | 3 | 6min | 2min |
 | 2 | 2 | 4min | 2min |
-| 3 | 0 | 0 | - |
+| 3 | 1 | 2min | 2min |
 | 4 | 0 | 0 | - |
 | 5 | 0 | 0 | - |
 
@@ -47,6 +47,10 @@ From Phase 2:
 - Used meshState flag pattern to prevent worker mesh overwriting main thread edits
 - States: idle (default), generating (locked), ready (complete), error (failed)
 
+From Phase 3:
+- Used instance attributes (aChunkOffset) for shader-based chunk positioning
+- Vertex shader computes: worldPos = aPosition + aChunkOffset
+
 ### Pending Todos
 
 None yet.
@@ -58,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 02-worker-system 02-02 plan
+Stopped at: Completed 03-performance 03-01 plan
 Resume file: None
