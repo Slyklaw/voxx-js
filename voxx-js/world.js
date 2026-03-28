@@ -61,8 +61,12 @@ export class World {
             this.chunks[key].hasVoxelData = true;
             
             // If mesh data is available from worker, use it directly
-            if (chunkData.meshData) {
+            // Only apply if chunk meshState is 'idle' (not being edited by main thread)
+            if (chunkData.meshData && this.chunks[key].meshState === 'idle') {
               this.chunks[key].fromWorkerMesh(chunkData.meshData);
+            } else if (chunkData.meshData && this.chunks[key].meshState !== 'idle') {
+              // Worker mesh arrived but main thread is editing - discard worker result
+              if (DEBUG) console.log(`[World] Discarding worker mesh for ${chunkX},${chunkZ}: meshState=${this.chunks[key].meshState}`);
             }
           } else {
             console.error(`[World] Failed to generate chunk ${chunkX},${chunkZ} - no data received`);
