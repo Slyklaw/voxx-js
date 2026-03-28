@@ -698,39 +698,40 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   // This moves matrix calculation from JavaScript to vertex shader
   const instanceBuffer = createInstanceBuffer(gl, visibleChunks);
   
-  // Set up chunk offset attribute (location 6 = aChunkOffset in voxel shader)
-  const chunkOffsetLoc = 6; // matches layout(location = 6) in voxel.js
-  if (instanceBuffer && voxelAttribs) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-    gl.enableVertexAttribArray(chunkOffsetLoc);
-    gl.vertexAttribPointer(chunkOffsetLoc, 3, gl.FLOAT, false, 0, 0);
-    // Set divisor to 1 so attribute advances once per instance (chunk), not per vertex
-    gl.vertexAttribDivisor(chunkOffsetLoc, 1);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  }
-  
   // PERF-01: Use single drawElementsInstanced call for all visible chunks
-  // The instance buffer (set up at lines 701-710) provides per-chunk offset via aChunkOffset attribute
+  // The instance buffer provides per-chunk offset via aChunkOffset attribute
   if (visibleChunks.length > 0) {
     const chunk = visibleChunks[0];
     const chunkMesh = chunk._webglMesh;
     
     if (chunkMesh && chunkMesh.vao && chunkMesh.ibo && chunkMesh.indexCount > 0) {
-      // Bind the VAO - it already has instance buffer bound from lines 701-710
+      // Bind the VAO first
       gl.bindVertexArray(chunkMesh.vao);
+      
+      // Set up chunk offset attribute WHILE VAO is bound (location 6 = aChunkOffset in voxel.js)
+      // This gets captured in VAO state so drawElementsInstanced works correctly
+      const chunkOffsetLoc = 6; // matches layout(location = 6) in voxel.js
+      if (instanceBuffer && voxelAttribs) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+        gl.enableVertexAttribArray(chunkOffsetLoc);
+        gl.vertexAttribPointer(chunkOffsetLoc, 3, gl.FLOAT, false, 0, 0);
+        // Set divisor to 1 so attribute advances once per instance (chunk), not per vertex
+        gl.vertexAttribDivisor(chunkOffsetLoc, 1);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      }
       
       // Single draw call for all chunks - instance count = visibleChunks.length
       gl.drawElementsInstanced(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0, visibleChunks.length);
       
+      // Clean up instance attribute state (reset divisor for other renders)
+      if (instanceBuffer) {
+        gl.vertexAttribDivisor(chunkOffsetLoc, 0);
+        gl.disableVertexAttribArray(chunkOffsetLoc);
+      }
+      
       gl.bindVertexArray(null);
       incrementDrawCalls(1);  // Only 1 draw call total, not per-chunk
     }
-  }
-  
-  // Clean up instance attribute state (reset divisor for other renders)
-  if (instanceBuffer) {
-    gl.vertexAttribDivisor(chunkOffsetLoc, 0);
-    gl.disableVertexAttribArray(chunkOffsetLoc);
   }
   
   if (DEBUG && visibleChunks.length > 0) {
