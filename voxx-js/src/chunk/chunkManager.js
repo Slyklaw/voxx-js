@@ -142,8 +142,19 @@ export class ChunkManager {
     this.centerZ = z;
   }
   
-  removeChunk(x, z) {
+  removeChunk(x, z, gl = null) {
     const key = this.getKey(x, z);
+    const chunk = this.chunks.get(key);
+    if (chunk && gl) {
+      // Dispose GPU resources before removing chunk
+      if (chunk.mesh) {
+        if (chunk.mesh.vao) gl.deleteVertexArray(chunk.mesh.vao);
+        if (chunk.mesh.vbo) gl.deleteBuffer(chunk.mesh.vbo);
+        if (chunk.mesh.ibo) gl.deleteBuffer(chunk.mesh.ibo);
+        if (chunk.mesh.wireIbo) gl.deleteBuffer(chunk.mesh.wireIbo);
+        chunk.mesh = null;
+      }
+    }
     this.chunks.delete(key);
   }
   

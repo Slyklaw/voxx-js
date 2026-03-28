@@ -1,4 +1,5 @@
 import { MESH_CONFIG, BLOCK_CONFIG } from '../../config.js';
+import { registerContextResources } from './context.js';
 
 const FLOAT_SIZE = 4;
 // Use config constants for vertex format
@@ -320,6 +321,21 @@ export function createChunkMeshFromData(gl, meshData, attribs = null) {
     wireIndexCount = wireIndices.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
   }
+
+  // Register all resources with context registry for lifecycle management
+  registerContextResources({
+    dispose: () => {
+      // Delete VAO
+      if (vao) gl.deleteVertexArray(vao);
+      // Delete VBO
+      if (vbo) gl.deleteBuffer(vbo);
+      // Delete IBO
+      if (ibo) gl.deleteBuffer(ibo);
+      // Delete wire IBO
+      if (wireIbo) gl.deleteBuffer(wireIbo);
+    },
+    init: null // Buffers will be recreated on mesh rebuild, not context restore
+  });
 
   return { vbo, vao, ibo, wireIbo, indexCount, wireIndexCount, vertexCount };
 }

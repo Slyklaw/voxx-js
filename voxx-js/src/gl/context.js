@@ -59,6 +59,7 @@ export {
   canvas,
   isContextLost,
   registerContextResources,
+  resourceRegistry,
   addContextLossListener,
   removeContextLossListener
 };
