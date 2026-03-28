@@ -207,6 +207,31 @@ export function resetMetrics() {
   renderTimes = [];
 }
 
+// FPS warning throttling - warn once per 5 seconds to avoid spam
+let lastFPSWarningTime = 0;
+const FPS_WARNING_INTERVAL = 5000; // 5 seconds in ms
+const FPS_WARNING_THRESHOLD = 50;
+
+export function checkFPSWarning() {
+  const currentFPS = getFPS();
+  
+  // Skip warning if:
+  // - FPS is 0 (context loss, initial load, or no frames yet)
+  // - FPS is above threshold
+  // - Already warned within the last 5 seconds
+  if (currentFPS <= 0 || currentFPS >= FPS_WARNING_THRESHOLD) {
+    return;
+  }
+  
+  const now = performance.now();
+  if (now - lastFPSWarningTime < FPS_WARNING_INTERVAL) {
+    return;
+  }
+  
+  lastFPSWarningTime = now;
+  console.warn(`Low FPS detected: ${currentFPS} fps - consider reducing quality settings`);
+}
+
 import { DEBUG } from '../../config.js';
 
 export function logPerformance() {
