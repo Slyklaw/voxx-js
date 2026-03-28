@@ -1,5 +1,66 @@
 const CHUNK_SIZE = 16;
 
+// Instance buffer for instanced rendering (PERF-01)
+// Stores per-chunk world offsets: [chunkX * CHUNK_SIZE, 0, chunkZ * CHUNK_SIZE]
+let instanceBuffer = null;
+let instanceData = null;
+let instanceCount = 0;
+
+export function createInstanceBuffer(gl, chunks) {
+  if (!chunks || chunks.length === 0) {
+    return null;
+  }
+  
+  // Create Float32Array with 3 floats per chunk (x, y, z offset)
+  instanceData = new Float32Array(chunks.length * 3);
+  
+  chunks.forEach((chunk, i) => {
+    const offsetX = chunk.x * CHUNK_SIZE;
+    const offsetY = 0;
+    const offsetZ = chunk.z * CHUNK_SIZE;
+    instanceData[i * 3 + 0] = offsetX;
+    instanceData[i * 3 + 1] = offsetY;
+    instanceData[i * 3 + 2] = offsetZ;
+  });
+  
+  instanceCount = chunks.length;
+  
+  // Create or update WebGL buffer
+  if (instanceBuffer) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, instanceData, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  } else {
+    instanceBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, instanceData, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
+  
+  return instanceBuffer;
+}
+
+export function getInstanceBuffer() {
+  return instanceBuffer;
+}
+
+export function getInstanceCount() {
+  return instanceCount;
+}
+
+export function getInstanceData() {
+  return instanceData;
+}
+
+export function disposeInstanceBuffer(gl) {
+  if (instanceBuffer) {
+    gl.deleteBuffer(instanceBuffer);
+    instanceBuffer = null;
+  }
+  instanceData = null;
+  instanceCount = 0;
+}
+
 class Chunk {
   constructor(x, z) {
     this.x = x;
@@ -127,6 +188,18 @@ export class ChunkManager {
       }
     }
     return clean;
+  }
+  
+  getAllLoadedChunks() {
+    // Returns array of all loaded chunks with their positions
+    const result = [];
+    for (const chunk of this.chunks.values()) {
+      // Only include chunks with valid meshes
+      if (chunk.mesh && !chunk.isDirty()) {
+        result.push({ x: chunk.x, z: chunk.z, mesh: chunk.mesh });
+      }
+    }
+    return result;
   }
   
   setRenderDistance(distance) {
