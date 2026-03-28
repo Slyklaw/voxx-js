@@ -723,6 +723,22 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
       }
       
+      // Bind texture atlas (required for voxel shader)
+      if (textureAtlas) {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+        if (voxelUniforms.uTextureAtlas !== null && voxelUniforms.uTextureAtlas !== undefined) {
+          gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
+        }
+      }
+      
+      // Bind shadow map (required for shadow calculations)
+      if (shadowMapObj && voxelUniforms.uShadowMap !== undefined && shadowMapObj.texture) {
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, shadowMapObj.texture);
+        gl.uniform1i(voxelUniforms.uShadowMap, 2);
+      }
+      
       // Bind the element array buffer (IBO) - VAO doesn't capture ELEMENT_ARRAY_BUFFER state
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
       
