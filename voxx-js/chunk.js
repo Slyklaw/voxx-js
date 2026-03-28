@@ -21,6 +21,11 @@ export class Chunk {
     this.needsUpdate = true;
     this.hasVoxelData = false;
     this.meshReady = false; // Track when mesh is ready for rendering
+    
+    // Mesh state machine to prevent race conditions between worker and main thread
+    // States: 'idle' - no active generation, 'generating' - mesh being generated, 'ready' - mesh ready, 'error' - generation failed
+    this.meshState = 'idle';
+    
     this.neighborChunks = {
       north: null,  // z - 1
       south: null,  // z + 1
@@ -210,10 +215,22 @@ export class Chunk {
       return;
     }
 
-    const meshData = this.generateMeshData();
-    this.meshData = meshData;
-    this.meshReady = true;
-    this.needsUpdate = false;
+    // Set meshState to 'generating' before generating mesh
+    this.meshState = 'generating';
+    
+    try {
+      const meshData = this.generateMeshData();
+      this.meshData = meshData;
+      this.meshReady = true;
+      this.needsUpdate = false;
+      
+      // Set meshState to 'ready' after successful generation
+      this.meshState = 'ready';
+    } catch (error) {
+      // Set meshState to 'error' if generation fails
+      this.meshState = 'error';
+      console.error(`[Chunk] Mesh generation failed for ${this.chunkX},${this.chunkZ}:`, error);
+    }
   }
 
   // Store mesh data for WebGL rendering (src/gl/buffers.js handles actual GL buffers)
@@ -230,8 +247,17 @@ export class Chunk {
   /**
    * Build mesh from worker-provided mesh payload (WebGL2 compatible)
    * meshData: { positions: Float32Array, normals: Float32Array, colors: Float32Array, indices: Uint32Array }
+   * 
+   * Only applies mesh if meshState is 'idle' - prevents race condition when main thread is editing
    */
   fromWorkerMesh(meshData) {
+    // Synchronization: Only apply worker mesh if main thread is not currently editing
+    // If meshState !== 'idle', main thread has initiated edits and will regenerate
+    if (this.meshState !== 'idle') {
+      console.log(`[Chunk] Skipping worker mesh for ${this.chunkX},${this.chunkZ}: meshState=${this.meshState} (main thread editing)`);
+      return;
+    }
+    
     // console.log(`[Chunk] fromWorkerMesh for ${this.chunkX},${this.chunkZ}:`, {
     //   hasPositions: !!meshData?.positions,
     //   positionLength: meshData?.positions?.length,
@@ -244,6 +270,7 @@ export class Chunk {
     this._createMeshFromData(meshData);
     this.meshReady = true;
     this.needsUpdate = false;
+    this.meshState = 'ready';
   }
 
   dispose(gl = null) {
@@ -260,6 +287,7 @@ export class Chunk {
     // Clean up mesh data
     this.meshData = null;
     this.meshReady = false;
+    this.meshState = 'idle'; // Reset mesh state for reuse
     
     // Clear neighbor references
     this.neighborChunks.north = null;
