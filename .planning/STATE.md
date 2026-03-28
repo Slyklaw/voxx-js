@@ -12,23 +12,23 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 Phase: 3 of 5 (Performance)
 Plan: 3 of 3 in current phase
 Status: Complete
-Last activity: 2026-03-28 — Completed plan 03-03: Neighbor calculation caching
+Last activity: 2026-03-28 - Completed plan 03-02: Grid-based visibility culling
 
-Progress: ██████░░░░░ 57%
+Progress: 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 2 min
-- Total execution time: 0.2 hours
+- Total plans completed: 7
+- Average duration: 3 min
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 | 1 | 3 | 6min | 2min |
 | 2 | 2 | 4min | 2min |
-| 3 | 2 | 4min | 2min |
+| 3 | 3 | 9min | 3min |
 | 4 | 0 | 0 | - |
 | 5 | 0 | 0 | - |
 
@@ -39,9 +39,9 @@ Progress: ██████░░░░░ 57%
 ### Decisions
 
 From PROJECT.md Key Decisions table:
-- Vanilla JS (no framework) — Direct WebGL access, minimal dependencies
-- Worker-based mesh generation — Prevents frame drops during chunk creation
-- CDN for simplex-noise — Should self-host (DEPS-01)
+- Vanilla JS (no framework) - Direct WebGL access, minimal dependencies
+- Worker-based mesh generation - Prevents frame drops during chunk creation
+- CDN for simplex-noise - Should self-host (DEPS-01)
 
 From Phase 2:
 - Used meshState flag pattern to prevent worker mesh overwriting main thread edits
@@ -50,6 +50,7 @@ From Phase 2:
 From Phase 3:
 - Used instance attributes (aChunkOffset) for shader-based chunk positioning
 - Vertex shader computes: worldPos = aPosition + aChunkOffset
+- Grid-based visibility culling with spatialIndex Map for O(1) lookup
 
 ### Pending Todos
 
@@ -62,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 03-performance 03-03 plan
+Stopped at: Completed 03-performance 03-02 plan
 Resume file: None

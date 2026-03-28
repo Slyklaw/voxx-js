@@ -8,7 +8,7 @@
 
 - [ ] **Phase 1: WebGL Foundation** — Fix memory leaks and context loss handling
 - [x] **Phase 2: Worker System** — Resolve worker termination and sync issues
-- [ ] **Phase 3: Performance** — Optimize render loop and chunk management
+- [x] **Phase 3: Performance** — Optimize render loop and chunk management
 - [ ] **Phase 4: User Experience** — Add loading progress and quality settings
 - [ ] **Phase 5: Code Quality** — Refactor globals and self-host dependencies
 
@@ -76,7 +76,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Instanced rendering with shader-based transforms (PERF-01)
-- [ ] 03-02-PLAN.md — Grid-based visibility culling (PERF-02)
+- [x] 03-02-PLAN.md — Grid-based visibility culling (PERF-02)
 - [x] 03-03-PLAN.md — Neighbor calculation caching (PERF-03)
 
 ---
@@ -120,7 +120,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 | 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
 | 2. Worker System | 2/2 | Complete | 2026-03-28 |
-| 3. Performance | 2/3 | In Progress | 2026-03-28 |
+| 3. Performance | 3/3 | Complete | 2026-03-28 |
 | 4. User Experience | 0/1 | Not started | - |
 | 5. Code Quality | 0/1 | Not started | - |
 
