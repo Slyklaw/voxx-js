@@ -20,9 +20,9 @@ Requirements for addressing codebase concerns. Each maps to roadmap phases.
 
 ### Performance
 
-- [ ] **PERF-01**: Matrix calculations run in shaders rather than JavaScript per-frame
+- [x] **PERF-01**: Matrix calculations run in shaders rather than JavaScript per-frame
 - [ ] **PERF-02**: Chunk visibility checks don't scan all chunks every frame
-- [ ] **PERF-03**: Neighbor calculations are cached and updated incrementally
+- [x] **PERF-03**: Neighbor calculations are cached and updated incrementally
 
 ### User Experience
 
@@ -74,9 +74,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GL-03 | Phase 1 | Pending |
 | WRK-01 | Phase 2 | Pending |
 | WRK-02 | Phase 2 | Pending |
-| PERF-01 | Phase 3 | Pending |
+| PERF-01 | Phase 3 | Complete |
 | PERF-02 | Phase 3 | Pending |
-| PERF-03 | Phase 3 | Pending |
+| PERF-03 | Phase 3 | Complete |
 | UX-01 | Phase 4 | Pending |
 | UX-02 | Phase 4 | Pending |
 | QUAL-01 | Phase 5 | Pending |
