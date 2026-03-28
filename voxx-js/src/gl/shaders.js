@@ -1,3 +1,5 @@
+import { registerContextResources } from './context.js';
+
 export function compileShader(gl, type, source) {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, source);
@@ -31,6 +33,25 @@ export function createProgram(gl, vertexSource, fragmentSource) {
 
   gl.deleteShader(vertexShader);
   gl.deleteShader(fragmentShader);
+
+  // Register program with context registry for lifecycle management
+  // Store sources for recreation on context restore
+  const sources = { vertexSource, fragmentSource };
+  registerContextResources({
+    dispose: () => {
+      gl.deleteProgram(program);
+    },
+    init: () => {
+      // Recreate program on context restore using stored sources
+      const newVertexShader = compileShader(gl, gl.VERTEX_SHADER, sources.vertexSource);
+      const newFragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, sources.fragmentSource);
+      gl.attachShader(program, newVertexShader);
+      gl.attachShader(program, newFragmentShader);
+      gl.linkProgram(program);
+      gl.deleteShader(newVertexShader);
+      gl.deleteShader(newFragmentShader);
+    }
+  });
 
   return program;
 }

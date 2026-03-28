@@ -4,6 +4,7 @@
  */
 
 import { DEBUG } from '../../config.js';
+import { registerContextResources } from './context.js';
 
 /**
  * Check if float texture extensions are supported and test actual allocation
@@ -156,6 +157,23 @@ export function createGBufferFBO(gl, width, height, supportInfo) {
   
   gbuffer.dispose = () => disposeGBuffer(gl, gbuffer);
   
+  // Register with context for lifecycle management
+  const gbufferWidth = width;
+  const gbufferHeight = height;
+  const gbufferSupportInfo = supportInfo;
+  registerContextResources({
+    dispose: () => disposeGBuffer(gl, gbuffer),
+    init: () => {
+      // Recreate G-buffer on context restore
+      const newGBuffer = createGBufferFBO(gl, gbufferWidth, gbufferHeight, gbufferSupportInfo);
+      // Replace resources in original object
+      gbuffer.fbo = newGBuffer.fbo;
+      gbuffer.color = newGBuffer.color;
+      gbuffer.depth = newGBuffer.depth;
+      gbuffer.isFloatFallback = newGBuffer.isFloatFallback;
+    }
+  });
+  
   return gbuffer;
 }
 
@@ -256,6 +274,20 @@ export function createSSAOBuffer(gl, width, height, supportInfo) {
   
   ssaoBuffer.dispose = () => disposeSSAOBuffer(gl, ssaoBuffer);
   
+  // Register with context for lifecycle management
+  const ssaoWidth = fullWidth;
+  const ssaoHeight = fullHeight;
+  const ssaoSupportInfo = supportInfo;
+  registerContextResources({
+    dispose: () => disposeSSAOBuffer(gl, ssaoBuffer),
+    init: () => {
+      // Recreate SSAO buffer on context restore
+      const newSSAO = createSSAOBuffer(gl, ssaoWidth, ssaoHeight, ssaoSupportInfo);
+      ssaoBuffer.fbo = newSSAO.fbo;
+      ssaoBuffer.texture = newSSAO.texture;
+    }
+  });
+  
   return ssaoBuffer;
 }
 
@@ -327,6 +359,19 @@ export function createShadowMapFBO(gl, size = 2048) {
 
   const shadowFBO = { fbo, texture, size, dispose: null };
   shadowFBO.dispose = () => disposeShadowMapFBO(gl, shadowFBO);
+  
+  // Register with context for lifecycle management
+  const shadowSize = size;
+  registerContextResources({
+    dispose: () => disposeShadowMapFBO(gl, shadowFBO),
+    init: () => {
+      // Recreate shadow map on context restore
+      const newShadowFBO = createShadowMapFBO(gl, shadowSize);
+      shadowFBO.fbo = newShadowFBO.fbo;
+      shadowFBO.texture = newShadowFBO.texture;
+    }
+  });
+  
   return shadowFBO;
 }
 
