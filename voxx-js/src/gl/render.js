@@ -709,13 +709,22 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
   
-  // Render each visible chunk using instance attribute for position
-  for (let i = 0; i < visibleChunks.length; i++) {
-    const chunk = visibleChunks[i];
-    // chunk._webglMesh is the WebGL mesh object created by createChunkMeshFromData
-    // Pass chunk position as instance data - shader will use aChunkOffset attribute
-    renderChunk(gl, chunk._webglMesh, null, viewMatrix, projectionMatrix, wireframe, debugMode, chunk.chunkX, chunk.chunkZ);
-    incrementDrawCalls(1);
+  // PERF-01: Use single drawElementsInstanced call for all visible chunks
+  // The instance buffer (set up at lines 701-710) provides per-chunk offset via aChunkOffset attribute
+  if (visibleChunks.length > 0) {
+    const chunk = visibleChunks[0];
+    const chunkMesh = chunk._webglMesh;
+    
+    if (chunkMesh && chunkMesh.vao && chunkMesh.ibo && chunkMesh.indexCount > 0) {
+      // Bind the VAO - it already has instance buffer bound from lines 701-710
+      gl.bindVertexArray(chunkMesh.vao);
+      
+      // Single draw call for all chunks - instance count = visibleChunks.length
+      gl.drawElementsInstanced(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0, visibleChunks.length);
+      
+      gl.bindVertexArray(null);
+      incrementDrawCalls(1);  // Only 1 draw call total, not per-chunk
+    }
   }
   
   // Clean up instance attribute state (reset divisor for other renders)
