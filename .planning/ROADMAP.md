@@ -54,7 +54,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Graceful worker termination (WRK-01)
+- [x] 02-01-PLAN.md — Graceful worker termination (WRK-01)
 - [ ] 02-02-PLAN.md — Mesh synchronization (WRK-02)
 
 ---
@@ -114,7 +114,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 | 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
-| 2. Worker System | 0/2 | Not started | - |
+| 2. Worker System | 1/2 | In Progress | - |
 | 3. Performance | 0/1 | Not started | - |
 | 4. User Experience | 0/1 | Not started | - |
 | 5. Code Quality | 0/1 | Not started | - |
