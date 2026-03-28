@@ -1,4 +1,53 @@
-import { gl, canvas, isContextLost, registerContextResources } from './gl/context.js';
+import { gl, canvas, isContextLost, registerContextResources, addContextLossListener } from './gl/context.js';
+
+// Context loss notification overlay
+function createContextLostOverlay() {
+  const overlay = document.createElement('div');
+  overlay.id = 'context-lost-overlay';
+  overlay.innerHTML = 'Reconnecting...';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 9999;
+    text-align: center;
+  `;
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+const contextLostOverlay = createContextLostOverlay();
+
+export function showContextLostNotification() {
+  if (contextLostOverlay) {
+    contextLostOverlay.style.display = 'flex';
+  }
+}
+
+export function hideContextLostNotification() {
+  if (contextLostOverlay) {
+    contextLostOverlay.style.display = 'none';
+  }
+}
+
+// Wire up context loss listeners
+addContextLossListener(() => {
+  if (isContextLost()) {
+    showContextLostNotification();
+  } else {
+    hideContextLostNotification();
+  }
+});
 import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, updateSSAOSettings, renderVoxelsToGBuffer } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
@@ -10,6 +59,10 @@ import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './constants.js';
 import { InputHandler } from './input/InputHandler.js';
 import { BlockEditor } from './blockEditor/BlockEditor.js';
 import { Camera } from './camera/Camera.js';
+
+// Export notification functions for context.js
+window.showContextLostNotification = showContextLostNotification;
+window.hideContextLostNotification = hideContextLostNotification;
 
 console.log('WebGL2 main initializing...');
 

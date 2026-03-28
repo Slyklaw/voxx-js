@@ -21,6 +21,10 @@ function handleContextLost(event) {
   contextLost = true;
   resourceRegistry.forEach(({ dispose }) => dispose());
   contextLossListeners.forEach(callback => callback());
+  // Show context lost notification if available
+  if (typeof window.showContextLostNotification === 'function') {
+    window.showContextLostNotification();
+  }
   return true;
 }
 
@@ -28,6 +32,10 @@ function handleContextRestored() {
   contextLost = false;
   resourceRegistry.forEach(({ init }) => init());
   contextLossListeners.forEach(callback => callback());
+  // Hide context lost notification if available
+  if (typeof window.hideContextLostNotification === 'function') {
+    window.hideContextLostNotification();
+  }
 }
 
 function registerContextResources({ dispose, init }) {
