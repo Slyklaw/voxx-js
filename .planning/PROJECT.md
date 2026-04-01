@@ -10,31 +10,37 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ## Requirements
 
-### Validated
+### Validated (v1.0 — shipped 2026-04-01)
 
-- ✓ WebGL2 rendering pipeline with GBuffer deferred rendering — existing
-- ✓ Procedural terrain generation using simplex noise — existing
-- ✓ First-person camera controls (WASD + mouse look) — existing
-- ✓ Block placement and destruction via raycasting — existing
-- ✓ Chunk-based world management with 16x16x16 chunks — existing
-- ✓ Worker-based chunk mesh generation — existing
-- ✓ Biome-based terrain (plains, desert, mountains, snow) — existing
-- ✓ Day/night cycle with sun movement — existing
-- ✓ SSAO and post-processing effects — existing
-- ✓ Debug modes (wireframe, chunk boundaries) — existing
+**Existing features:**
+- ✓ WebGL2 rendering pipeline with GBuffer deferred rendering
+- ✓ Procedural terrain generation using simplex noise
+- ✓ First-person camera controls (WASD + mouse look)
+- ✓ Block placement and destruction via raycasting
+- ✓ Chunk-based world management with 16x16x16 chunks
+- ✓ Worker-based chunk mesh generation
+- ✓ Biome-based terrain (plains, desert, mountains, snow)
+- ✓ Day/night cycle with sun movement
+- ✓ SSAO and post-processing effects
+- ✓ Debug modes (wireframe, chunk boundaries)
 
-### Active
+**v1.0 improvements:**
+- ✓ GL-01: Memory leak prevention via resource registry lifecycle management — v1.0
+- ✓ GL-02: Context loss detection and auto-recovery without page reload — v1.0
+- ✓ GL-03: FPS monitoring with warning threshold at 50fps — v1.0
+- ✓ WRK-01: Graceful worker termination waiting for in-progress jobs — v1.0
+- ✓ WRK-02: Chunk mesh state machine preventing race conditions — v1.0
+- ✓ PERF-01: Instanced rendering with shader-based transforms — v1.0
+- ✓ PERF-02: Grid-based visibility culling with spatial index — v1.0
+- ✓ PERF-03: Neighbor calculation caching with dirty flags — v1.0
 
-- [ ] Fix WebGL resource management (memory leaks, context loss handling)
-- [ ] Resolve worker termination race conditions
-- [ ] Fix chunk mesh synchronization issues
-- [ ] Address global state pollution in main.js and render.js
-- [ ] Optimize render loop (move matrix math to shaders)
-- [ ] Implement chunk visibility tracking optimization
-- [ ] Add resource loading progress indicator
-- [ ] Add graphics quality settings (render distance, SSAO toggle)
-- [ ] Improve test coverage for WebGL and worker threads
-- [ ] Self-host simplex-noise dependency
+### Active (v2.0 — planned)
+
+- [ ] UX-01: Add resource loading progress indicator during world generation
+- [ ] UX-02: Add graphics quality settings (render distance, SSAO toggle)
+- [ ] QUAL-01: Encapsulate global state in modules
+- [ ] QUAL-02: Implement centralized WebGL resource manager
+- [ ] DEPS-01: Self-host simplex-noise dependency
 
 ### Out of Scope
 
@@ -46,23 +52,31 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ## Context
 
+**v1.0 Shipped (2026-04-01):**
+- 3 phases completed, 9 plans executed
+- Fixed critical WebGL memory leaks and context loss handling
+- Resolved worker termination race conditions and mesh synchronization
+- Implemented instanced rendering for significant performance gains
+- Grid-based visibility culling reduces CPU overhead
+- Neighbor caching eliminates redundant calculations
+
 **Technical Environment:**
 - Vanilla JavaScript (ES2020) with WebGL2
 - No build step - direct ES module serving
 - simplex-noise for procedural generation
 - Vitest for testing
 
-**Existing Codebase:**
+**Codebase State:**
 - Modular layered architecture (Presentation/Game Logic/Interaction/Application)
-- Already has solid foundation: rendering pipeline, chunk system, world generation
-- Issues are technical debt and polish, not fundamental missing features
+- WebGL resource lifecycle management via context registry
+- Worker pool with graceful termination and job tracking
+- Instanced rendering with shader-based matrix transforms
 
-**Known Issues to Address:**
-- WebGL context loss handling incomplete
-- Worker pool race conditions
-- Global state causing maintenance difficulty
-- Performance bottlenecks in render loop
-- Missing user experience features (loading indicator, quality settings)
+**Known Issues (v2.0 scope):**
+- No loading progress indicator during world generation
+- No UI for graphics quality settings
+- Global state pollution in main.js and render.js
+- simplex-noise loaded from CDN (dependency risk)
 
 ## Constraints
 
@@ -75,9 +89,12 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Vanilla JS (no framework) | Keep dependencies minimal, direct WebGL access | ✓ Good - aligns with core value |
-| Worker-based mesh generation | Prevent frame drops during chunk creation | ⚠️ Revisit - worker termination issues need fixing |
-| CDN for simplex-noise | Quick setup | ⚠️ Revisit - should self-host |
+| Worker-based mesh generation | Prevent frame drops during chunk creation | ✓ Fixed - graceful termination + state machine |
+| CDN for simplex-noise | Quick setup | ⚠️ Revisit - should self-host (v2.0) |
+| Resource registry pattern | Unified WebGL resource lifecycle | ✓ Good - eliminates memory leaks |
+| Instanced rendering | Reduce draw calls for chunk-heavy scenes | ✓ Good - significant perf improvement |
+| Grid-based visibility culling | O(1) chunk lookup vs scanning all chunks | ✓ Good - bounded iteration time |
 
 ---
 
-*Last updated: 2026-03-27 after CONCERNS.md analysis for addressing codebase issues*
+*Last updated: 2026-04-01 after v1.0 milestone completion*

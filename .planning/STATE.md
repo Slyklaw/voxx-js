@@ -2,66 +2,63 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-27)
+See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** High-performance browser-based voxel world rendering with smooth frame rates and rich visual features
-**Current focus:** Phase 3: Performance
+**Current focus:** Planning v2.0 milestone (Phase 4-5)
+
+## Milestone Status
+
+**v1.0 WebGL Foundation — Shipped 2026-04-01**
+- ✓ Phase 1: WebGL Foundation (3/3 plans)
+- ✓ Phase 2: Worker System (2/2 plans)
+- ✓ Phase 3: Performance (4/4 plans)
+
+**v2.0 Performance & UX — Planned**
+- Phase 4: User Experience (cancelled, needs replanning)
+- Phase 5: Code Quality (not started)
 
 ## Current Position
 
-Phase: 3 of 5 (Performance)
-Plan: 4 of 4 in current phase
-Status: Complete
-Last activity: 2026-03-27 - Completed plan 03-04: drawElementsInstanced gap closure
+Milestone: v1.0 complete, v2.0 planning
+Status: Ready for next milestone
+Last activity: 2026-04-01 - Milestone v1.0 completed
 
-Progress: 80%
+Progress: 9/9 plans complete (v1.0)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 3 min
-- Total execution time: 0.3 hours
+- Total plans completed: 9
+- Total phases completed: 3
+- Average duration: ~3 min per plan
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-| 1 | 3 | 6min | 2min |
-| 2 | 2 | 4min | 2min |
-| 3 | 3 | 9min | 3min |
-| 4 | 0 | 0 | - |
-| 5 | 0 | 0 | - |
-
-*Updated after each plan completion*
+| Phase | Plans | Status |
+|-------|-------|--------|
+| 1. WebGL Foundation | 3 | Complete |
+| 2. Worker System | 2 | Complete |
+| 3. Performance | 4 | Complete |
 
 ## Accumulated Context
 
-### Decisions
+### Decisions (from v1.0)
 
 From PROJECT.md Key Decisions table:
-- Vanilla JS (no framework) - Direct WebGL access, minimal dependencies
-- Worker-based mesh generation - Prevents frame drops during chunk creation
-- CDN for simplex-noise - Should self-host (DEPS-01)
-
-From Phase 2:
-- Used meshState flag pattern to prevent worker mesh overwriting main thread edits
-- States: idle (default), generating (locked), ready (complete), error (failed)
-
-From Phase 3:
-- Used instance attributes (aChunkOffset) for shader-based chunk positioning
-- Vertex shader computes: worldPos = aPosition + aChunkOffset
-- Grid-based visibility culling with spatialIndex Map for O(1) lookup
-
-### Pending Todos
-
-None yet.
+- Vanilla JS (no framework) - Direct WebGL access, minimal dependencies ✓
+- Worker-based mesh generation - Fixed with graceful termination + state machine ✓
+- CDN for simplex-noise - Self-host planned for v2.0 (DEPS-01)
+- Resource registry pattern - Unified WebGL lifecycle, eliminates memory leaks ✓
+- Instanced rendering - Shader-based transforms for performance ✓
+- Grid-based visibility culling - O(1) lookup with spatial index ✓
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-27
-Stopped at: Completed 03-performance 03-04 plan - Phase 3 complete
-Resume file: None
+Last session: 2026-04-01
+Stopped at: Milestone v1.0 completed
+Resume file: .planning/MILESTONES.md
