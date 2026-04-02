@@ -97,6 +97,11 @@ function getSunInfo(hour) {
 }
 
 let currentLightSpaceMatrix = null;
+let lastShadowPassDuration = 0;
+
+export function getShadowPassDuration() {
+  return lastShadowPassDuration;
+}
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
@@ -1075,9 +1080,14 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
   
   // ── PASS 0: Shadow Map ──────────────────────────────────────────────────
   currentLightSpaceMatrix = null;
+  const shadowPassStart = performance.now();
   if (shadowMapObj && shadowProgram && window.createLightSpaceMatrix && cameraPos) {
     const sunInfo = getSunInfo(timeOfDay);
     currentLightSpaceMatrix = window.createLightSpaceMatrix(cameraPos, sunInfo.direction);
+    
+    if (DEBUG && currentLightSpaceMatrix) {
+      console.log(`[Shadow] Light space matrix updated for time=${timeOfDay.toFixed(2)}, sunDir=[${sunInfo.direction.map(v => v.toFixed(2)).join(',')}]`);
+    }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowMapObj.fbo);
     gl.viewport(0, 0, shadowMapObj.size, shadowMapObj.size);
@@ -1117,6 +1127,10 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     gl.disable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
     gl.colorMask(true, true, true, true);
+  }
+  lastShadowPassDuration = performance.now() - shadowPassStart;
+  if (lastShadowPassDuration > 2) {
+    console.warn(`[Shadow] Pass took ${lastShadowPassDuration.toFixed(2)}ms (target: <2ms for 60fps)`);
   }
   
   // Bind G-buffer FBO

@@ -48,7 +48,7 @@ addContextLossListener(() => {
     hideContextLostNotification();
   }
 });
-import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, updateSSAOSettings, renderVoxelsToGBuffer } from './gl/render.js';
+import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, updateSSAOSettings, renderVoxelsToGBuffer, getShadowPassDuration } from './gl/render.js';
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
@@ -479,7 +479,10 @@ function render(currentTime) {
   }
 
   const fpsEl = document.querySelector('.debug-fps');
-  if (fpsEl) fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${inputHandler.getSelectedBlockType()}`;
+  if (fpsEl) {
+    const shadowMs = getShadowPassDuration();
+    fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${inputHandler.getSelectedBlockType()} | Shadow: ${shadowMs.toFixed(1)}ms`;
+  }
 
   const posEl = document.getElementById('camera-position');
   if (posEl) {
