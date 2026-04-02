@@ -101,16 +101,9 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
   // calculate bias (based on depth map resolution and slope)
   float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.001);
 
-  // PCF (Percentage-Closer Filtering) 3x3 kernel
-  float shadow = 0.0;
-  vec2 texelSize = 1.0 / vec2(4096.0); // Size of the shadow map
-  for (int x = -1; x <= 1; ++x) {
-    for (int y = -1; y <= 1; ++y) {
-      // sampler2DShadow hardware comparison directly returns 1.0 (lit) or 0.0 (shadowed)
-      shadow += texture(uShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, projCoords.z - bias)); 
-    }
-  }
-  return shadow / 9.0;
+  // Hard shadow — single texel lookup, no filtering
+  float shadow = texture(uShadowMap, vec3(projCoords.xy, projCoords.z - bias));
+  return shadow;
 }
 
 void main() {

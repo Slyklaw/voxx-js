@@ -360,6 +360,8 @@ export function createShadowMapFBO(gl, size = 2048) {
   const shadowFBO = { fbo, texture, size, dispose: null };
   shadowFBO.dispose = () => disposeShadowMapFBO(gl, shadowFBO);
   
+  if (DEBUG) console.log(`[FBO] Shadow map created: ${size}x${size}`);
+  
   // Register with context for lifecycle management
   const shadowSize = size;
   registerContextResources({
