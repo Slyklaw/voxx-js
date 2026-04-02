@@ -72,7 +72,7 @@
   2. Scene geometry casts shadows in the direction of the sun/light
   3. Shadow edges are hard (no soft/blur filtering applied)
   4. Shadow map uses a fixed resolution quality default with no UI toggle
-**Plans**: TBD
+**Plans**: 1 plan
 
 ### Phase 6: Shadow Integration
 **Goal**: Shadows cover full render distance, track sun movement, and maintain 60fps
