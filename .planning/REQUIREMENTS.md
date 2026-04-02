@@ -60,20 +60,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SHADOW-01 | TBD | Pending |
-| SHADOW-02 | TBD | Pending |
-| SHADOW-03 | TBD | Pending |
-| SHADOW-04 | TBD | Pending |
-| SHADOW-05 | TBD | Pending |
-| SHADOW-06 | TBD | Pending |
-| SHADOW-07 | TBD | Pending |
-| SHADOW-08 | TBD | Pending |
-| DEPS-01 | TBD | Pending |
+| DEPS-01 | Phase 4 | Pending |
+| SHADOW-01 | Phase 5 | Pending |
+| SHADOW-03 | Phase 5 | Pending |
+| SHADOW-04 | Phase 5 | Pending |
+| SHADOW-07 | Phase 5 | Pending |
+| SHADOW-02 | Phase 6 | Pending |
+| SHADOW-05 | Phase 6 | Pending |
+| SHADOW-06 | Phase 6 | Pending |
+| SHADOW-08 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-02*
