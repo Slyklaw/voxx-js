@@ -36,18 +36,19 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ### Active (v2.0 — Shadows)
 
-- [ ] SHADOW-01: Directional shadow map rendered from sun position (light direction matches day/night cycle)
-- [ ] SHADOW-02: Shadows cover full render distance (all visible chunks cast and receive shadows)
-- [ ] SHADOW-03: Hard shadow edges (no PCF soft filtering)
-- [ ] SHADOW-04: Shadow map resolution set to a quality default (no UI toggle)
-- [ ] SHADOW-05: Shadow map integrates with existing deferred rendering pipeline
-- [ ] SHADOW-06: Shadow map updates as sun moves during day/night cycle
-- [ ] SHADOW-07: Shadow map framebuffer created and managed by resource registry (no memory leaks)
-- [ ] SHADOW-08: Shadow rendering maintains 60fps on mid-range hardware with default settings
+(None — all v2.0 requirements shipped)
 
 ### Validated (v2.0 — shipped 2026-04-02)
 
 - ✓ DEPS-01: Self-host simplex-noise dependency — Phase 4
+- ✓ SHADOW-01: Directional shadow map rendered from sun position — Phase 5
+- ✓ SHADOW-02: Shadows cover full render distance — Phase 6
+- ✓ SHADOW-03: Hard shadow edges (no PCF soft filtering) — Phase 5
+- ✓ SHADOW-04: Shadow map resolution set to a quality default (no UI toggle) — Phase 5
+- ✓ SHADOW-05: Shadow map integrates with existing deferred rendering pipeline — Phase 6
+- ✓ SHADOW-06: Shadow map updates as sun moves during day/night cycle — Phase 6
+- ✓ SHADOW-07: Shadow map framebuffer created and managed by resource registry — Phase 5
+- ✓ SHADOW-08: Shadow rendering maintains 60fps on mid-range hardware — Phase 6
 
 ### Out of Scope
 
@@ -101,6 +102,9 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Resource registry pattern | Unified WebGL resource lifecycle | ✓ Good - eliminates memory leaks |
 | Instanced rendering | Reduce draw calls for chunk-heavy scenes | ✓ Good - significant perf improvement |
 | Grid-based visibility culling | O(1) chunk lookup vs scanning all chunks | ✓ Good - bounded iteration time |
+| Hard shadows (no PCF) | Crisp edges preferred, simpler shader | ✓ Good - single texture lookup |
+| Dynamic shadow frustum | Render distance 8 requires 320+ unit coverage | ✓ Good - frustum scales with render distance |
+| Shadow pass timing | Need to monitor performance impact | ✓ Good - <2ms target for 60fps |
 
 ## Current Milestone: v2.0 Shadows
 
@@ -113,4 +117,4 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ---
 
-*Last updated: 2026-04-02 after Phase 4*
+*Last updated: 2026-04-02 after v2.0 Shadows milestone completion*
