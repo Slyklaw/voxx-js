@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** High-performance browser-based voxel world rendering with smooth frame rates and rich visual features
-**Current focus:** v2.0 Shadows — Phase 5 (Core Shadows)
+**Current focus:** v2.0 Shadows — Phase 6 (Shadow Integration)
 
 ## Milestone Status
 
