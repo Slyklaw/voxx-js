@@ -1,4 +1,4 @@
-import { createNoise2D } from 'https://cdn.jsdelivr.net/npm/simplex-noise@4.0.3/dist/esm/simplex-noise.js';
+import { createNoise2D } from '../lib/simplex-noise.js';
 import { Chunk } from './chunk.js';
 import { BIOME_CONFIG } from './biomes.js';
 import { BLOCK_TYPES, BLOCKS, getBlockColor } from './blocks.js';
