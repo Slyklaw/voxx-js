@@ -61,7 +61,7 @@
   1. Application loads simplex-noise from local files instead of CDN
   2. Terrain generation produces identical results after migration (no behavioral change)
   3. Application works offline without network access to external CDNs
-**Plans**: TBD
+**Plans**: 1 plan
 
 ### Phase 5: Core Shadows
 **Goal**: Render directional shadows from the sun position with hard edges
