@@ -83,7 +83,11 @@
   2. Shadow map integrates into the existing deferred rendering GBuffer pipeline
   3. Shadows update in real-time as the sun moves during the day/night cycle
   4. Frame rate stays at 60fps on mid-range hardware with shadows enabled at default settings
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Expand shadow frustum to cover full render distance and add frustum culling
+- [ ] 06-02-PLAN.md — Add shadow performance monitoring and verify sun tracking
 
 ---
 
