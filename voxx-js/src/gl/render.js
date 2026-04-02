@@ -1022,6 +1022,39 @@ export function renderLoop(canvasEl, gl, renderFn) {
   };
 }
 
+/**
+ * Check if a chunk's bounding box intersects the shadow camera's frustum.
+ * Transforms chunk center to light-space and checks against orthographic bounds.
+ */
+function isChunkInShadowFrustum(chunk, lightSpaceMatrix, frustumSize, near, far) {
+  const chunkX = chunk.x !== undefined ? chunk.x : (chunk.chunkX || 0);
+  const chunkZ = chunk.z !== undefined ? chunk.z : (chunk.chunkZ || 0);
+  
+  // Compute chunk center world position
+  const cx = chunkX * CHUNK_SIZE + CHUNK_SIZE / 2;
+  const cy = 0;
+  const cz = chunkZ * CHUNK_SIZE + CHUNK_SIZE / 2;
+  
+  // Transform chunk center by lightSpaceMatrix to get light-space coordinates
+  const x = lightSpaceMatrix[0] * cx + lightSpaceMatrix[4] * cy + lightSpaceMatrix[8] * cz + lightSpaceMatrix[12];
+  const y = lightSpaceMatrix[1] * cx + lightSpaceMatrix[5] * cy + lightSpaceMatrix[9] * cz + lightSpaceMatrix[13];
+  const z = lightSpaceMatrix[2] * cx + lightSpaceMatrix[6] * cy + lightSpaceMatrix[10] * cz + lightSpaceMatrix[14];
+  const w = lightSpaceMatrix[3] * cx + lightSpaceMatrix[7] * cy + lightSpaceMatrix[11] * cz + lightSpaceMatrix[15];
+  
+  if (w === 0) return true; // Avoid division by zero
+  
+  const ndcX = x / w;
+  const ndcY = y / w;
+  const ndcZ = z / w;
+  
+  // Check against orthographic bounds in NDC space
+  // Orthographic projection maps [-size, size] to [-1, 1] in X/Y
+  // and [near, far] to [-1, 1] in Z
+  return ndcX >= -1.0 && ndcX <= 1.0 &&
+         ndcY >= -1.0 && ndcY <= 1.0 &&
+         ndcZ >= -1.0 && ndcZ <= 1.0;
+}
+
 export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe = false, debugMode = false, timeOfDay = 0.5, renderOutlineCallback = null, cameraPos = null) {
   // DEBUG: Skip G-buffer and render directly to test if voxels work
   if (window.__DEBUG_SKIP_GBUFFER) {
@@ -1063,10 +1096,16 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     gl.uniformMatrix4fv(shadowUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
     
     // Draw all chunks rapidly to depth buffer
+    const frustumSize = window._shadowFrustumSize || 320;
+    const farPlane = window._shadowFarPlane || 450;
     for (let i = 0; i < chunks.length; i++) {
       const chunkMesh = chunks[i];
       // Skip chunks that don't have valid geometry structures
       if (!chunkMesh || !chunkMesh.vao || !chunkMesh.ibo || !chunkMesh.indexCount) continue;
+      
+      // Frustum culling: skip chunks outside shadow camera view
+      if (currentLightSpaceMatrix && !isChunkInShadowFrustum(chunkMesh, currentLightSpaceMatrix, frustumSize, 1.0, farPlane)) continue;
+      
       bindChunk(gl, chunkMesh.vao);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
       gl.drawElements(gl.TRIANGLES, chunkMesh.indexCount, gl.UNSIGNED_INT, 0);

@@ -270,6 +270,11 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
   const renderDist = getRenderDistance();
   const size = renderDist * CHUNK_WIDTH + 64;
   const farPlane = renderDist * CHUNK_WIDTH * 1.5;
+  
+  // Expose frustum params for shadow pass culling in render.js
+  window._shadowFrustumSize = size;
+  window._shadowFarPlane = farPlane;
+  
   const proj = createOrthoMatrix(-size, size, -size, size, 1.0, farPlane);
   
   return multiplyMatrices(proj, view);
