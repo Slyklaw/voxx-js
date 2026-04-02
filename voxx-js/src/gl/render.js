@@ -718,6 +718,11 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
     gl.uniform1i(voxelUniforms.uShadowMap, 2);
   }
   
+  // Set light space matrix for shadow calculations
+  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix !== undefined) {
+    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+  }
+  
   // Render each chunk individually
   // Note: Each chunk has its own mesh with world-space vertices from greedyMesh
   // The instance buffer approach requires all chunks to share the same local vertex buffer
