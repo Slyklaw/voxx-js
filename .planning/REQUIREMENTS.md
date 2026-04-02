@@ -9,13 +9,13 @@ Requirements for v2.0 Shadows milestone. Each maps to roadmap phases.
 
 ### Shadow Mapping
 
-- [ ] **SHADOW-01**: Directional shadow map rendered from sun position (light direction matches day/night cycle)
+- [x] **SHADOW-01**: Directional shadow map rendered from sun position (light direction matches day/night cycle)
 - [ ] **SHADOW-02**: Shadows cover full render distance (all visible chunks cast and receive shadows)
-- [ ] **SHADOW-03**: Hard shadow edges (no PCF soft filtering)
-- [ ] **SHADOW-04**: Shadow map resolution set to a quality default (no UI toggle)
+- [x] **SHADOW-03**: Hard shadow edges (no PCF soft filtering)
+- [x] **SHADOW-04**: Shadow map resolution set to a quality default (no UI toggle)
 - [ ] **SHADOW-05**: Shadow map integrates with existing deferred rendering pipeline
 - [ ] **SHADOW-06**: Shadow map updates as sun moves during day/night cycle
-- [ ] **SHADOW-07**: Shadow map framebuffer created and managed by resource registry (no memory leaks)
+- [x] **SHADOW-07**: Shadow map framebuffer created and managed by resource registry (no memory leaks)
 
 ### Performance
 
@@ -61,10 +61,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DEPS-01 | Phase 4 | Complete |
-| SHADOW-01 | Phase 5 | Pending |
-| SHADOW-03 | Phase 5 | Pending |
-| SHADOW-04 | Phase 5 | Pending |
-| SHADOW-07 | Phase 5 | Pending |
+| SHADOW-01 | Phase 5 | Complete |
+| SHADOW-03 | Phase 5 | Complete |
+| SHADOW-04 | Phase 5 | Complete |
+| SHADOW-07 | Phase 5 | Complete |
 | SHADOW-02 | Phase 6 | Pending |
 | SHADOW-05 | Phase 6 | Pending |
 | SHADOW-06 | Phase 6 | Pending |

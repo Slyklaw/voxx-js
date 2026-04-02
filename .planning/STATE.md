@@ -16,23 +16,23 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 **v2.0 Shadows — Active**
 - ✓ Phase 4: Dependency (1/1 plans)
-- ○ Phase 5: Core Shadows (0/3 plans)
+- ✓ Phase 5: Core Shadows (1/1 plans)
 - ○ Phase 6: Shadow Integration (0/3 plans)
 
 ## Current Position
 
 Milestone: v2.0 Shadows
-Phase: 5 - Core Shadows
+Phase: 6 - Shadow Integration
 Plan: Not started
-Status: Ready to plan Phase 5
+Status: Phase 5 complete, ready for Phase 6
 
-Progress: ██████████░░░░░░░░░░ 4/6 phases complete (67%)
+Progress: ████████████░░░░░░░░ 5/6 phases complete (83%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Total phases completed: 4
+- Total plans completed: 11
+- Total phases completed: 5
 - Average duration: ~2 min per plan
 
 **By Phase:**
@@ -43,7 +43,7 @@ Progress: ██████████░░░░░░░░░░ 4/6 phase
 | 2. Worker System | 2 | Complete |
 | 3. Performance | 4 | Complete |
 | 4. Dependency | 1 | Complete |
-| 5. Core Shadows | 0 | Not started |
+| 5. Core Shadows | 1 | Complete |
 | 6. Shadow Integration | 0 | Not started |
 
 ## Accumulated Context
@@ -71,6 +71,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Phase 4 complete, ready to plan Phase 5 (Core Shadows)
+Stopped at: Phase 5 complete, ready for Phase 6 (Shadow Integration)
 Resume file: None
-Next step: `/gsd-plan-phase 5`
+Next step: `/gsd-plan-phase 6`
