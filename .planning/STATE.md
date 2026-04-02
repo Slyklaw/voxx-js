@@ -15,7 +15,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 - ✓ Phase 3: Performance (4/4 plans)
 
 **v2.0 Shadows — Active**
-- Phase 4: Dependency (0/1 plans)
+- ✓ Phase 4: Dependency (1/1 plans)
 - Phase 5: Core Shadows (0/3 plans)
 - Phase 6: Shadow Integration (0/3 plans)
 
@@ -23,17 +23,17 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Milestone: v2.0 Shadows
 Phase: 4 - Dependency
-Plan: Not started
-Status: Roadmap defined, awaiting Phase 4 planning
+Plan: 1/1 complete
+Status: Phase 4 complete, ready for Phase 5 planning
 
-Progress: ██████████░░░░░░░░░░ 3/6 phases complete (50%)
+Progress: ██████████░░░░░░░░░░ 4/6 phases complete (67%)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Total phases completed: 3
-- Average duration: ~3 min per plan
+- Total plans completed: 10
+- Total phases completed: 4
+- Average duration: ~2 min per plan
 
 **By Phase:**
 
@@ -42,7 +42,7 @@ Progress: ██████████░░░░░░░░░░ 3/6 phase
 | 1. WebGL Foundation | 3 | Complete |
 | 2. Worker System | 2 | Complete |
 | 3. Performance | 4 | Complete |
-| 4. Dependency | 0 | Not started |
+| 4. Dependency | 1 | Complete |
 | 5. Core Shadows | 0 | Not started |
 | 6. Shadow Integration | 0 | Not started |
 
@@ -53,7 +53,7 @@ Progress: ██████████░░░░░░░░░░ 3/6 phase
 From PROJECT.md Key Decisions table:
 - Vanilla JS (no framework) - Direct WebGL access, minimal dependencies ✓
 - Worker-based mesh generation - Fixed with graceful termination + state machine ✓
-- CDN for simplex-noise - Self-host planned for v2.0 (DEPS-01) → Phase 4
+- CDN for simplex-noise - Self-hosted in v2.0 Phase 4 (DEPS-01) ✓
 - Resource registry pattern - Unified WebGL lifecycle, eliminates memory leaks ✓
 - Instanced rendering - Shader-based transforms for performance ✓
 - Grid-based visibility culling - O(1) lookup with spatial index ✓
@@ -71,6 +71,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Roadmap created for v2.0 Shadows
+Stopped at: Completed 04-01-PLAN.md (self-host simplex-noise)
 Resume file: .planning/ROADMAP.md
-Next step: `/gsd-plan-phase 4`
+Next step: `/gsd-plan-phase 5`

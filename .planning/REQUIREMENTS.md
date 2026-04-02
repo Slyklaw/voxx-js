@@ -23,7 +23,7 @@ Requirements for v2.0 Shadows milestone. Each maps to roadmap phases.
 
 ### Dependencies
 
-- [ ] **DEPS-01**: Self-host simplex-noise dependency
+- [x] **DEPS-01**: Self-host simplex-noise dependency
 
 ## v2 Requirements
 
@@ -60,7 +60,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEPS-01 | Phase 4 | Pending |
+| DEPS-01 | Phase 4 | Complete |
 | SHADOW-01 | Phase 5 | Pending |
 | SHADOW-03 | Phase 5 | Pending |
 | SHADOW-04 | Phase 5 | Pending |
