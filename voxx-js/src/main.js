@@ -56,6 +56,7 @@ import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './constants.js';
+import { getRenderDistance } from './chunk/chunkManager.js';
 import { InputHandler } from './input/InputHandler.js';
 import { BlockEditor } from './blockEditor/BlockEditor.js';
 import { Camera } from './camera/Camera.js';
@@ -266,8 +267,10 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
   const upVec = sunNormY > 0.99 ? [1, 0, 0] : [0, 1, 0];
   const view = camera.lookAt(lightPos, center, upVec);
   
-  const size = 64.0;
-  const proj = createOrthoMatrix(-size, size, -size, size, 1.0, dist * 2.0);
+  const renderDist = getRenderDistance();
+  const size = renderDist * CHUNK_WIDTH + 64;
+  const farPlane = renderDist * CHUNK_WIDTH * 1.5;
+  const proj = createOrthoMatrix(-size, size, -size, size, 1.0, farPlane);
   
   return multiplyMatrices(proj, view);
 }
