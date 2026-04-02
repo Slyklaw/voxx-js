@@ -36,15 +36,18 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ### Active (v2.0 — Shadows)
 
-- [ ] SHADOW-01: Directional shadow map rendered from sun position
-- [ ] SHADOW-02: Shadows cover full render distance
-- [ ] SHADOW-03: Hard shadow edges (no soft filtering)
-- [ ] SHADOW-04: Shadow map resolution set to quality default (no UI toggle)
-- [ ] UX-01: Add resource loading progress indicator during world generation
-- [ ] UX-02: Add graphics quality settings (render distance, SSAO toggle)
-- [ ] QUAL-01: Encapsulate global state in modules
-- [ ] QUAL-02: Implement centralized WebGL resource manager
-- [ ] DEPS-01: Self-host simplex-noise dependency
+- [ ] SHADOW-01: Directional shadow map rendered from sun position (light direction matches day/night cycle)
+- [ ] SHADOW-02: Shadows cover full render distance (all visible chunks cast and receive shadows)
+- [ ] SHADOW-03: Hard shadow edges (no PCF soft filtering)
+- [ ] SHADOW-04: Shadow map resolution set to a quality default (no UI toggle)
+- [ ] SHADOW-05: Shadow map integrates with existing deferred rendering pipeline
+- [ ] SHADOW-06: Shadow map updates as sun moves during day/night cycle
+- [ ] SHADOW-07: Shadow map framebuffer created and managed by resource registry (no memory leaks)
+- [ ] SHADOW-08: Shadow rendering maintains 60fps on mid-range hardware with default settings
+
+### Validated (v2.0 — shipped 2026-04-02)
+
+- ✓ DEPS-01: Self-host simplex-noise dependency — Phase 4
 
 ### Out of Scope
 
@@ -94,7 +97,7 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 |----------|-----------|---------|
 | Vanilla JS (no framework) | Keep dependencies minimal, direct WebGL access | ✓ Good - aligns with core value |
 | Worker-based mesh generation | Prevent frame drops during chunk creation | ✓ Fixed - graceful termination + state machine |
-| CDN for simplex-noise | Quick setup | ⚠️ Revisit - should self-host (v2.0) |
+| CDN for simplex-noise | Quick setup | ✓ Good - Self-hosted in Phase 4 (DEPS-01) |
 | Resource registry pattern | Unified WebGL resource lifecycle | ✓ Good - eliminates memory leaks |
 | Instanced rendering | Reduce draw calls for chunk-heavy scenes | ✓ Good - significant perf improvement |
 | Grid-based visibility culling | O(1) chunk lookup vs scanning all chunks | ✓ Good - bounded iteration time |
@@ -110,4 +113,4 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 
 ---
 
-*Last updated: 2026-04-02 after v2.0 milestone start*
+*Last updated: 2026-04-02 after Phase 4*

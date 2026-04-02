@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** High-performance browser-based voxel world rendering with smooth frame rates and rich visual features
-**Current focus:** v2.0 Shadows — Phase 4 (Dependency)
+**Current focus:** v2.0 Shadows — Phase 5 (Core Shadows)
 
 ## Milestone Status
 
@@ -16,15 +16,15 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 **v2.0 Shadows — Active**
 - ✓ Phase 4: Dependency (1/1 plans)
-- Phase 5: Core Shadows (0/3 plans)
-- Phase 6: Shadow Integration (0/3 plans)
+- ○ Phase 5: Core Shadows (0/3 plans)
+- ○ Phase 6: Shadow Integration (0/3 plans)
 
 ## Current Position
 
 Milestone: v2.0 Shadows
-Phase: 4 - Dependency
-Plan: 1/1 complete
-Status: Phase 4 complete, ready for Phase 5 planning
+Phase: 5 - Core Shadows
+Plan: Not started
+Status: Ready to plan Phase 5
 
 Progress: ██████████░░░░░░░░░░ 4/6 phases complete (67%)
 
@@ -71,6 +71,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 04-01-PLAN.md (self-host simplex-noise)
-Resume file: .planning/ROADMAP.md
+Stopped at: Phase 4 complete, ready to plan Phase 5 (Core Shadows)
+Resume file: None
 Next step: `/gsd-plan-phase 5`

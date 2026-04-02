@@ -16,7 +16,7 @@
 - [x] **Phase 1: WebGL Foundation** — Fix memory leaks and context loss handling
 - [x] **Phase 2: Worker System** — Resolve worker termination and sync issues
 - [x] **Phase 3: Performance** — Optimize render loop and chunk management
-- [ ] **Phase 4: Dependency** — Self-host simplex-noise dependency
+- [x] **Phase 4: Dependency** — Self-host simplex-noise dependency (completed 2026-04-02)
 - [ ] **Phase 5: Core Shadows** — Directional shadow map with hard edges from sun position
 - [ ] **Phase 6: Shadow Integration** — Full render distance coverage, sun tracking, and performance
 
@@ -94,7 +94,7 @@
 | 1. WebGL Foundation | 3/3 | Complete | 2026-03-28 |
 | 2. Worker System | 2/2 | Complete | 2026-03-28 |
 | 3. Performance | 4/4 | Complete | 2026-03-28 |
-| 4. Dependency | 0/1 | Not started | - |
+| 4. Dependency | 1/1 | Complete    | 2026-04-02 |
 | 5. Core Shadows | 0/3 | Not started | - |
 | 6. Shadow Integration | 0/3 | Not started | - |
 
