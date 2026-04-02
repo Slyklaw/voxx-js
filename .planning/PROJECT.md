@@ -34,8 +34,12 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 - ✓ PERF-02: Grid-based visibility culling with spatial index — v1.0
 - ✓ PERF-03: Neighbor calculation caching with dirty flags — v1.0
 
-### Active (v2.0 — planned)
+### Active (v2.0 — Shadows)
 
+- [ ] SHADOW-01: Directional shadow map rendered from sun position
+- [ ] SHADOW-02: Shadows cover full render distance
+- [ ] SHADOW-03: Hard shadow edges (no soft filtering)
+- [ ] SHADOW-04: Shadow map resolution set to quality default (no UI toggle)
 - [ ] UX-01: Add resource loading progress indicator during world generation
 - [ ] UX-02: Add graphics quality settings (render distance, SSAO toggle)
 - [ ] QUAL-01: Encapsulate global state in modules
@@ -95,6 +99,15 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Instanced rendering | Reduce draw calls for chunk-heavy scenes | ✓ Good - significant perf improvement |
 | Grid-based visibility culling | O(1) chunk lookup vs scanning all chunks | ✓ Good - bounded iteration time |
 
+## Current Milestone: v2.0 Shadows
+
+**Goal:** Add real-time directional shadow mapping from the sun position, covering full render distance with hard shadows.
+
+**Target features:**
+- Directional shadow map from sun/light position
+- Full render distance shadow coverage
+- Hard shadow edges, single shadow map, no UI toggle
+
 ---
 
-*Last updated: 2026-04-01 after v1.0 milestone completion*
+*Last updated: 2026-04-02 after v2.0 milestone start*

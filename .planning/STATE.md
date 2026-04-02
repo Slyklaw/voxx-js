@@ -20,11 +20,11 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Milestone: v1.0 complete, v2.0 planning
-Status: Ready for next milestone
-Last activity: 2026-04-01 - Milestone v1.0 completed
+Milestone: v2.0 Shadows — defining requirements
+Status: Defining requirements
+Last activity: 2026-04-02 - Milestone v2.0 started
 
-Progress: 9/9 plans complete (v1.0)
+Progress: 9/9 plans complete (v1.0), 0 plans (v2.0)
 
 ## Performance Metrics
 
