@@ -7,7 +7,7 @@
 ## Milestones
 
 - ✅ **v1.0 WebGL Foundation** — Phases 1-3 (shipped 2026-04-01)
-- 📋 **v2.0 Shadows** — Phases 4-6 (planning)
+- ✅ **v2.0 Shadows** — Phases 4-6 (complete 2026-04-02)
 
 ---
 
@@ -18,7 +18,7 @@
 - [x] **Phase 3: Performance** — Optimize render loop and chunk management
 - [x] **Phase 4: Dependency** — Self-host simplex-noise dependency (completed 2026-04-02)
 - [x] **Phase 5: Core Shadows** — Directional shadow map with hard edges from sun position (completed 2026-04-02)
-- [ ] **Phase 6: Shadow Integration** — Full render distance coverage, sun tracking, and performance
+- [x] **Phase 6: Shadow Integration** — Full render distance coverage, sun tracking, and performance (completed 2026-04-02)
 
 ---
 
@@ -86,8 +86,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Expand shadow frustum to cover full render distance and add frustum culling
-- [ ] 06-02-PLAN.md — Add shadow performance monitoring and verify sun tracking
+- [x] 06-01-PLAN.md — Expand shadow frustum to cover full render distance and add frustum culling
+- [x] 06-02-PLAN.md — Add shadow performance monitoring and verify sun tracking
 
 ---
 
@@ -100,7 +100,7 @@ Plans:
 | 3. Performance | 4/4 | Complete | 2026-03-28 |
 | 4. Dependency | 1/1 | Complete    | 2026-04-02 |
 | 5. Core Shadows | 1/1 | Complete    | 2026-04-02 |
-| 6. Shadow Integration | 0/3 | Not started | - |
+| 6. Shadow Integration | 2/2 | Complete    | 2026-04-02 |
 
 ---
 
