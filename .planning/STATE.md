@@ -70,7 +70,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02
-Stopped at: Phase 6 complete, v2.0 Shadows milestone complete
+Last session: 2026-04-03
+Stopped at: v2.0 Shadows milestone complete, shadow bugs fixed
 Resume file: None
 Next step: `/gsd-complete-milestone` or plan next milestone
