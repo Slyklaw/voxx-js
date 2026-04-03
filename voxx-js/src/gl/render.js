@@ -719,7 +719,7 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   }
   
   // Set light space matrix for shadow calculations
-  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix !== undefined) {
+  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix) {
     gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
   }
   
@@ -1090,10 +1090,6 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     const sunInfo = getSunInfo(timeOfDay);
     currentLightSpaceMatrix = window.createLightSpaceMatrix(cameraPos, sunInfo.direction);
     
-    if (DEBUG && currentLightSpaceMatrix) {
-      console.log(`[Shadow] Light space matrix updated for time=${timeOfDay.toFixed(2)}, sunDir=[${sunInfo.direction.map(v => v.toFixed(2)).join(',')}]`);
-    }
-    
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowMapObj.fbo);
     gl.viewport(0, 0, shadowMapObj.size, shadowMapObj.size);
     gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -1114,7 +1110,8 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     const frustumSize = window._shadowFrustumSize || 320;
     const farPlane = window._shadowFarPlane || 450;
     for (let i = 0; i < chunks.length; i++) {
-      const chunkMesh = chunks[i];
+      const chunk = chunks[i];
+      const chunkMesh = chunk._webglMesh;
       // Skip chunks that don't have valid geometry structures
       if (!chunkMesh || !chunkMesh.vao || !chunkMesh.ibo || !chunkMesh.indexCount) continue;
       
