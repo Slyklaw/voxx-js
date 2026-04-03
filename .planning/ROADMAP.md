@@ -100,7 +100,7 @@ Plans:
 | 3. Performance | 4/4 | Complete | 2026-03-28 |
 | 4. Dependency | 1/1 | Complete    | 2026-04-02 |
 | 5. Core Shadows | 1/1 | Complete    | 2026-04-02 |
-| 6. Shadow Integration | 2/2 | Complete    | 2026-04-02 |
+| 6. Shadow Integration | 2/2 | Complete    | 2026-04-03 |
 
 ---
 
