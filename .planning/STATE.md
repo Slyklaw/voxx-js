@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v2.0
+milestone_name: Shadows
+status: Awaiting next milestone
+stopped_at: v2.0 Shadows milestone complete, shadow bugs fixed
+last_updated: "2026-11-03T23:52:52.716Z"
+last_activity: 2026-11-03 — Milestone v2.0 completed and archived
+progress:
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 13
+  completed_plans: 13
+  percent: 100
+---
+
 # Project State
 
 ## Project Reference
@@ -10,27 +26,28 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Milestone Status
 
 **v1.0 WebGL Foundation — Shipped 2026-04-01**
+
 - ✓ Phase 1: WebGL Foundation (3/3 plans)
 - ✓ Phase 2: Worker System (2/2 plans)
 - ✓ Phase 3: Performance (4/4 plans)
 
 **v2.0 Shadows — Complete**
+
 - ✓ Phase 4: Dependency (1/1 plans)
 - ✓ Phase 5: Core Shadows (1/1 plans)
 - ✓ Phase 6: Shadow Integration (2/2 plans)
 
 ## Current Position
 
-Milestone: v2.0 Shadows — COMPLETE
-Phase: 6 - Shadow Integration — COMPLETE
-Plan: All plans complete
-Status: v2.0 Shadows milestone complete
-
-Progress: ████████████████████ 6/6 phases complete (100%)
+Phase: Milestone v2.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-11-03 — Milestone v2.0 completed and archived
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 13
 - Total phases completed: 6
 - Average duration: ~2 min per plan
@@ -51,6 +68,7 @@ Progress: ████████████████████ 6/6 phase
 ### Decisions (from v1.0)
 
 From PROJECT.md Key Decisions table:
+
 - Vanilla JS (no framework) - Direct WebGL access, minimal dependencies ✓
 - Worker-based mesh generation - Fixed with graceful termination + state machine ✓
 - CDN for simplex-noise - Self-hosted in v2.0 Phase 4 (DEPS-01) ✓
@@ -59,6 +77,7 @@ From PROJECT.md Key Decisions table:
 - Grid-based visibility culling - O(1) lookup with spatial index ✓
 
 ### Decisions (v2.0)
+
 - Shadow mapping uses hard edges only (no PCF soft filtering) — v2.0 scope
 - Single shadow map (no cascaded shadow maps) — adequate for this milestone
 - Shadow resolution is fixed quality default — no UI toggle (defer to UX-02)
@@ -68,9 +87,21 @@ From PROJECT.md Key Decisions table:
 
 None.
 
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-11-03:
+
+| Category | Item | Status |
+|----------|------|--------|
+| verification_gap | Phase 04: 04-VERIFICATION.md | human_needed |
+
 ## Session Continuity
 
 Last session: 2026-04-03
 Stopped at: v2.0 Shadows milestone complete, shadow bugs fixed
 Resume file: None
 Next step: `/gsd-complete-milestone` or plan next milestone
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
