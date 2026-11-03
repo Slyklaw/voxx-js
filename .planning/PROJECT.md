@@ -80,11 +80,13 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 - Worker pool with graceful termination and job tracking
 - Instanced rendering with shader-based matrix transforms
 
-**Known Issues (v2.0 scope):**
-- No loading progress indicator during world generation
-- No UI for graphics quality settings
-- Global state pollution in main.js and render.js
-- simplex-noise loaded from CDN (dependency risk)
+**Known Issues (resolved in v2.0):**
+- simplex-noise now self-hosted (DEPS-01) — offline-capable
+
+**Known Issues (deferred):**
+- No loading progress indicator during world generation (UX-01)
+- No UI for graphics quality settings (UX-02)
+- Global state pollution in main.js and render.js (QUAL-01, QUAL-02)
 
 ## Constraints
 
@@ -106,15 +108,10 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Dynamic shadow frustum | Render distance 8 requires 320+ unit coverage | ✓ Good - frustum scales with render distance |
 | Shadow pass timing | Need to monitor performance impact | ✓ Good - <2ms target for 60fps |
 
-## Current Milestone: v2.0 Shadows
+## Current Milestone: (none — v2.0 shipped 2026-11-03)
 
-**Goal:** Add real-time directional shadow mapping from the sun position, covering full render distance with hard shadows.
-
-**Target features:**
-- Directional shadow map from sun/light position
-- Full render distance shadow coverage
-- Hard shadow edges, single shadow map, no UI toggle
+Next: `/gsd-new-milestone` to plan the next release.
 
 ---
 
-*Last updated: 2026-04-02 after v2.0 Shadows milestone completion*
+*Last updated: 2026-11-03 after v2.0 Shadows milestone completion*

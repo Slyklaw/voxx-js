@@ -18,10 +18,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-02)
+See: .planning/PROJECT.md (updated 2026-11-03)
 
 **Core value:** High-performance browser-based voxel world rendering with smooth frame rates and rich visual features
-**Current focus:** v2.0 Shadows — Phase 6 (Shadow Integration)
+**Current focus:** (none — v2.0 Shadows shipped 2026-11-03; next milestone TBD)
 
 ## Milestone Status
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 - ✓ Phase 2: Worker System (2/2 plans)
 - ✓ Phase 3: Performance (4/4 plans)
 
-**v2.0 Shadows — Complete**
+**v2.0 Shadows — Shipped 2026-11-03**
 
 - ✓ Phase 4: Dependency (1/1 plans)
 - ✓ Phase 5: Core Shadows (1/1 plans)
