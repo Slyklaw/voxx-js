@@ -9,6 +9,7 @@ import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginD
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
+import { resourceManager } from './resourceManager.js';
 import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInstanceBuffer, getVisibleChunks } from '../chunk/chunkManager.js';
 import { CHUNK_SIZE, defaultChunkManager } from '../chunk/chunkManager.js';
 import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';

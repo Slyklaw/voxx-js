@@ -52,6 +52,7 @@ import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateT
 import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
+import { resourceManager } from './gl/resourceManager.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
 import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';

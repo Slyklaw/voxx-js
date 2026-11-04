@@ -1,12 +1,12 @@
-const canvas = document.getElementById('canvas');
+const canvas = (typeof document !== 'undefined' && document) ? document.getElementById('canvas') : null;
 
-const gl = canvas.getContext('webgl2', {
+const gl = canvas ? canvas.getContext('webgl2', {
   antialias: true,
   alpha: false,
   depth: true,
   stencil: false,
   premultipliedAlpha: false
-});
+}) : null;
 
 let contextLost = false;
 const contextLossListeners = [];
