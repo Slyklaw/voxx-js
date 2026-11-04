@@ -13,6 +13,53 @@ import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInsta
 import { CHUNK_SIZE, defaultChunkManager } from '../chunk/chunkManager.js';
 import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
 
+const renderState = {
+  currentLightSpaceMatrix: null,
+  lastShadowPassDuration: 0,
+  skyProgram: null,
+  skyUniforms: null,
+  skyAttribs: null,
+  skyVBO: null,
+  skyVAO: null,
+  selectionProgram: null,
+  selectionUniforms: null,
+  selectionAttribs: null,
+  selectionVBO: null,
+  selectionIBO: null,
+  selectionVAO: null,
+  cameraUBO: null,
+  globalUBO: null,
+  textureAtlas: null,
+  textureAtlasLoaded: false,
+  gbuffer: null,
+  gbufferSupported: false,
+  gbufferSupportInfo: null,
+  gbufferActive: false,
+  ssaoProgram: null,
+  ssaoUniforms: null,
+  ssaoBuffer: null,
+  ssaoBlurBuffer: null,
+  ssaoKernel: null,
+  ssaoNoiseTexture: null,
+  blurProgram: null,
+  blurUniforms: null,
+  compositeProgram: null,
+  compositeUniforms: null,
+  shadowProgram: null,
+  shadowUniforms: null,
+  currentWireframeMode: false,
+  currentDebugMode: false,
+  renderCallback: null,
+  animationFrameId: null,
+  lastTimestamp: 0,
+  glContext: null,
+  currentViewMatrix: null,
+  currentProjectionMatrix: null,
+  currentTimeOfDay: 0.5,
+  canvas: null,
+};
+
+
 // Interpolate between two RGB arrays
 function lerpColor(color1, color2, t) {
   return [
@@ -96,56 +143,24 @@ function getSunInfo(hour) {
   };
 }
 
-let currentLightSpaceMatrix = null;
-let lastShadowPassDuration = 0;
 
 export function getShadowPassDuration() {
-  return lastShadowPassDuration;
+  return renderState.lastShadowPassDuration;
 }
 
 export let voxelProgram = null;
 export let voxelUniforms = null;
 export let voxelAttribs = null;
 
-let skyProgram = null;
-let skyUniforms = null;
-let skyAttribs = null;
-let skyVBO = null;
-let skyVAO = null;
 
-let selectionProgram = null;
-let selectionUniforms = null;
-let selectionAttribs = null;
-let selectionVBO = null;
-let selectionIBO = null;
-let selectionVAO = null;
 
-let cameraUBO = null;
-let globalUBO = null;
-let textureAtlas = null;
-let textureAtlasLoaded = false;
 
 // G-buffer for deferred rendering / SSAO
-let gbuffer = null;
-let gbufferSupported = false;
-let gbufferSupportInfo = null;
-let gbufferActive = false;
 
 // SSAO resources
-let ssaoProgram = null;
-let ssaoUniforms = null;
-let ssaoBuffer = null;
-let ssaoBlurBuffer = null;  // Separate buffer for blur output (prevents feedback loop)
-let ssaoKernel = null;
-let ssaoNoiseTexture = null;
-let blurProgram = null;
-let blurUniforms = null;
-let compositeProgram = null;
-let compositeUniforms = null;
+// ssaoBlurBuffer initialized in renderState
 
 // Shadow Mapping resources
-let shadowProgram = null;
-let shadowUniforms = null;
 export let shadowMapObj = null;
 
 export let ssaoSettings = {
@@ -155,8 +170,6 @@ export let ssaoSettings = {
   bias: SSAO_CONFIG.BIAS
 };
 
-let currentWireframeMode = false;
-let currentDebugMode = false;
 
 const SKY_BLUE = [0.53, 0.81, 0.92, 1.0];
 
@@ -202,9 +215,9 @@ function createCubeMesh() {
 }
 
 function initSky(gl) {
-  skyProgram = createSkyProgram(gl);
-  skyUniforms = getSkyUniforms(gl, skyProgram);
-  skyAttribs = getSkyAttribs(gl, skyProgram);
+  renderState.skyProgram = createSkyProgram(gl);
+  renderState.skyUniforms = getSkyUniforms(gl, renderState.skyProgram);
+  renderState.skyAttribs = getSkyAttribs(gl, renderState.skyProgram);
 
   const skyVertices = new Float32Array([
     -100, -100, -100,  100, -100, -100,  100, 100, -100, -100, 100, -100,
@@ -220,15 +233,15 @@ function initSky(gl) {
     1, 5, 6, 1, 6, 2
   ]);
 
-  skyVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, skyVBO);
+  renderState.skyVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, renderState.skyVBO);
   gl.bufferData(gl.ARRAY_BUFFER, skyVertices, gl.STATIC_DRAW);
 
-  skyVAO = gl.createVertexArray();
-  gl.bindVertexArray(skyVAO);
-  gl.bindBuffer(gl.ARRAY_BUFFER, skyVBO);
-  gl.enableVertexAttribArray(skyAttribs.aPosition);
-  gl.vertexAttribPointer(skyAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
+  renderState.skyVAO = gl.createVertexArray();
+  gl.bindVertexArray(renderState.skyVAO);
+  gl.bindBuffer(gl.ARRAY_BUFFER, renderState.skyVBO);
+  gl.enableVertexAttribArray(renderState.skyAttribs.aPosition);
+  gl.vertexAttribPointer(renderState.skyAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
 
   const skyIBO = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, skyIBO);
@@ -238,42 +251,42 @@ function initSky(gl) {
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-  gl.useProgram(skyProgram);
+  gl.useProgram(renderState.skyProgram);
   // Initialize with default colors (noon)
-  gl.uniform3f(skyUniforms.uTopColor, 0.53, 0.81, 0.92);
-  gl.uniform3f(skyUniforms.uBottomColor, 1.0, 1.0, 1.0);
+  gl.uniform3f(renderState.skyUniforms.uTopColor, 0.53, 0.81, 0.92);
+  gl.uniform3f(renderState.skyUniforms.uBottomColor, 1.0, 1.0, 1.0);
   gl.useProgram(null);
 }
 
 function initSelection(gl) {
-  selectionProgram = createSelectionProgram(gl);
-  selectionUniforms = getSelectionUniforms(gl, selectionProgram);
-  selectionAttribs = getSelectionAttribs(gl, selectionProgram);
+  renderState.selectionProgram = createSelectionProgram(gl);
+  renderState.selectionUniforms = getSelectionUniforms(gl, renderState.selectionProgram);
+  renderState.selectionAttribs = getSelectionAttribs(gl, renderState.selectionProgram);
 
   const vertices = createWireframeCubeVertices();
   const indices = createWireframeCubeIndices();
 
-  selectionVBO = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, selectionVBO);
+  renderState.selectionVBO = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, renderState.selectionVBO);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-  selectionVAO = gl.createVertexArray();
-  gl.bindVertexArray(selectionVAO);
-  gl.bindBuffer(gl.ARRAY_BUFFER, selectionVBO);
-  gl.enableVertexAttribArray(selectionAttribs.aPosition);
-  gl.vertexAttribPointer(selectionAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
+  renderState.selectionVAO = gl.createVertexArray();
+  gl.bindVertexArray(renderState.selectionVAO);
+  gl.bindBuffer(gl.ARRAY_BUFFER, renderState.selectionVBO);
+  gl.enableVertexAttribArray(renderState.selectionAttribs.aPosition);
+  gl.vertexAttribPointer(renderState.selectionAttribs.aPosition, 3, gl.FLOAT, false, 0, 0);
 
-  selectionIBO = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, selectionIBO);
+  renderState.selectionIBO = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, renderState.selectionIBO);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-  gl.useProgram(selectionProgram);
-  gl.uniform3fv(selectionUniforms.uSelectionColor, DEFAULT_SELECTION_COLOR);
-  gl.uniform1f(selectionUniforms.uBlockSize, DEFAULT_BLOCK_SIZE);
+  gl.useProgram(renderState.selectionProgram);
+  gl.uniform3fv(renderState.selectionUniforms.uSelectionColor, DEFAULT_SELECTION_COLOR);
+  gl.uniform1f(renderState.selectionUniforms.uBlockSize, DEFAULT_BLOCK_SIZE);
   gl.useProgram(null);
 }
 
@@ -283,52 +296,52 @@ function drawFullscreenQuad(gl) {
 
 function initSSAO(gl) {
   // Generate kernel samples
-  ssaoKernel = generateKernelSamples(32);
+  renderState.ssaoKernel = generateKernelSamples(32);
   // Create noise texture
-  ssaoNoiseTexture = createNoiseTexture(gl, 4);
+  renderState.ssaoNoiseTexture = createNoiseTexture(gl, 4);
   // Compile SSAO shader
-  ssaoProgram = createSSAOProgram(gl);
-  ssaoUniforms = getSSAOUniforms(gl, ssaoProgram);
+  renderState.ssaoProgram = createSSAOProgram(gl);
+  renderState.ssaoUniforms = getSSAOUniforms(gl, renderState.ssaoProgram);
   // Upload kernel samples to uniform array
-  gl.useProgram(ssaoProgram);
-  for (let i = 0; i < ssaoKernel.length; ++i) {
-    gl.uniform3fv(gl.getUniformLocation(ssaoProgram, `samples[${i}]`), ssaoKernel[i]);
+  gl.useProgram(renderState.ssaoProgram);
+  for (let i = 0; i < renderState.ssaoKernel.length; ++i) {
+    gl.uniform3fv(gl.getUniformLocation(renderState.ssaoProgram, `samples[${i}]`), renderState.ssaoKernel[i]);
   }
   // Create SSAO buffers at half resolution
-  if (gbufferSupported) {
-    ssaoBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);
-    ssaoBlurBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);  // Separate buffer for blur output
+  if (renderState.gbufferSupported) {
+    renderState.ssaoBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, renderState.gbufferSupportInfo);
+    renderState.ssaoBlurBuffer = createSSAOBuffer(gl, gl.canvas.width, gl.canvas.height, renderState.gbufferSupportInfo);  // Separate buffer for blur output
   }
   // Create blur shader
-  blurProgram = createBlurProgram(gl);
-  blurUniforms = getBlurUniforms(gl, blurProgram);
+  renderState.blurProgram = createBlurProgram(gl);
+  renderState.blurUniforms = getBlurUniforms(gl, renderState.blurProgram);
   // Create composite shader
-  compositeProgram = createCompositeProgram(gl);
-  compositeUniforms = getCompositeUniforms(gl, compositeProgram);
+  renderState.compositeProgram = createCompositeProgram(gl);
+  renderState.compositeUniforms = getCompositeUniforms(gl, renderState.compositeProgram);
   gl.useProgram(null);
 }
 
 export function updateSSAOSettings(gl, settings) {
   Object.assign(ssaoSettings, settings);
   
-  if (ssaoProgram && ssaoUniforms) {
-    gl.useProgram(ssaoProgram);
-    if (settings.radius !== undefined) gl.uniform1f(ssaoUniforms.radius, ssaoSettings.radius);
-    if (settings.bias !== undefined) gl.uniform1f(ssaoUniforms.bias, ssaoSettings.bias);
+  if (renderState.ssaoProgram && renderState.ssaoUniforms) {
+    gl.useProgram(renderState.ssaoProgram);
+    if (settings.radius !== undefined) gl.uniform1f(renderState.ssaoUniforms.radius, ssaoSettings.radius);
+    if (settings.bias !== undefined) gl.uniform1f(renderState.ssaoUniforms.bias, ssaoSettings.bias);
   }
   
-  if (compositeProgram && compositeUniforms) {
-    gl.useProgram(compositeProgram);
-    if (settings.intensity !== undefined) gl.uniform1f(compositeUniforms.uAOIntensity, ssaoSettings.intensity);
+  if (renderState.compositeProgram && renderState.compositeUniforms) {
+    gl.useProgram(renderState.compositeProgram);
+    if (settings.intensity !== undefined) gl.uniform1f(renderState.compositeUniforms.uAOIntensity, ssaoSettings.intensity);
   }
 }
 
 function renderSSAOPass(gl, projectionMatrix) {
-  if (!gbuffer || !ssaoProgram || !ssaoBuffer || !ssaoSettings.enabled) return;
+  if (!renderState.gbuffer || !renderState.ssaoProgram || !renderState.ssaoBuffer || !ssaoSettings.enabled) return;
   
   // Bind SSAO FBO
-  gl.bindFramebuffer(gl.FRAMEBUFFER, ssaoBuffer.fbo);
-  gl.viewport(0, 0, ssaoBuffer.width, ssaoBuffer.height);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, renderState.ssaoBuffer.fbo);
+  gl.viewport(0, 0, renderState.ssaoBuffer.width, renderState.ssaoBuffer.height);
   gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
   gl.clear(gl.COLOR_BUFFER_BIT);
   
@@ -338,31 +351,31 @@ function renderSSAOPass(gl, projectionMatrix) {
   gl.disable(gl.BLEND);
   
   // Use SSAO program
-  gl.useProgram(ssaoProgram);
+  gl.useProgram(renderState.ssaoProgram);
   
   // Bind G-buffer textures
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[1]); // oct-encoded normals
-  gl.uniform1i(ssaoUniforms.gNormal, 0);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[1]); // oct-encoded normals
+  gl.uniform1i(renderState.ssaoUniforms.gNormal, 0);
   
   gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[2]); // view-space position
-  gl.uniform1i(ssaoUniforms.gPosition, 1);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[2]); // view-space position
+  gl.uniform1i(renderState.ssaoUniforms.gPosition, 1);
   
   gl.activeTexture(gl.TEXTURE2);
-  gl.bindTexture(gl.TEXTURE_2D, ssaoNoiseTexture);
-  gl.uniform1i(ssaoUniforms.texNoise, 2);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.ssaoNoiseTexture);
+  gl.uniform1i(renderState.ssaoUniforms.texNoise, 2);
   
   // Upload projection matrix (needed to project sample positions to clip space)
-  if (projectionMatrix && ssaoUniforms.projection !== null) {
-    gl.uniformMatrix4fv(ssaoUniforms.projection, false, projectionMatrix);
+  if (projectionMatrix && renderState.ssaoUniforms.projection !== null) {
+    gl.uniformMatrix4fv(renderState.ssaoUniforms.projection, false, projectionMatrix);
   }
   
   // Set uniforms
-  gl.uniform2f(ssaoUniforms.noiseScale, 
-    ssaoBuffer.width / 4.0, ssaoBuffer.height / 4.0);
-  gl.uniform1f(ssaoUniforms.radius, ssaoSettings.radius);
-  gl.uniform1f(ssaoUniforms.bias, ssaoSettings.bias);
+  gl.uniform2f(renderState.ssaoUniforms.noiseScale, 
+    renderState.ssaoBuffer.width / 4.0, renderState.ssaoBuffer.height / 4.0);
+  gl.uniform1f(renderState.ssaoUniforms.radius, ssaoSettings.radius);
+  gl.uniform1f(renderState.ssaoUniforms.bias, ssaoSettings.bias);
   
   // Draw fullscreen quad
   drawFullscreenQuad(gl);
@@ -372,11 +385,11 @@ function renderSSAOPass(gl, projectionMatrix) {
 }
 
 function renderBlurPass(gl) {
-  if (!ssaoBuffer || !ssaoBlurBuffer || !blurProgram) return;
+  if (!renderState.ssaoBuffer || !renderState.ssaoBlurBuffer || !renderState.blurProgram) return;
   
   // Bind blur FBO (separate from SSAO to avoid feedback loop)
-  gl.bindFramebuffer(gl.FRAMEBUFFER, ssaoBlurBuffer.fbo);
-  gl.viewport(0, 0, ssaoBlurBuffer.width, ssaoBlurBuffer.height);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, renderState.ssaoBlurBuffer.fbo);
+  gl.viewport(0, 0, renderState.ssaoBlurBuffer.width, renderState.ssaoBlurBuffer.height);
   gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
   gl.clear(gl.COLOR_BUFFER_BIT);
   
@@ -385,17 +398,17 @@ function renderBlurPass(gl) {
   gl.disable(gl.DEPTH_TEST);
   gl.disable(gl.BLEND);
   
-  gl.useProgram(blurProgram);
+  gl.useProgram(renderState.blurProgram);
   
   // Bind SSAO output texture as input
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, ssaoBuffer.texture);
-  gl.uniform1i(blurUniforms.ssaoInput, 0);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.ssaoBuffer.texture);
+  gl.uniform1i(renderState.blurUniforms.ssaoInput, 0);
 
   // Bind G-buffer positions to detect edges during blur (prevents bleeding)
   gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[2]);
-  gl.uniform1i(blurUniforms.gPosition, 1);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[2]);
+  gl.uniform1i(renderState.blurUniforms.gPosition, 1);
   
   drawFullscreenQuad(gl);
   
@@ -404,7 +417,7 @@ function renderBlurPass(gl) {
 }
 
 function renderCompositePass(gl, canvas) {
-  if (!compositeProgram || !gbuffer || !ssaoBlurBuffer) return;
+  if (!renderState.compositeProgram || !renderState.gbuffer || !renderState.ssaoBlurBuffer) return;
   
   // Bind default framebuffer (screen)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -415,20 +428,20 @@ function renderCompositePass(gl, canvas) {
   gl.disable(gl.BLEND);
   gl.disable(gl.DEPTH_TEST);
   
-  gl.useProgram(compositeProgram);
+  gl.useProgram(renderState.compositeProgram);
   
   // Bind G-buffer albedo (color[0]) to texture unit 0
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]);
-  gl.uniform1i(compositeUniforms.gAlbedo, 0);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[0]);
+  gl.uniform1i(renderState.compositeUniforms.gAlbedo, 0);
   
   // Bind blurred AO to texture unit 1
   gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, ssaoBlurBuffer.texture);
-  gl.uniform1i(compositeUniforms.ssaoBlur, 1);
+  gl.bindTexture(gl.TEXTURE_2D, renderState.ssaoBlurBuffer.texture);
+  gl.uniform1i(renderState.compositeUniforms.ssaoBlur, 1);
   
   // Set intensity uniform
-  gl.uniform1f(compositeUniforms.uAOIntensity, ssaoSettings.intensity);
+  gl.uniform1f(renderState.compositeUniforms.uAOIntensity, ssaoSettings.intensity);
   
   drawFullscreenQuad(gl);
   
@@ -479,22 +492,22 @@ export function initRenderer(gl) {
     if (DEBUG) console.log('[Renderer] CameraUBO bound to voxel shader');
   }
 
-  cameraUBO = createCameraUBO(gl);
-  globalUBO = createGlobalUBO(gl);
+  renderState.cameraUBO = createCameraUBO(gl);
+  renderState.globalUBO = createGlobalUBO(gl);
 
   initSky(gl);
   initSelection(gl);
 
   // Initialize G-buffer for deferred rendering
-  gbufferSupportInfo = checkFloatTextureSupport(gl);
-  gbufferSupported = gbufferSupportInfo.supported;
-  if (gbufferSupported) {
+  renderState.gbufferSupportInfo = checkFloatTextureSupport(gl);
+  renderState.gbufferSupported = renderState.gbufferSupportInfo.supported;
+  if (renderState.gbufferSupported) {
     try {
-      gbuffer = createGBufferFBO(gl, gl.canvas.width, gl.canvas.height, gbufferSupportInfo);
+      renderState.gbuffer = createGBufferFBO(gl, gl.canvas.width, gl.canvas.height, renderState.gbufferSupportInfo);
       if (DEBUG) console.log('[Renderer] G-buffer initialized');
     } catch (e) {
       console.error('[Renderer] Failed to create G-buffer:', e);
-      gbufferSupported = false;
+      renderState.gbufferSupported = false;
     }
   } else {
     console.warn('[Renderer] Float textures not supported, SSAO disabled');
@@ -503,15 +516,15 @@ export function initRenderer(gl) {
   // Initialize Shadow Map (High Resolution 4096)
   try {
     shadowMapObj = createShadowMapFBO(gl, 4096);
-    shadowProgram = createShadowProgram(gl);
-    shadowUniforms = getShadowUniforms(gl, shadowProgram);
+    renderState.shadowProgram = createShadowProgram(gl);
+    renderState.shadowUniforms = getShadowUniforms(gl, renderState.shadowProgram);
     if (DEBUG) console.log('[Renderer] Shadow Map initialized');
   } catch (e) {
     console.error('[Renderer] Failed to init Shadow Map:', e);
   }
 
   // Initialize SSAO resources
-  if (gbufferSupported) {
+  if (renderState.gbufferSupported) {
     initSSAO(gl);
   }
 
@@ -519,8 +532,8 @@ export function initRenderer(gl) {
     program: voxelProgram,
     uniforms: voxelUniforms,
     attribs: voxelAttribs,
-    sky: { program: skyProgram, uniforms: skyUniforms },
-    selection: { program: selectionProgram, uniforms: selectionUniforms }
+    sky: { program: renderState.skyProgram, uniforms: renderState.skyUniforms },
+    selection: { program: renderState.selectionProgram, uniforms: renderState.selectionUniforms }
   };
 }
 
@@ -533,8 +546,8 @@ export function initRenderer(gl) {
 export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
   if (DEBUG) console.log(`[Renderer] Loading texture atlas: ${url}`);
   
-  textureAtlas = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+  renderState.textureAtlas = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, renderState.textureAtlas);
   
   // Set 1x1 blue pixel as placeholder while loading
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
@@ -544,7 +557,7 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
   image.crossOrigin = 'anonymous';
   image.onload = () => {
     if (DEBUG) console.log(`[Renderer] Texture image loaded: ${image.width}x${image.height}`);
-    gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+    gl.bindTexture(gl.TEXTURE_2D, renderState.textureAtlas);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     
     // Set texture parameters for pixel art (nearest neighbor)
@@ -554,7 +567,7 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
-    textureAtlasLoaded = true;
+    renderState.textureAtlasLoaded = true;
     if (DEBUG) console.log(`[Renderer] ✓ Texture atlas loaded and ready: ${image.width}x${image.height}`);
   };
   image.onerror = (e) => {
@@ -562,11 +575,11 @@ export function loadTextureAtlas(gl, url = 'textures-atlas.png') {
   };
   image.src = url;
   
-  return textureAtlas;
+  return renderState.textureAtlas;
 }
 
 export function isTextureLoaded() {
-  return textureAtlasLoaded;
+  return renderState.textureAtlasLoaded;
 }
 
 export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMatrix, wireframe = false, debugMode = false, chunkX = 0, chunkZ = 0) {
@@ -598,12 +611,12 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   
   // Set float texture fallback uniform if exists
   if (voxelUniforms.uUseFloatTextures !== undefined && voxelUniforms.uUseFloatTextures !== null) {
-    gl.uniform1i(voxelUniforms.uUseFloatTextures, gbufferActive ? 1 : 0);
+    gl.uniform1i(voxelUniforms.uUseFloatTextures, renderState.gbufferActive ? 1 : 0);
   }
   
   // Set shadow uniforms if they exist
-  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix !== undefined) {
-    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+  if (renderState.currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix !== undefined) {
+    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, renderState.currentLightSpaceMatrix);
   }
   if (shadowMapObj && voxelUniforms.uShadowMap !== undefined && shadowMapObj.texture) {
     gl.activeTexture(gl.TEXTURE2);
@@ -617,15 +630,15 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
   }
   
   // Bind texture atlas (always bind placeholder or real texture)
-      if (textureAtlas) {
+      if (renderState.textureAtlas) {
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+        gl.bindTexture(gl.TEXTURE_2D, renderState.textureAtlas);
         if (voxelUniforms.uTextureAtlas !== null && voxelUniforms.uTextureAtlas !== undefined) {
           gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
         }
         // Debug: log on first successful bind
         if (DEBUG && !renderChunk._loggedTextureBinding) {
-          console.log(`[Renderer] Texture bound (loaded=${textureAtlasLoaded})`);
+          console.log(`[Renderer] Texture bound (loaded=${renderState.textureAtlasLoaded})`);
           renderChunk._loggedTextureBinding = true;
         }
       } else {
@@ -654,11 +667,11 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
 }
 
 export function setWireframeMode(gl, enabled) {
-  currentWireframeMode = enabled;
+  renderState.currentWireframeMode = enabled;
 }
 
 export function setDebugMode(gl, enabled) {
-  currentDebugMode = enabled;
+  renderState.currentDebugMode = enabled;
   if (voxelUniforms && voxelUniforms.uDebugMode !== undefined) {
     gl.useProgram(voxelProgram);
     gl.uniform1i(voxelUniforms.uDebugMode, enabled ? 1 : 0);
@@ -703,9 +716,9 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   gl.useProgram(voxelProgram);
   
   // Bind texture atlas (required for voxel shader)
-  if (textureAtlas) {
+  if (renderState.textureAtlas) {
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textureAtlas);
+    gl.bindTexture(gl.TEXTURE_2D, renderState.textureAtlas);
     if (voxelUniforms.uTextureAtlas !== null && voxelUniforms.uTextureAtlas !== undefined) {
       gl.uniform1i(voxelUniforms.uTextureAtlas, 0);
     }
@@ -719,8 +732,8 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   }
   
   // Set light space matrix for shadow calculations
-  if (currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix) {
-    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+  if (renderState.currentLightSpaceMatrix && voxelUniforms.uLightSpaceMatrix) {
+    gl.uniformMatrix4fv(voxelUniforms.uLightSpaceMatrix, false, renderState.currentLightSpaceMatrix);
   }
   
   // Render each chunk individually
@@ -824,13 +837,13 @@ export function setupRenderState(gl) {
 }
 
 export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
-  if (!skyProgram) return;
+  if (!renderState.skyProgram) return;
 
   // Compute sky colors for this time of day
   const colors = getSkyColorsForHour(timeOfDay);
 
   gl.depthMask(false);
-  gl.useProgram(skyProgram);
+  gl.useProgram(renderState.skyProgram);
 
   const identityMatrix = new Float32Array([
     1, 0, 0, 0,
@@ -839,16 +852,16 @@ export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
     0, 0, 0, 1
   ]);
 
-  gl.uniformMatrix4fv(skyUniforms.uModelMatrix, false, identityMatrix);
-  gl.uniformMatrix4fv(skyUniforms.uViewMatrix, false, viewMatrix);
-  gl.uniformMatrix4fv(skyUniforms.uProjectionMatrix, false, projectionMatrix);
-  gl.uniform1f(skyUniforms.uTimeOfDay, timeOfDay);
+  gl.uniformMatrix4fv(renderState.skyUniforms.uModelMatrix, false, identityMatrix);
+  gl.uniformMatrix4fv(renderState.skyUniforms.uViewMatrix, false, viewMatrix);
+  gl.uniformMatrix4fv(renderState.skyUniforms.uProjectionMatrix, false, projectionMatrix);
+  gl.uniform1f(renderState.skyUniforms.uTimeOfDay, timeOfDay);
   
   // Pass computed sky colors
-  gl.uniform3f(skyUniforms.uTopColor, colors.top[0], colors.top[1], colors.top[2]);
-  gl.uniform3f(skyUniforms.uBottomColor, colors.bottom[0], colors.bottom[1], colors.bottom[2]);
+  gl.uniform3f(renderState.skyUniforms.uTopColor, colors.top[0], colors.top[1], colors.top[2]);
+  gl.uniform3f(renderState.skyUniforms.uBottomColor, colors.bottom[0], colors.bottom[1], colors.bottom[2]);
 
-  gl.bindVertexArray(skyVAO);
+  gl.bindVertexArray(renderState.skyVAO);
   gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
   gl.bindVertexArray(null);
 
@@ -857,13 +870,13 @@ export function renderSky(gl, viewMatrix, projectionMatrix, timeOfDay = 0.5) {
 }
 
 export function renderSelection(gl, blockPos, modelViewProjection) {
-  if (!selectionProgram || !blockPos) return;
+  if (!renderState.selectionProgram || !blockPos) return;
 
-  gl.useProgram(selectionProgram);
-  gl.uniformMatrix4fv(selectionUniforms.uModelViewProjection, false, modelViewProjection);
-  gl.uniform3fv(selectionUniforms.uBlockPosition, blockPos);
+  gl.useProgram(renderState.selectionProgram);
+  gl.uniformMatrix4fv(renderState.selectionUniforms.uModelViewProjection, false, modelViewProjection);
+  gl.uniform3fv(renderState.selectionUniforms.uBlockPosition, blockPos);
 
-  gl.bindVertexArray(selectionVAO);
+  gl.bindVertexArray(renderState.selectionVAO);
   gl.drawElements(gl.LINES, 24, gl.UNSIGNED_SHORT, 0);
   gl.bindVertexArray(null);
 
@@ -871,18 +884,18 @@ export function renderSelection(gl, blockPos, modelViewProjection) {
 }
 
 export function updateCamera(gl, viewMatrix, projectionMatrix) {
-  if (!cameraUBO) return;
-  updateCameraUBO(gl, cameraUBO, viewMatrix, projectionMatrix);
+  if (!renderState.cameraUBO) return;
+  updateCameraUBO(gl, renderState.cameraUBO, viewMatrix, projectionMatrix);
 }
 
 export function updateTimeOfDay(gl, time) {
-  if (!globalUBO) return;
+  if (!renderState.globalUBO) return;
   
   // Get dynamic sun lighting for this time
   const sunInfo = getSunInfo(time);
   
   const normalizedTime = (time % 24) / 24;
-  updateGlobalUBO(gl, globalUBO, sunInfo.direction, normalizedTime, sunInfo.color);
+  updateGlobalUBO(gl, renderState.globalUBO, sunInfo.direction, normalizedTime, sunInfo.color);
   
   // Also update voxel shader uniforms directly with dynamic lighting
   if (voxelProgram && voxelUniforms) {
@@ -979,55 +992,47 @@ export function createMockChunkMesh(gl) {
   return null;
 }
 
-let renderCallback = null;
-let animationFrameId = null;
-let lastTimestamp = 0;
-let canvas = null;
-let glContext = null;
-let currentViewMatrix = null;
-let currentProjectionMatrix = null;
-let currentTimeOfDay = 0.5;
 
 export function renderLoop(canvasEl, gl, renderFn) {
-  canvas = canvasEl;
-  glContext = gl;
-  renderCallback = renderFn;
-  lastTimestamp = 0;
+  renderState.canvas = canvasEl;
+  renderState.glContext = gl;
+  renderState.renderCallback = renderFn;
+  renderState.lastTimestamp = 0;
   
   initPerformance();
   
   function frame(timestamp) {
     const deltaTime = beginFrame(timestamp);
     
-    if (renderCallback) {
-      renderCallback(gl, deltaTime, timestamp);
+    if (renderState.renderCallback) {
+      renderState.renderCallback(gl, deltaTime, timestamp);
     }
     
-    if (currentViewMatrix && currentProjectionMatrix) {
-      renderSky(glContext, currentViewMatrix, currentProjectionMatrix, currentTimeOfDay);
+    if (renderState.currentViewMatrix && renderState.currentProjectionMatrix) {
+      renderSky(renderState.glContext, renderState.currentViewMatrix, renderState.currentProjectionMatrix, renderState.currentTimeOfDay);
     }
     
     // Check FPS and warn if below threshold
     checkFPSWarning();
     
-    animationFrameId = requestAnimationFrame(frame);
+    renderState.animationFrameId = requestAnimationFrame(frame);
   }
   
-  animationFrameId = requestAnimationFrame(frame);
+  renderState.animationFrameId = requestAnimationFrame(frame);
   
   return {
     stop: () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
+      if (renderState.animationFrameId) {
+        cancelAnimationFrame(renderState.animationFrameId);
+        renderState.animationFrameId = null;
       }
     },
     setViewMatrix: (view, proj) => {
-      currentViewMatrix = view;
-      currentProjectionMatrix = proj;
+      renderState.currentViewMatrix = view;
+      renderState.currentProjectionMatrix = proj;
     },
     setTimeOfDay: (time) => {
-      currentTimeOfDay = time;
+      renderState.currentTimeOfDay = time;
     }
   };
 }
@@ -1077,18 +1082,18 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     return;
   }
   
-  if (!isGBufferSupported() || !gbuffer) {
+  if (!isGBufferSupported() || !renderState.gbuffer) {
     // Fallback: render directly to screen
     renderChunks(gl, chunks, chunkPositions, viewMatrix, projectionMatrix, wireframe, debugMode, cameraPos);
     return;
   }
   
   // ── PASS 0: Shadow Map ──────────────────────────────────────────────────
-  currentLightSpaceMatrix = null;
+  renderState.currentLightSpaceMatrix = null;
   const shadowPassStart = performance.now();
-  if (shadowMapObj && shadowProgram && window.createLightSpaceMatrix && cameraPos) {
+  if (shadowMapObj && renderState.shadowProgram && window.createLightSpaceMatrix && cameraPos) {
     const sunInfo = getSunInfo(timeOfDay);
-    currentLightSpaceMatrix = window.createLightSpaceMatrix(cameraPos, sunInfo.direction);
+    renderState.currentLightSpaceMatrix = window.createLightSpaceMatrix(cameraPos, sunInfo.direction);
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, shadowMapObj.fbo);
     gl.viewport(0, 0, shadowMapObj.size, shadowMapObj.size);
@@ -1103,8 +1108,8 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     // Disable color rendering during depth pass
     gl.colorMask(false, false, false, false);
     
-    gl.useProgram(shadowProgram);
-    gl.uniformMatrix4fv(shadowUniforms.uLightSpaceMatrix, false, currentLightSpaceMatrix);
+    gl.useProgram(renderState.shadowProgram);
+    gl.uniformMatrix4fv(renderState.shadowUniforms.uLightSpaceMatrix, false, renderState.currentLightSpaceMatrix);
     
     // Draw all chunks rapidly to depth buffer
     const frustumSize = window._shadowFrustumSize || 320;
@@ -1116,7 +1121,7 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
       if (!chunkMesh || !chunkMesh.vao || !chunkMesh.ibo || !chunkMesh.indexCount) continue;
       
       // Frustum culling: skip chunks outside shadow camera view
-      if (currentLightSpaceMatrix && !isChunkInShadowFrustum(chunkMesh, currentLightSpaceMatrix, frustumSize, 1.0, farPlane)) continue;
+      if (renderState.currentLightSpaceMatrix && !isChunkInShadowFrustum(chunkMesh, renderState.currentLightSpaceMatrix, frustumSize, 1.0, farPlane)) continue;
       
       bindChunk(gl, chunkMesh.vao);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, chunkMesh.ibo);
@@ -1130,9 +1135,9 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     gl.cullFace(gl.BACK);
     gl.colorMask(true, true, true, true);
   }
-  lastShadowPassDuration = performance.now() - shadowPassStart;
-  if (lastShadowPassDuration > 2) {
-    console.warn(`[Shadow] Pass took ${lastShadowPassDuration.toFixed(2)}ms (target: <2ms for 60fps)`);
+  renderState.lastShadowPassDuration = performance.now() - shadowPassStart;
+  if (renderState.lastShadowPassDuration > 2) {
+    console.warn(`[Shadow] Pass took ${renderState.lastShadowPassDuration.toFixed(2)}ms (target: <2ms for 60fps)`);
   }
   
   // Bind G-buffer FBO
@@ -1142,7 +1147,7 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     return;
   }
   
-  gbufferActive = true;
+  renderState.gbufferActive = true;
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
   gl.depthMask(true);
@@ -1172,9 +1177,9 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
   
   // Unbind G-buffer
   unbindGBuffer(gl, canvas);
-  gbufferActive = false;
+  renderState.gbufferActive = false;
   
-  if (ssaoSettings.enabled && ssaoProgram && ssaoBuffer && ssaoBlurBuffer) {
+  if (ssaoSettings.enabled && renderState.ssaoProgram && renderState.ssaoBuffer && renderState.ssaoBlurBuffer) {
     // ── Pass 2: SSAO ────────────────────────────────────────────────────────
     renderSSAOPass(gl, projectionMatrix);
     
@@ -1189,15 +1194,15 @@ export function renderVoxelsToGBuffer(gl, canvas, chunks, chunkPositions, viewMa
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
-    if (compositeProgram && compositeUniforms) {
-      gl.useProgram(compositeProgram);
+    if (renderState.compositeProgram && renderState.compositeUniforms) {
+      gl.useProgram(renderState.compositeProgram);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]);
-      gl.uniform1i(compositeUniforms.gAlbedo, 0);
+      gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[0]);
+      gl.uniform1i(renderState.compositeUniforms.gAlbedo, 0);
       gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, gbuffer.color[0]); // dummy AO
-      gl.uniform1i(compositeUniforms.ssaoBlur, 1);
-      gl.uniform1f(compositeUniforms.uAOIntensity, 0.0); // 0 = passthrough albedo
+      gl.bindTexture(gl.TEXTURE_2D, renderState.gbuffer.color[0]); // dummy AO
+      gl.uniform1i(renderState.compositeUniforms.ssaoBlur, 1);
+      gl.uniform1f(renderState.compositeUniforms.uAOIntensity, 0.0); // 0 = passthrough albedo
       drawFullscreenQuad(gl);
       gl.useProgram(null);
     }
@@ -1208,9 +1213,9 @@ export { getFPS, getMetrics, logPerformance };
 
 // G-buffer management functions
 export function bindGBuffer(gl) {
-  if (!gbuffer) return false;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, gbuffer.fbo);
-  gl.viewport(0, 0, gbuffer.width, gbuffer.height);
+  if (!renderState.gbuffer) return false;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, renderState.gbuffer.fbo);
+  gl.viewport(0, 0, renderState.gbuffer.width, renderState.gbuffer.height);
   // CRITICAL: Must set drawBuffers for MRT - not persisted across FBO binds
   gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
   // Fix pixel alignment for non-4-aligned widths
@@ -1230,40 +1235,40 @@ export function unbindGBuffer(gl, canvas) {
 }
 
 export function getGBufferTextures() {
-  if (!gbuffer) return null;
+  if (!renderState.gbuffer) return null;
   return {
-    albedo: gbuffer.color[0],
-    normal: gbuffer.color[1],
-    depth: gbuffer.depth
+    albedo: renderState.gbuffer.color[0],
+    normal: renderState.gbuffer.color[1],
+    depth: renderState.gbuffer.depth
   };
 }
 
 export function isGBufferSupported() {
-  return gbufferSupported;
+  return renderState.gbufferSupported;
 }
 
 export function getSSAOProgram() {
-  return ssaoProgram;
+  return renderState.ssaoProgram;
 }
 
 export function getSSAOUniformsState() {
-  return ssaoUniforms;
+  return renderState.ssaoUniforms;
 }
 
 export function getSSAOBuffer() {
-  return ssaoBuffer;
+  return renderState.ssaoBuffer;
 }
 
 export function getGBuffer() {
-  return gbuffer;
+  return renderState.gbuffer;
 }
 
 export function resizeGBufferForCanvas(gl, canvas) {
-  if (gbuffer && canvas.width > 0 && canvas.height > 0) {
-    if (gbuffer.width !== canvas.width || gbuffer.height !== canvas.height) {
-      const newGbuffer = createGBufferFBO(gl, canvas.width, canvas.height, gbufferSupportInfo);
-      disposeGBuffer(gl, gbuffer);
-      gbuffer = newGbuffer;
+  if (renderState.gbuffer && canvas.width > 0 && canvas.height > 0) {
+    if (renderState.gbuffer.width !== canvas.width || renderState.gbuffer.height !== canvas.height) {
+      const newGbuffer = createGBufferFBO(gl, canvas.width, canvas.height, renderState.gbufferSupportInfo);
+      disposeGBuffer(gl, renderState.gbuffer);
+      renderState.gbuffer = newGbuffer;
       if (DEBUG) console.log(`[Renderer] G-buffer resized to ${canvas.width}x${canvas.height}`);
     }
   }
