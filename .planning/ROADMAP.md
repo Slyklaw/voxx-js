@@ -35,7 +35,7 @@
 ### v2.1 Cleanup (In Progress)
 
 - [x] **Phase 7: State Encapsulation** — Encapsulate global state in modules (main.js, render.js) (completed 2026-11-04)
-- [ ] **Phase 8: WebGL Resource Manager** — Centralize WebGL resource creation and disposal
+- [x] **Phase 8: WebGL Resource Manager** — Centralize WebGL resource creation and disposal (completed 2026-11-04)
 - [ ] **Phase 9: Code Hygiene & Module Boundaries** — Remove dead code and clarify module boundaries
 
 ---
@@ -87,8 +87,7 @@
 | 4. Dependency | v2.0 | 1/1 | Complete | 2026-04-02 |
 | 5. Core Shadows | v2.0 | 1/1 | Complete | 2026-04-02 |
 | 6. Shadow Integration | v2.0 | 2/2 | Complete | 2026-04-03 |
-| 7. State Encapsulation | v2.1 | 2/2 | Complete | 2026-11-04 || 8. WebGL Resource Manager | v2.1 | 0/? | Not started | — |
-| 9. Code Hygiene & Module Boundaries | v2.1 | 0/? | Not started | — |
+| 7. State Encapsulation | v2.1 | 2/2 | Complete | 2026-11-04 || 8. WebGL Resource Manager | v2.1 | 1/1 | Complete | 2026-11-04 || 9. Code Hygiene & Module Boundaries | v2.1 | 0/? | Not started | — |
 
 ---
 *Last updated: 2026-11-03 for v2.1 Cleanup milestone*

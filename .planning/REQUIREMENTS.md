@@ -68,8 +68,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QUAL-01 | Phase 7 | Complete || QUAL-02 | Phase 8 | Pending |
-| CLEAN-01 | Phase 9 | Pending |
+| QUAL-01 | Phase 7 | Complete || QUAL-02 | Phase 8 | Complete || CLEAN-01 | Phase 9 | Pending |
 | CLEAN-02 | Phase 9 | Pending |
 
 **Coverage:**

@@ -39,15 +39,15 @@ See: .planning/PROJECT.md (updated 2026-11-03)
 **v2.1 Cleanup — In Progress**
 
 - ✓ Phase 7: State Encapsulation (2/2 plans)
-- ○ Phase 8: WebGL Resource Manager (0/? plans)
+- ✓ Phase 8: WebGL Resource Manager (1/1 plans)
 - ○ Phase 9: Code Hygiene & Module Boundaries (0/? plans)
 
 ## Current Position
 
-Phase: 7 of 9 (State Encapsulation) — complete
-Plan: 2/2
+Phase: 8 of 9 (WebGL Resource Manager) — complete
+Plan: 1/1
 Status: Phase complete
-Last activity: 2026-11-04 — Phase 7 executed (2 plans)
+Last activity: 2026-11-04 — Phase 8 executed (1 plan)
 
 ## Performance Metrics
 
