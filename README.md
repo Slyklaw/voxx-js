@@ -1,3 +1,3 @@
-# voxx-js
+# voxx-js.ssao
 
-Run: npx http-server . -p 8080 -c-1~
+Run: npx run dev

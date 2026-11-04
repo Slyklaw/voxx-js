@@ -52,7 +52,7 @@ Verification: `npm run test:run`; `npm run dev` smoke.
 
 Verification: lint not available; manual smoke; tests pass.
 
-## Phase 5 — Test Coverage Expansion
+## Phase 5 — Test Coverage Expansion ✅ Completed (tests added; coverage provider not installed, threshold skipped)
 - Add unit tests for `World` chunk lifecycle.
 - Add tests for render offset math (32-based).
 - Add `BlockEditor` targeting tests with mocked world.
