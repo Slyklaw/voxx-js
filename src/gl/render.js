@@ -643,21 +643,8 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   
   beginDrawCalls();
   
-  // PERF-02: Use grid-based visibility check if camera position is provided
-  // Otherwise fall back to scanning all chunks (backward compatibility)
-  let visibleChunks;
-  if (cameraPos && typeof cameraPos[0] === 'number' && typeof cameraPos[2] === 'number') {
-    // Use World's loaded chunks; chunkManager spatial index is not maintained.
-    visibleChunks = chunks.filter(chunk => chunk && chunk._webglMesh);
-  } else {
-    // Fallback: filter all chunks (original behavior)
-    visibleChunks = chunks
-      .filter(chunk => {
-        // chunk is a Chunk object with .chunkX and .chunkZ properties
-        // Also check it has a ready WebGL mesh
-        return chunk && chunk._webglMesh;
-      });
-  }
+  // Filter to chunks with a ready WebGL mesh.
+  let visibleChunks = chunks.filter(chunk => chunk && chunk._webglMesh);
   
   // Sort for deterministic draw order
   visibleChunks = visibleChunks.sort((a, b) => {

@@ -60,7 +60,7 @@ Verification: lint not available; manual smoke; tests pass.
 
 Verification: `npm run test:run -- --coverage`.
 
-## Phase 6 — Rendering & Runtime Quality
+## Phase 6 — Rendering & Runtime Quality ✅ Completed (visibility path simplified; long-run smoke manual)
 - Remove broken camera-based visibility path leftovers.
 - Review `disposeWebGLResources` for leaks.
 - Throttle chunk rebuilds and verify worker cancellation edge cases.
