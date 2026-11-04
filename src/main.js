@@ -61,15 +61,31 @@ import { InputHandler } from './input/InputHandler.js';
 import { BlockEditor } from './blockEditor/BlockEditor.js';
 import { Camera } from './camera/Camera.js';
 
+// Single application state object (QUAL-01)
+export const appState = {
+  renderDistance: 8,
+  wireframeMode: false,
+  debugColorsMode: false,
+  world: null,
+  biomeCalculator: null,
+  chunkMeshes: new Map(),
+  camera: null,
+  inputHandler: null,
+  blockEditor: null,
+  targetedBlock: null,
+  outlineProgram: null,
+  outlineVAO: null,
+  outlineUniforms: null,
+  sunCycleTime: SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8 / 24),
+  timePaused: false,
+  lastTime: 0,
+};
+
 // Export notification functions for context.js
 window.showContextLostNotification = showContextLostNotification;
 window.hideContextLostNotification = hideContextLostNotification;
 
 console.log('WebGL2 main initializing...');
-
-let renderDistance = 8;
-let wireframeMode = false;
-let debugColorsMode = false;
 
 // Get day phase based on hour (0-23)
 function getDayPhase(hours) {
@@ -84,34 +100,23 @@ function updateDebugUI() {
   const wireEl = document.getElementById('wireframe-indicator');
   const debugEl = document.getElementById('debug-indicator');
   if (wireEl) {
-    wireEl.textContent = wireframeMode ? 'WIRE' : '';
-    wireEl.style.display = wireframeMode ? 'block' : 'none';
+    wireEl.textContent = appState.wireframeMode ? 'WIRE' : '';
+    wireEl.style.display = appState.wireframeMode ? 'block' : 'none';
   }
   if (debugEl) {
-    debugEl.textContent = debugColorsMode ? 'DEBUG' : '';
-    debugEl.style.display = debugColorsMode ? 'block' : 'none';
+    debugEl.textContent = appState.debugColorsMode ? 'DEBUG' : '';
+    debugEl.style.display = appState.debugColorsMode ? 'block' : 'none';
   }
 }
 
-// Global references for callbacks
-let world;
-let biomeCalculator;
-let chunkMeshes = new Map();
-let camera;
-let inputHandler;
-let blockEditor;
-let targetedBlock = null;
-
-let outlineProgram = null;
-let outlineVAO = null;
-let outlineUniforms = null;
+// Global references for callbacks (moved into appState)
 
 function disposeWebGLResources() {
-  if (gl && outlineVAO) gl.deleteVertexArray(outlineVAO);
-  outlineProgram = null;
-  outlineVAO = null;
-  outlineUniforms = null;
-  for (const chunk of Object.values(world?.chunks || {})) {
+  if (gl && appState.outlineVAO) gl.deleteVertexArray(appState.outlineVAO);
+  appState.outlineProgram = null;
+  appState.outlineVAO = null;
+  appState.outlineUniforms = null;
+  for (const chunk of Object.values(appState.world?.chunks || {})) {
     if (chunk._webglMesh) {
       const m = chunk._webglMesh;
       if (m.vao) gl.deleteVertexArray(m.vao);
@@ -120,7 +125,7 @@ function disposeWebGLResources() {
       chunk._webglMesh = null;
     }
   }
-  chunkMeshes.clear();
+  appState.chunkMeshes.clear();
   if (DEBUG) console.log('[WebGL] Resources disposed on context loss');
 }
 
@@ -128,7 +133,7 @@ function initWebGLResources() {
   initBlockOutline();
   initRenderer(gl);
   loadTextureAtlas(gl, 'textures-atlas.png');
-  for (const chunk of Object.values(world?.chunks || {})) {
+  for (const chunk of Object.values(appState.world?.chunks || {})) {
     if (chunk.meshData && chunk.meshReady) {
       chunk._webglMesh = null;
     }
@@ -154,8 +159,8 @@ function initBlockOutline() {
     }
   `;
   
-  outlineProgram = createProgram(gl, vertexSource, fragmentSource);
-  outlineUniforms = getUniformLocations(gl, outlineProgram, ['uModelViewProjection', 'uColor']);
+  appState.outlineProgram = createProgram(gl, vertexSource, fragmentSource);
+  appState.outlineUniforms = getUniformLocations(gl, appState.outlineProgram, ['uModelViewProjection', 'uColor']);
   
   // Create unit cube wireframe vertices (12 edges)
   const size = 0.51;
@@ -177,8 +182,8 @@ function initBlockOutline() {
     -size, -size,  size,  -size,  size,  size,
   ]);
   
-  outlineVAO = gl.createVertexArray();
-  gl.bindVertexArray(outlineVAO);
+  appState.outlineVAO = gl.createVertexArray();
+  gl.bindVertexArray(appState.outlineVAO);
   
   const vbo = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -191,23 +196,23 @@ function initBlockOutline() {
 }
 
 function renderBlockOutline(mvpMatrix) {
-  if (!targetedBlock || !outlineProgram) return;
+  if (!appState.targetedBlock || !appState.outlineProgram) return;
   
-  gl.useProgram(outlineProgram);
+  gl.useProgram(appState.outlineProgram);
   
   const model = new Float32Array([
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
-    targetedBlock.x + 0.5, targetedBlock.y + 0.5, targetedBlock.z + 0.5, 1
+    appState.targetedBlock.x + 0.5, appState.targetedBlock.y + 0.5, appState.targetedBlock.z + 0.5, 1
   ]);
   
   const finalMVP = multiplyMatrices(mvpMatrix, model);
   
-  gl.uniformMatrix4fv(outlineUniforms.uModelViewProjection, false, finalMVP);
-  gl.uniform4f(outlineUniforms.uColor, 1.0, 0.0, 1.0, 1.0);
+  gl.uniformMatrix4fv(appState.outlineUniforms.uModelViewProjection, false, finalMVP);
+  gl.uniform4f(appState.outlineUniforms.uColor, 1.0, 0.0, 1.0, 1.0);
   
-  gl.bindVertexArray(outlineVAO);
+  gl.bindVertexArray(appState.outlineVAO);
   gl.lineWidth(2.0);
   gl.drawArrays(gl.LINES, 0, 24);
   gl.bindVertexArray(null);
@@ -265,7 +270,7 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
   
   const sunNormY = Math.abs(sunDir[1] / Math.sqrt(sunDir[0]*sunDir[0] + sunDir[1]*sunDir[1] + sunDir[2]*sunDir[2]));
   const upVec = sunNormY > 0.99 ? [1, 0, 0] : [0, 1, 0];
-  const view = camera.lookAt(lightPos, center, upVec);
+  const view = appState.camera.lookAt(lightPos, center, upVec);
   
   const renderDist = getRenderDistance();
   const size = renderDist * CHUNK_WIDTH + 64;
@@ -283,11 +288,10 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
 window.createLightSpaceMatrix = createLightSpaceMatrix;
 
 // Set time of day (hour: 0-24)
-let sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (8/24);
-let timePaused = false;
+// appState.sunCycleTime and appState.timePaused moved into appState
 
 function setTimeOfDay(hour) {
-  sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (hour / 24);
+  appState.sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (hour / 24);
   if (DEBUG) console.log(`[Debug] Time set to ${hour}:00`);
 }
 
@@ -309,45 +313,45 @@ document.getElementById('time-night')?.addEventListener('click', () => setTimeOf
 // Time pause toggle
 const timePauseBtn = document.getElementById('time-pause');
 timePauseBtn?.addEventListener('click', () => {
-  timePaused = !timePaused;
-  timePauseBtn.textContent = timePaused ? 'Play' : 'Pause';
-  timePauseBtn.style.backgroundColor = timePaused ? '#4a4' : '';
+  appState.timePaused = !appState.timePaused;
+  timePauseBtn.textContent = appState.timePaused ? 'Play' : 'Pause';
+  timePauseBtn.style.backgroundColor = appState.timePaused ? '#4a4' : '';
 });
 
 // Wireframe toggle from UI
 document.getElementById('wireframe-toggle')?.addEventListener('change', (e) => {
-  wireframeMode = e.target.checked;
-  if (DEBUG) console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+  appState.wireframeMode = e.target.checked;
+  if (DEBUG) console.log(`[Debug] Wireframe mode: ${appState.wireframeMode ? 'ON' : 'OFF'}`);
   updateDebugUI();
 });
 
 // Debug colors toggle from UI
 document.getElementById('debug-toggle')?.addEventListener('change', (e) => {
-  debugColorsMode = e.target.checked;
-  if (DEBUG) console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+  appState.debugColorsMode = e.target.checked;
+  if (DEBUG) console.log(`[Debug] Debug colors mode: ${appState.debugColorsMode ? 'ON' : 'OFF'}`);
   updateDebugUI();
 });
 
 // Expose toggle functions for InputHandler
 window.toggleWireframe = () => {
-  wireframeMode = !wireframeMode;
+  appState.wireframeMode = !appState.wireframeMode;
   const el = document.getElementById('wireframe-toggle');
-  if (el) el.checked = wireframeMode;
-  if (DEBUG) console.log(`[Debug] Wireframe mode: ${wireframeMode ? 'ON' : 'OFF'}`);
+  if (el) el.checked = appState.wireframeMode;
+  if (DEBUG) console.log(`[Debug] Wireframe mode: ${appState.wireframeMode ? 'ON' : 'OFF'}`);
   updateDebugUI();
 };
 
 window.toggleDebugColors = () => {
-  debugColorsMode = !debugColorsMode;
+  appState.debugColorsMode = !appState.debugColorsMode;
   const el = document.getElementById('debug-toggle');
-  if (el) el.checked = debugColorsMode;
-  if (DEBUG) console.log(`[Debug] Debug colors mode: ${debugColorsMode ? 'ON' : 'OFF'}`);
+  if (el) el.checked = appState.debugColorsMode;
+  if (DEBUG) console.log(`[Debug] Debug colors mode: ${appState.debugColorsMode ? 'ON' : 'OFF'}`);
   updateDebugUI();
 };
 
 // Expose render distance setter
 window.setRenderDistance = (dist) => {
-  renderDistance = dist;
+  appState.renderDistance = dist;
 };
 
 updateDebugUI();
@@ -365,32 +369,30 @@ window.updateSSAOSettings = (settings) => {
   if (DEBUG) console.log(`[SSAO] Settings updated`);
 };
 
-// Initialize world
+// Initialize appState.world
 const noiseSeed = Math.random();
-world = new World(noiseSeed, gl);
-biomeCalculator = new BiomeCalculator(noiseSeed);
+appState.world = new World(noiseSeed, gl);
+appState.biomeCalculator = new BiomeCalculator(noiseSeed);
 
 // Initialize Camera
-camera = new Camera({ x: 50, y: 200, z: 50 }, { x: 0.5, y: 0 });
+appState.camera = new Camera({ x: 50, y: 200, z: 50 }, { x: 0.5, y: 0 });
 
 // Initialize BlockEditor
-blockEditor = new BlockEditor(world, gl, chunkMeshes, voxelAttribs);
+appState.blockEditor = new BlockEditor(appState.world, gl, appState.chunkMeshes, voxelAttribs);
 
 // Initialize InputHandler with callbacks
-inputHandler = new InputHandler(
+appState.inputHandler = new InputHandler(
   canvas,
-  (blockType) => { blockEditor.setSelectedBlockType(blockType); },
-  () => { blockEditor.destroyBlock(); },
-  () => { blockEditor.placeBlock(inputHandler.getSelectedBlockType()); }
+  (blockType) => { appState.blockEditor.setSelectedBlockType(blockType); },
+  () => { appState.blockEditor.destroyBlock(); },
+  () => { appState.blockEditor.placeBlock(appState.inputHandler.getSelectedBlockType()); }
 );
-
-let lastTime = 0;
 
 // Chunk rebuild throttling
 const MAX_REBUILDS_PER_FRAME = 2;
 
 function updateChunks() {
-  const visibleChunks = world.getVisibleChunks();
+  const visibleChunks = appState.world.getVisibleChunks();
   
   for (const chunk of visibleChunks) {
     const key = `${chunk.chunkX},${chunk.chunkZ}`;
@@ -417,7 +419,7 @@ function syncChunkToWebGL(chunk) {
     const webglMesh = createChunkMeshFromData(gl, chunk.meshData, voxelAttribs);
     if (webglMesh) {
       chunk._webglMesh = webglMesh;
-      chunkMeshes.set(key, webglMesh);
+      appState.chunkMeshes.set(key, webglMesh);
       if (DEBUG) console.log(`[WebGL2] Created mesh for chunk ${key}: ${webglMesh.vertexCount} vertices`);
     }
     return webglMesh;
@@ -435,30 +437,30 @@ function render(currentTime) {
 
   beginFrame(currentTime);
 
-  const deltaTime = (currentTime - lastTime) / 1000;
-  lastTime = currentTime;
+  const deltaTime = (currentTime - appState.lastTime) / 1000;
+  appState.lastTime = currentTime;
 
-  // Update camera movement using InputHandler keys
-  camera.updateMovement(deltaTime, inputHandler.getKeys());
+  // Update appState.camera movement using InputHandler keys
+  appState.camera.updateMovement(deltaTime, appState.inputHandler.getKeys());
   
   // Sync rotation from InputHandler to Camera (mouselook)
-  const inputRotation = inputHandler.getRotation();
-  camera.setRotation(inputRotation.x, inputRotation.y);
+  const inputRotation = appState.inputHandler.getRotation();
+  appState.camera.setRotation(inputRotation.x, inputRotation.y);
   
   // Update block targeting using BlockEditor
-  blockEditor.updateTargetedBlock(camera.getPosition(), camera.getRotation());
-  targetedBlock = blockEditor.getTargetedBlock();
+  appState.blockEditor.updateTargetedBlock(appState.camera.getPosition(), appState.camera.getRotation());
+  appState.targetedBlock = appState.blockEditor.getTargetedBlock();
 
   // Update sun cycle (unless paused)
-  if (!timePaused) {
-    sunCycleTime += deltaTime * SUN_CYCLE_CONFIG.TIME_SCALE;
-    if (sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
-      sunCycleTime = 0;
+  if (!appState.timePaused) {
+    appState.sunCycleTime += deltaTime * SUN_CYCLE_CONFIG.TIME_SCALE;
+    if (appState.sunCycleTime >= SUN_CYCLE_CONFIG.TOTAL_CYCLE) {
+      appState.sunCycleTime = 0;
     }
   }
 
-  const hours = Math.floor(sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24);
-  const minutes = Math.floor((sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24 - hours) * 60);
+  const hours = Math.floor(appState.sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24);
+  const minutes = Math.floor((appState.sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE * 24 - hours) * 60);
   const isDaytime = hours >= 6 && hours < 18;
   const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   
@@ -469,31 +471,31 @@ function render(currentTime) {
   // Update compass direction text and needle
   const compassTextEl = document.querySelector('.compass-text');
   if (compassTextEl) {
-    compassTextEl.textContent = camera.getCardinalDirection();
+    compassTextEl.textContent = appState.camera.getCardinalDirection();
   }
 
   const compassNeedleEl = document.querySelector('.compass-needle');
   if (compassNeedleEl) {
-    const needleRotation = -camera.getRotation().y * 180 / Math.PI;
+    const needleRotation = -appState.camera.getRotation().y * 180 / Math.PI;
     compassNeedleEl.style.transform = `translate(-50%, -100%) rotate(${needleRotation}deg)`;
   }
 
   const fpsEl = document.querySelector('.debug-fps');
   if (fpsEl) {
     const shadowMs = getShadowPassDuration();
-    fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${inputHandler.getSelectedBlockType()} | Shadow: ${shadowMs.toFixed(1)}ms`;
+    fpsEl.textContent = `FPS: ${getFPSDisplay()} (est: ${getFPS()}) | Block: ${appState.inputHandler.getSelectedBlockType()} | Shadow: ${shadowMs.toFixed(1)}ms`;
   }
 
-  const posEl = document.getElementById('camera-position');
+  const posEl = document.getElementById('appState.camera-position');
   if (posEl) {
-    const pos = camera.getPosition();
+    const pos = appState.camera.getPosition();
     posEl.textContent = `X: ${pos.x.toFixed(2)} Y: ${pos.y.toFixed(2)} Z: ${pos.z.toFixed(2)}`;
   }
 
   // Update biome display based on player position
-  if (biomeCalculator) {
-    const pos = camera.getPosition();
-    const biomeContributions = biomeCalculator.getBiomeContributions(pos.x, pos.z);
+  if (appState.biomeCalculator) {
+    const pos = appState.camera.getPosition();
+    const biomeContributions = appState.biomeCalculator.getBiomeContributions(pos.x, pos.z);
     const lowlandBar = document.querySelector('.biome-fill.lowland');
     const lowlandPercent = document.querySelector('.biome-item:first-child .biome-percent');
     const mountainBar = document.querySelector('.biome-fill.mountains');
@@ -514,27 +516,27 @@ function render(currentTime) {
     }
   }
 
-  world.update(camera.getPosition(), renderDistance);
+  appState.world.update(appState.camera.getPosition(), appState.renderDistance);
   
   updateChunks();
 
-  const viewMatrix = camera.createViewMatrix();
+  const viewMatrix = appState.camera.createViewMatrix();
   const projectionMatrix = createProjectionMatrix();
 
   beginRenderTiming();
   
   clear(gl, canvas);
 
-  const timeOfDayHours = (sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) * 24;
+  const timeOfDayHours = (appState.sunCycleTime / SUN_CYCLE_CONFIG.TOTAL_CYCLE) * 24;
 
   updateCamera(gl, viewMatrix, projectionMatrix);
   updateTimeOfDay(gl, timeOfDayHours);
 
-  const visibleChunks = world.getVisibleChunks();
+  const visibleChunks = appState.world.getVisibleChunks();
   const mvpMatrix = multiplyMatrices(projectionMatrix, viewMatrix);
   
   if (visibleChunks.length > 0) {
-    renderVoxelsToGBuffer(gl, canvas, visibleChunks, [], viewMatrix, projectionMatrix, wireframeMode, debugColorsMode, timeOfDayHours, () => renderBlockOutline(mvpMatrix), camera.getPosition());
+    renderVoxelsToGBuffer(gl, canvas, visibleChunks, [], viewMatrix, projectionMatrix, appState.wireframeMode, appState.debugColorsMode, timeOfDayHours, () => renderBlockOutline(mvpMatrix), appState.camera.getPosition());
   } else {
     renderSky(gl, viewMatrix, projectionMatrix, timeOfDayHours);
     renderBlockOutline(mvpMatrix);
