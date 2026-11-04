@@ -34,6 +34,13 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 - ✓ PERF-02: Grid-based visibility culling with spatial index — v1.0
 - ✓ PERF-03: Neighbor calculation caching with dirty flags — v1.0
 
+### Active (v2.1 — Cleanup)
+
+- [ ] QUAL-01: Encapsulate global state in modules (main.js, render.js)
+- [ ] QUAL-02: Centralized WebGL resource manager
+- [ ] CLEAN-01: Remove dead code and stale comments
+- [ ] CLEAN-02: Refactor module boundaries for clearer architecture
+
 ### Active (v2.0 — Shadows)
 
 (None — all v2.0 requirements shipped)
@@ -108,10 +115,32 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Dynamic shadow frustum | Render distance 8 requires 320+ unit coverage | ✓ Good - frustum scales with render distance |
 | Shadow pass timing | Need to monitor performance impact | ✓ Good - <2ms target for 60fps |
 
-## Current Milestone: (none — v2.0 shipped 2026-11-03)
+## Current Milestone: v2.1 Cleanup
 
-Next: `/gsd-new-milestone` to plan the next release.
+**Goal:** Improve code quality — encapsulate global state, centralize WebGL resource management, remove dead code, and refactor module boundaries, while preserving behavior (minor fixes allowed).
+
+**Target features:**
+- QUAL-01: Encapsulate global state in modules (main.js, render.js)
+- QUAL-02: Centralized WebGL resource manager
+- Dead code removal and stale comment cleanup
+- Architecture refactoring for clearer module boundaries
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
 
-*Last updated: 2026-11-03 after v2.0 Shadows milestone completion*
+*Last updated: 2026-11-03 after v2.1 Cleanup milestone start*
