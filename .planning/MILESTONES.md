@@ -1,5 +1,18 @@
 # Milestones
 
+## v2.1 Cleanup (Shipped: 2026-11-04)
+
+**Phases completed:** 3 phases, 4 plans
+
+**Key accomplishments:**
+
+- Encapsulated module-level mutable state in `src/gl/render.js` into a single `renderState` object (QUAL-01)
+- Encapsulated module-level mutable state in `src/main.js` into a single `appState` object (QUAL-01)
+- Added centralized `src/gl/resourceManager.js` owning WebGL resource lifecycle with context-loss hooks (QUAL-02)
+- Removed dead code, stale comments, unused imports, and unused test-cube helpers (CLEAN-01, CLEAN-02)
+
+---
+
 ## v2.0 Shadows (Shipped: 2026-11-03)
 
 **Phases completed:** 6 phases, 13 plans, 28 tasks

@@ -34,12 +34,12 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 - ✓ PERF-02: Grid-based visibility culling with spatial index — v1.0
 - ✓ PERF-03: Neighbor calculation caching with dirty flags — v1.0
 
-### Active (v2.1 — Cleanup)
+### Validated (v2.1 — Cleanup, shipped 2026-11-04)
 
-- [ ] QUAL-01: Encapsulate global state in modules (main.js, render.js)
-- [ ] QUAL-02: Centralized WebGL resource manager
-- [ ] CLEAN-01: Remove dead code and stale comments
-- [ ] CLEAN-02: Refactor module boundaries for clearer architecture
+- ✓ QUAL-01: Encapsulate global state in modules (main.js, render.js) — v2.1
+- ✓ QUAL-02: Centralized WebGL resource manager — v2.1
+- ✓ CLEAN-01: Remove dead code and stale comments — v2.1
+- ✓ CLEAN-02: Refactor module boundaries for clearer architecture — v2.1
 
 ### Active (v2.0 — Shadows)
 
@@ -115,15 +115,9 @@ High-performance browser-based voxel world rendering with smooth frame rates and
 | Dynamic shadow frustum | Render distance 8 requires 320+ unit coverage | ✓ Good - frustum scales with render distance |
 | Shadow pass timing | Need to monitor performance impact | ✓ Good - <2ms target for 60fps |
 
-## Current Milestone: v2.1 Cleanup
+## Current Milestone: (none — v2.1 shipped 2026-11-04)
 
-**Goal:** Improve code quality — encapsulate global state, centralize WebGL resource management, remove dead code, and refactor module boundaries, while preserving behavior (minor fixes allowed).
-
-**Target features:**
-- QUAL-01: Encapsulate global state in modules (main.js, render.js)
-- QUAL-02: Centralized WebGL resource manager
-- Dead code removal and stale comment cleanup
-- Architecture refactoring for clearer module boundaries
+Next: `/gsd-new-milestone` to plan the next release.
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -143,4 +137,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-11-03 after v2.1 Cleanup milestone start*
+*Last updated: 2026-11-04 after v2.1 Cleanup milestone completion*

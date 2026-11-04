@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Cleanup
-status: planning
-last_updated: "2026-11-04T00:01:25.061Z"
-last_activity: 2026-11-04
+status: Awaiting next milestone
+stopped_at: v2.0 Shadows milestone complete, shadow bugs fixed
+last_updated: "2026-11-04T00:36:31.709Z"
+last_activity: 2026-11-04 — Milestone v2.1 completed and archived
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -36,7 +37,7 @@ See: .planning/PROJECT.md (updated 2026-11-03)
 - ✓ Phase 5: Core Shadows (1/1 plans)
 - ✓ Phase 6: Shadow Integration (2/2 plans)
 
-**v2.1 Cleanup — In Progress**
+**v2.1 Cleanup — Shipped 2026-11-04**
 
 - ✓ Phase 7: State Encapsulation (2/2 plans)
 - ✓ Phase 8: WebGL Resource Manager (1/1 plans)
@@ -44,10 +45,10 @@ See: .planning/PROJECT.md (updated 2026-11-03)
 
 ## Current Position
 
-Phase: 9 of 9 (Code Hygiene & Module Boundaries) — complete
-Plan: 1/1
-Status: Phase complete
-Last activity: 2026-11-04 — Phase 9 executed (1 plan)
+Phase: Milestone v2.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-11-04 — Milestone v2.1 completed and archived
 
 ## Performance Metrics
 
