@@ -1,4 +1,4 @@
-import { MESH_CONFIG, BLOCK_CONFIG } from '../../config.js';
+import { MESH_CONFIG, BLOCK_CONFIG } from '../core/config.js';
 import { registerContextResources } from './context.js';
 
 const FLOAT_SIZE = 4;

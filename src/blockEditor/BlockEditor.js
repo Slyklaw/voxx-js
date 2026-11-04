@@ -4,7 +4,7 @@
  */
 
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../constants.js';
-import { DEBUG } from '../../config.js';
+import { DEBUG } from '../core/config.js';
 import { createChunkMeshFromData } from '../gl/buffers.js';
 
 export class BlockEditor {

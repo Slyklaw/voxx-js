@@ -1,9 +1,9 @@
 import { createNoise2D } from './lib/simplex-noise.js';
-import { Chunk } from './chunk.js';
-import { BIOME_CONFIG } from './biomes.js';
-import { BLOCK_TYPES, BLOCKS, getBlockColor } from './blocks.js';
-import { DEBUG } from './config.js';
-import { generateMeshData } from './greedyMesh.js';
+import { Chunk } from './src/core/chunk.js';
+import { BIOME_CONFIG } from './src/core/biomes.js';
+import { BLOCK_TYPES, BLOCKS, getBlockColor } from './src/core/blocks.js';
+import { DEBUG } from './src/core/config.js';
+import { generateMeshData } from './src/core/greedyMesh.js';
 
 self.onmessage = function (e) {
   const { chunkX, chunkZ, noiseSeed, callbackId } = e.data;

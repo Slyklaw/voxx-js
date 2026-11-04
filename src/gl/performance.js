@@ -232,7 +232,7 @@ export function checkFPSWarning() {
   console.warn(`Low FPS detected: ${currentFPS} fps - consider reducing quality settings`);
 }
 
-import { DEBUG } from '../../config.js';
+import { DEBUG } from '../core/config.js';
 
 export function logPerformance() {
   if (!DEBUG) return;

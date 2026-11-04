@@ -4,7 +4,7 @@
  * and block selection (1-9 keys and mouse wheel).
  */
 
-import { PLAYER_CONFIG, DEBUG } from '../../config.js';
+import { PLAYER_CONFIG, DEBUG } from '../core/config.js';
 
 // Convert yaw angle to cardinal direction (N, NE, E, SE, S, SW, W, NW)
 function getCardinalDirection(yaw) {
@@ -22,11 +22,14 @@ function getCardinalDirection(yaw) {
 }
 
 export class InputHandler {
-  constructor(canvas, onBlockSelect, onBlockDestroy, onBlockPlace) {
+  constructor(canvas, onBlockSelect, onBlockDestroy, onBlockPlace, onToggleWireframe, onToggleDebugColors, onSetRenderDistance) {
     this.canvas = canvas;
     this.onBlockSelect = onBlockSelect;
     this.onBlockDestroy = onBlockDestroy;
     this.onBlockPlace = onBlockPlace;
+    this.onToggleWireframe = onToggleWireframe;
+    this.onToggleDebugColors = onToggleDebugColors;
+    this.onSetRenderDistance = onSetRenderDistance;
     
     // State
     this.isPointerLocked = false;
@@ -91,12 +94,12 @@ export class InputHandler {
       
       // Toggle debug colors mode (V key)
       if (event.code === 'KeyV' && this.isPointerLocked) {
-        window.toggleDebugColors?.();
+        this.onToggleDebugColors?.();
       }
       
       // Toggle wireframe mode (F key)
       if (event.code === 'KeyF' && this.isPointerLocked) {
-        window.toggleWireframe?.();
+        this.onToggleWireframe?.();
       }
     });
 
@@ -158,8 +161,8 @@ export class InputHandler {
       if (el) {
         const current = parseInt(el.textContent);
         el.textContent = Math.min(32, current + 1);
-        if (window.setRenderDistance) {
-          window.setRenderDistance(parseInt(el.textContent));
+        if (this.onSetRenderDistance) {
+          this.onSetRenderDistance(parseInt(el.textContent));
         }
       }
     });
@@ -169,8 +172,8 @@ export class InputHandler {
       if (el) {
         const current = parseInt(el.textContent);
         el.textContent = Math.max(1, current - 1);
-        if (window.setRenderDistance) {
-          window.setRenderDistance(parseInt(el.textContent));
+        if (this.onSetRenderDistance) {
+          this.onSetRenderDistance(parseInt(el.textContent));
         }
       }
     });

@@ -1,4 +1,4 @@
-import { WORKER_CONFIG, DEBUG } from './config.js';
+import { WORKER_CONFIG, DEBUG } from './src/core/config.js';
 
 export class WorkerPool {
   constructor(workerScript, poolSize = navigator.hardwareConcurrency || 4) {

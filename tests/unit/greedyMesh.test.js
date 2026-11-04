@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateMeshData } from '../../greedyMesh.js';
+import { generateMeshData } from '../../src/core/greedyMesh.js';
 import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from '../../src/constants.js';
-import { BLOCK_TYPES } from '../../blocks.js';
+import { BLOCK_TYPES } from '../../src/core/blocks.js';
 
 describe('greedyMesh.js', () => {
   // Create a simple mock chunk with voxel data

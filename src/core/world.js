@@ -3,10 +3,10 @@
  */
 
 import { Chunk } from './chunk.js';
-import { CHUNK_WIDTH, CHUNK_DEPTH } from './src/constants.js';
-import { createNoise2D } from './lib/simplex-noise.js';
+import { CHUNK_WIDTH, CHUNK_DEPTH } from '../constants.js';
+import { createNoise2D } from '../../lib/simplex-noise.js';
 import { BiomeCalculator } from './biomes.js';
-import { WorkerPool } from './workerPool.js';
+import { WorkerPool } from '../../workerPool.js';
 import { DEBUG } from './config.js';
 
 // Hot chunk retention configuration

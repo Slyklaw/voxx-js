@@ -1,4 +1,4 @@
-import { createNoise2D } from './lib/simplex-noise.js';
+import { createNoise2D } from '../../lib/simplex-noise.js';
 import { BLOCK_TYPES } from './blocks.js';
 import { SUN_CYCLE_CONFIG, BIOME_TUNING } from './config.js';
 

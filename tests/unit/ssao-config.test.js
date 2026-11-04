@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SSAO_CONFIG } from '../../config.js';
+import { SSAO_CONFIG } from '../../src/core/config.js';
 
 describe('SSAO Configuration', () => {
   it('should export SSAO_CONFIG', () => {

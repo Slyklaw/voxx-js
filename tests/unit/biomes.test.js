@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateBiomeHeight, getBiomeBlockType, BiomeCalculator, BIOMES, BIOME_CONFIG } from '../../biomes.js';
-import { BLOCK_TYPES } from '../../blocks.js';
+import { generateBiomeHeight, getBiomeBlockType, BiomeCalculator, BIOMES, BIOME_CONFIG } from '../../src/core/biomes.js';
+import { BLOCK_TYPES } from '../../src/core/blocks.js';
 
 describe('biomes.js', () => {
   describe('generateBiomeHeight', () => {

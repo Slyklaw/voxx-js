@@ -10,9 +10,8 @@ import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
 import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, createShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
 import { resourceManager } from './resourceManager.js';
-import { getVisibleChunks } from '../chunk/chunkManager.js';
-import { CHUNK_SIZE, defaultChunkManager } from '../chunk/chunkManager.js';
-import { DEBUG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
+import { CHUNK_WIDTH } from '../constants.js';
+import { DEBUG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../core/config.js';
 
 const renderState = {
   currentLightSpaceMatrix: null,
@@ -648,11 +647,8 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
   // Otherwise fall back to scanning all chunks (backward compatibility)
   let visibleChunks;
   if (cameraPos && typeof cameraPos[0] === 'number' && typeof cameraPos[2] === 'number') {
-    // Use O(1) spatial index lookup - only iterates render distance grid
-    const renderDistance = defaultChunkManager.getRenderDistance();
-    visibleChunks = getVisibleChunks(cameraPos[0], cameraPos[2], renderDistance);
-    // Still filter for chunks with WebGL mesh
-    visibleChunks = visibleChunks.filter(chunk => chunk && chunk._webglMesh);
+    // Use World's loaded chunks; chunkManager spatial index is not maintained.
+    visibleChunks = chunks.filter(chunk => chunk && chunk._webglMesh);
   } else {
     // Fallback: filter all chunks (original behavior)
     visibleChunks = chunks
@@ -709,7 +705,7 @@ export function renderChunks(gl, chunks, chunkPositions = [], viewMatrix, projec
     // Get chunk world position for model matrix
     const chunkX = chunk.x || chunk.chunkX || 0;
     const chunkZ = chunk.z || chunk.chunkZ || 0;
-    const modelMatrix = createModelMatrix(chunkX * CHUNK_SIZE, 0, chunkZ * CHUNK_SIZE);
+    const modelMatrix = createModelMatrix(chunkX * CHUNK_WIDTH, 0, chunkZ * CHUNK_WIDTH);
     
     // Render chunk
     gl.bindVertexArray(chunkMesh.vao);
@@ -921,9 +917,9 @@ function isChunkInShadowFrustum(chunk, lightSpaceMatrix, frustumSize, near, far)
   const chunkZ = chunk.z !== undefined ? chunk.z : (chunk.chunkZ || 0);
   
   // Compute chunk center world position
-  const cx = chunkX * CHUNK_SIZE + CHUNK_SIZE / 2;
+  const cx = chunkX * CHUNK_WIDTH + CHUNK_WIDTH / 2;
   const cy = 0;
-  const cz = chunkZ * CHUNK_SIZE + CHUNK_SIZE / 2;
+  const cz = chunkZ * CHUNK_WIDTH + CHUNK_WIDTH / 2;
   
   // Transform chunk center by lightSpaceMatrix to get light-space coordinates
   const x = lightSpaceMatrix[0] * cx + lightSpaceMatrix[4] * cy + lightSpaceMatrix[8] * cz + lightSpaceMatrix[12];

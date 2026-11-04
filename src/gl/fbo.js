@@ -3,7 +3,7 @@
  * Provides G-buffer factory functions for deferred rendering and SSAO
  */
 
-import { DEBUG } from '../../config.js';
+import { DEBUG } from '../core/config.js';
 import { registerContextResources } from './context.js';
 
 /**

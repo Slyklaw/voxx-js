@@ -3,7 +3,7 @@
  * Manages player movement via WASD + space/shift, and creates view matrices for rendering.
  */
 
-import { PLAYER_CONFIG, DEBUG } from '../../config.js';
+import { PLAYER_CONFIG, DEBUG } from '../core/config.js';
 
 export class Camera {
   constructor(initialPosition = { x: 50, y: 200, z: 50 }, initialRotation = { x: 0.5, y: 0 }) {

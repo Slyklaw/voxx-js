@@ -53,11 +53,11 @@ import { createChunkMeshFromData } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { resourceManager } from './gl/resourceManager.js';
-import { World } from '../world.js';
-import { BiomeCalculator } from '../biomes.js';
-import { RENDER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
+import { World } from './core/world.js';
+import { BiomeCalculator } from './core/biomes.js';
+import { RENDER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from './core/config.js';
 import { CHUNK_WIDTH } from './constants.js';
-import { getRenderDistance } from './chunk/chunkManager.js';
+
 import { InputHandler } from './input/InputHandler.js';
 import { BlockEditor } from './blockEditor/BlockEditor.js';
 import { Camera } from './camera/Camera.js';
@@ -271,7 +271,7 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
   const upVec = sunNormY > 0.99 ? [1, 0, 0] : [0, 1, 0];
   const view = appState.camera.lookAt(lightPos, center, upVec);
   
-  const renderDist = getRenderDistance();
+  const renderDist = appState.renderDistance;
   const size = renderDist * CHUNK_WIDTH + 64;
   const farPlane = renderDist * CHUNK_WIDTH * 1.5;
   
@@ -329,8 +329,8 @@ document.getElementById('debug-toggle')?.addEventListener('change', (e) => {
   updateDebugUI();
 });
 
-// Expose toggle functions for InputHandler
-window.toggleWireframe = () => {
+// Toggle functions used by InputHandler and UI
+const toggleWireframe = () => {
   appState.wireframeMode = !appState.wireframeMode;
   const el = document.getElementById('wireframe-toggle');
   if (el) el.checked = appState.wireframeMode;
@@ -338,7 +338,7 @@ window.toggleWireframe = () => {
   updateDebugUI();
 };
 
-window.toggleDebugColors = () => {
+const toggleDebugColors = () => {
   appState.debugColorsMode = !appState.debugColorsMode;
   const el = document.getElementById('debug-toggle');
   if (el) el.checked = appState.debugColorsMode;
@@ -346,8 +346,8 @@ window.toggleDebugColors = () => {
   updateDebugUI();
 };
 
-// Expose render distance setter
-window.setRenderDistance = (dist) => {
+// Render distance setter
+const setRenderDistance = (dist) => {
   appState.renderDistance = dist;
 };
 
@@ -382,7 +382,10 @@ appState.inputHandler = new InputHandler(
   canvas,
   (blockType) => { appState.blockEditor.setSelectedBlockType(blockType); },
   () => { appState.blockEditor.destroyBlock(); },
-  () => { appState.blockEditor.placeBlock(appState.inputHandler.getSelectedBlockType()); }
+  () => { appState.blockEditor.placeBlock(appState.inputHandler.getSelectedBlockType()); },
+  toggleWireframe,
+  toggleDebugColors,
+  setRenderDistance
 );
 
 // Chunk rebuild throttling
