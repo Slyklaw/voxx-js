@@ -48,15 +48,15 @@ addContextLossListener(() => {
     hideContextLostNotification();
   }
 });
-import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateTimeOfDay, voxelAttribs, voxelUniforms, loadTextureAtlas, updateSSAOSettings, renderVoxelsToGBuffer, getShadowPassDuration } from './gl/render.js';
-import { createChunkMeshFromData, VERTEX_FORMAT } from './gl/buffers.js';
+import { initRenderer, setupRenderState, clear, renderSky, updateCamera, updateTimeOfDay, voxelAttribs, loadTextureAtlas, updateSSAOSettings, renderVoxelsToGBuffer, getShadowPassDuration } from './gl/render.js';
+import { createChunkMeshFromData } from './gl/buffers.js';
 import { initPerformance, beginFrame, getFPS, getFPSDisplay, beginRenderTiming, endRenderTiming, logPerformance, getDrawCalls } from './gl/performance.js';
 import { createProgram, getUniformLocations } from './gl/shaders.js';
 import { resourceManager } from './gl/resourceManager.js';
 import { World } from '../world.js';
 import { BiomeCalculator } from '../biomes.js';
-import { RENDER_CONFIG, PLAYER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
-import { CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH } from './constants.js';
+import { RENDER_CONFIG, SUN_CYCLE_CONFIG, DEBUG } from '../config.js';
+import { CHUNK_WIDTH } from './constants.js';
 import { getRenderDistance } from './chunk/chunkManager.js';
 import { InputHandler } from './input/InputHandler.js';
 import { BlockEditor } from './blockEditor/BlockEditor.js';
@@ -109,8 +109,6 @@ function updateDebugUI() {
     debugEl.style.display = appState.debugColorsMode ? 'block' : 'none';
   }
 }
-
-// Global references for callbacks (moved into appState)
 
 function disposeWebGLResources() {
   if (gl && appState.outlineVAO) gl.deleteVertexArray(appState.outlineVAO);
@@ -289,8 +287,6 @@ function createLightSpaceMatrix(cameraPos, sunDir) {
 window.createLightSpaceMatrix = createLightSpaceMatrix;
 
 // Set time of day (hour: 0-24)
-// appState.sunCycleTime and appState.timePaused moved into appState
-
 function setTimeOfDay(hour) {
   appState.sunCycleTime = SUN_CYCLE_CONFIG.TOTAL_CYCLE * (hour / 24);
   if (DEBUG) console.log(`[Debug] Time set to ${hour}:00`);

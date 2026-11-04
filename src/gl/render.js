@@ -1,18 +1,18 @@
-import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DIRECTION, DEFAULT_AMBIENT, DEFAULT_DIFFUSE } from '../shaders/voxel.js';
+import { createVoxelProgram, getVoxelUniforms, getVoxelAttribs, DEFAULT_LIGHT_DIRECTION } from '../shaders/voxel.js';
 import { createSkyProgram, getSkyUniforms, getSkyAttribs } from '../shaders/sky.js';
 import { createSelectionProgram, getSelectionUniforms, getSelectionAttribs, DEFAULT_SELECTION_COLOR, DEFAULT_BLOCK_SIZE, createWireframeCubeVertices, createWireframeCubeIndices } from '../shaders/selection.js';
 import { createSSAOProgram, getSSAOUniforms, generateKernelSamples, createNoiseTexture } from '../shaders/ssao.js';
 import { createBlurProgram, getBlurUniforms } from '../shaders/blur.js';
 import { createCompositeProgram, getCompositeUniforms } from '../shaders/composite.js';
-import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO, bindCameraUBO, bindGlobalUBO, UBO_SIZES } from './ubo.js';
+import { createCameraUBO, createGlobalUBO, updateCameraUBO, updateGlobalUBO } from './ubo.js';
 import { initPerformance, beginFrame, getFPS, getMetrics, logPerformance, beginDrawCalls, incrementDrawCalls, checkFPSWarning } from './performance.js';
 import { bindChunk, unbindChunk, initBufferPool } from './buffers.js';
-import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, resizeSSAOBuffer, disposeSSAOBuffer, createShadowMapFBO, disposeShadowMapFBO } from './fbo.js';
+import { createGBufferFBO, disposeGBuffer, checkFloatTextureSupport, createSSAOBuffer, createShadowMapFBO } from './fbo.js';
 import { createShadowProgram, getShadowUniforms } from '../shaders/shadow.js';
 import { resourceManager } from './resourceManager.js';
-import { createInstanceBuffer, getInstanceBuffer, getInstanceCount, disposeInstanceBuffer, getVisibleChunks } from '../chunk/chunkManager.js';
+import { getVisibleChunks } from '../chunk/chunkManager.js';
 import { CHUNK_SIZE, defaultChunkManager } from '../chunk/chunkManager.js';
-import { DEBUG, LIGHTING_CONFIG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
+import { DEBUG, LIGHTING_DEFAULTS, ATLAS_CONFIG, SKY_STOP_POSITIONS, SKY_TOP_COLOR_STOPS, SKY_BOTTOM_COLOR_STOPS, SUN_LIGHT_DIRECTION_STOPS, SUN_LIGHT_COLOR_STOPS, SUN_LIGHT_INTENSITY_STOPS, SSAO_CONFIG } from '../../config.js';
 
 const renderState = {
   currentLightSpaceMatrix: null,
@@ -175,45 +175,6 @@ export let ssaoSettings = {
 const SKY_BLUE = [0.53, 0.81, 0.92, 1.0];
 
 
-
-function createCubeMesh() {
-  const positions = [
-    -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  0.5,  0.5, -0.5, -0.5,  0.5, -0.5,
-    -0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5,  0.5,  0.5, -0.5,  0.5,  0.5,
-    -0.5, -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  0.5,  0.5, -0.5, -0.5,  0.5,
-     0.5, -0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5,  0.5,  0.5, -0.5,  0.5,
-    -0.5, -0.5, -0.5,  0.5, -0.5, -0.5,  0.5, -0.5,  0.5, -0.5, -0.5,  0.5,
-    -0.5,  0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5,  0.5, -0.5,  0.5,  0.5
-  ];
-
-  const indices = [
-    0, 1, 2, 0, 2, 3,      // Front face
-    4, 5, 6, 4, 6, 7,      // Back face
-    8, 9, 10, 8, 10, 11,   // Left face
-    12, 13, 14, 12, 14, 15, // Right face
-    16, 17, 18, 16, 18, 19, // Bottom face
-    20, 21, 22, 20, 22, 23  // Top face
-  ];
-
-  const normals = [];
-  const faces = [
-    [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0], [0, -1, 0], [0, 1, 0]
-  ];
-
-  for (let face = 0; face < 6; face++) {
-    for (let i = 0; i < 4; i++) {
-      normals.push(faces[face][0], faces[face][1], faces[face][2]);
-    }
-  }
-
-  const colors = [];
-  const cubeColor = [0.8, 0.2, 0.2];
-  for (let i = 0; i < 24; i++) {
-    colors.push(cubeColor[0], cubeColor[1], cubeColor[2]);
-  }
-
-  return { positions, indices, colors, normals };
-}
 
 function initSky(gl) {
   renderState.skyProgram = createSkyProgram(gl);
@@ -646,7 +607,6 @@ export function renderChunk(gl, chunkMesh, modelMatrix, viewMatrix, projectionMa
         console.warn('[Renderer] No texture atlas to bind!');
       }
   
-  // gl.disable(gl.CULL_FACE); // DEBUG: Show all faces
   
   bindChunk(gl, chunkMesh.vao);
   
@@ -907,92 +867,6 @@ export function updateTimeOfDay(gl, time) {
     gl.useProgram(null);
   }
 }
-
-export function createMockChunkMesh(gl) {
-  const cube = createCubeMesh();
-  const vertexCount = cube.positions.length / 3;
-
-  const data = new Float32Array(vertexCount * VERTEX_FORMAT.FLOATS_PER_VERTEX);
-
-  // Test with STONE texture at atlas position [0, 0]
-  const ATLAS_W = 1024;
-  const ATLAS_H = 512;
-  const TILE = 16;
-  
-  // Stone texture position
-  const stoneAtlasX = 0;
-  const stoneAtlasY = 0;
-  
-  // Calculate UV bounds for stone texture
-  const uMin = stoneAtlasX / ATLAS_W;  // 0/1024 = 0
-  const vMin = stoneAtlasY / ATLAS_H;  // 0/512 = 0
-  const uMax = (stoneAtlasX + TILE) / ATLAS_W;  // 16/1024 = 0.0156
-  const vMax = (stoneAtlasY + TILE) / ATLAS_H;  // 16/512 = 0.03125
-
-  if (DEBUG) console.log(`[TestCube] Stone UVs: [${uMin}, ${vMin}] to [${uMax}, ${vMax}]`);
-
-  for (let i = 0; i < vertexCount; i++) {
-    const base = i * VERTEX_FORMAT.FLOATS_PER_VERTEX;
-    data[base + 0] = cube.positions[i * 3 + 0];
-    data[base + 1] = cube.positions[i * 3 + 1];
-    data[base + 2] = cube.positions[i * 3 + 2];
-    data[base + 3] = cube.colors[i * 3 + 0];
-    data[base + 4] = cube.colors[i * 3 + 1];
-    data[base + 5] = cube.colors[i * 3 + 2];
-    data[base + 6] = cube.normals[i * 3 + 0];
-    data[base + 7] = cube.normals[i * 3 + 1];
-    data[base + 8] = cube.normals[i * 3 + 2];
-    
-    // UV coordinates - map to stone texture in atlas
-    // Each face of the cube gets the full stone texture
-    const cornerIndex = i % 4;
-    switch (cornerIndex) {
-      case 0: // bottom-left
-        data[base + 9] = uMin;
-        data[base + 10] = vMax;  // V is flipped (bottom of texture)
-        break;
-      case 1: // bottom-right
-        data[base + 9] = uMax;
-        data[base + 10] = vMax;
-        break;
-      case 2: // top-left
-        data[base + 9] = uMin;
-        data[base + 10] = vMin;  // V is flipped (top of texture)
-        break;
-      case 3: // top-right
-        data[base + 9] = uMax;
-        data[base + 10] = vMin;
-        break;
-    }
-  }
-
-  const vbo = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-
-  const vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-
-  gl.enableVertexAttribArray(voxelAttribs.aPosition);
-  gl.vertexAttribPointer(voxelAttribs.aPosition, 3, gl.FLOAT, false, VERTEX_FORMAT.STRIDE, VERTEX_FORMAT.POSITION_OFFSET);
-
-  gl.enableVertexAttribArray(voxelAttribs.aColor);
-  gl.vertexAttribPointer(voxelAttribs.aColor, 3, gl.FLOAT, false, VERTEX_FORMAT.STRIDE, VERTEX_FORMAT.COLOR_OFFSET);
-
-  gl.enableVertexAttribArray(voxelAttribs.aNormal);
-  gl.vertexAttribPointer(voxelAttribs.aNormal, 3, gl.FLOAT, false, VERTEX_FORMAT.STRIDE, VERTEX_FORMAT.NORMAL_OFFSET);
-
-  gl.enableVertexAttribArray(voxelAttribs.aUV);
-  gl.vertexAttribPointer(voxelAttribs.aUV, 2, gl.FLOAT, false, VERTEX_FORMAT.STRIDE, VERTEX_FORMAT.UV_OFFSET);
-
-  gl.bindVertexArray(null);
-  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-  // Remove test cube - terrain is working
-  return null;
-}
-
 
 export function renderLoop(canvasEl, gl, renderFn) {
   renderState.canvas = canvasEl;
