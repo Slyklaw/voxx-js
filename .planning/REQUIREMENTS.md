@@ -68,15 +68,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QUAL-01 | | Pending |
-| QUAL-02 | | Pending |
-| CLEAN-01 | | Pending |
-| CLEAN-02 | | Pending |
+| QUAL-01 | Phase 7 | Pending |
+| QUAL-02 | Phase 8 | Pending |
+| CLEAN-01 | Phase 9 | Pending |
+| CLEAN-02 | Phase 9 | Pending |
 
 **Coverage:**
 - v1 requirements: 4 total
-- Mapped to phases: 0
-- Unmapped: 4 ⚠️
+- Mapped to phases: 4
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-11-03*

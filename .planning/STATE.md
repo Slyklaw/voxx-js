@@ -36,12 +36,18 @@ See: .planning/PROJECT.md (updated 2026-11-03)
 - ✓ Phase 5: Core Shadows (1/1 plans)
 - ✓ Phase 6: Shadow Integration (2/2 plans)
 
+**v2.1 Cleanup — In Progress**
+
+- ○ Phase 7: State Encapsulation (0/? plans)
+- ○ Phase 8: WebGL Resource Manager (0/? plans)
+- ○ Phase 9: Code Hygiene & Module Boundaries (0/? plans)
+
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (ready to plan)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-11-04 — Milestone v2.1 started
+Status: Roadmap created (3 phases)
+Last activity: 2026-11-04 — Milestone v2.1 roadmap created
 
 ## Performance Metrics
 
